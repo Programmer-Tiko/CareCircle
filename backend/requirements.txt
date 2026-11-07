@@ -6,3 +6,6 @@ joblib
 soundfile
 praat-parselmouth
 pytest
+openpyxl
+torch
+torchaudio

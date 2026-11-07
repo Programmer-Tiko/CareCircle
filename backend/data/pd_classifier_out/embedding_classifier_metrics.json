@@ -1,0 +1,23 @@
+{
+  "n_pd": 40,
+  "n_hc": 41,
+  "embedding_dim": 768,
+  "cv_accuracy": 0.6172839506172839,
+  "cv_roc_auc": 0.6792682926829268,
+  "confusion_matrix": [
+    [
+      24,
+      17
+    ],
+    [
+      14,
+      26
+    ]
+  ],
+  "comparison_baseline": {
+    "method": "hand-engineered jitter/shimmer/HNR (train_pd_classifier.py)",
+    "cv_accuracy": 0.6172839506172839,
+    "cv_roc_auc": 0.6304878048780488
+  },
+  "note": "Same 5-fold stratified CV, same subjects, same labels as the hand-engineered-feature baseline -- only the feature representation differs. 81 samples is small for a 768-dim embedding, so this is a real but noisy comparison, not a final verdict."
+}
