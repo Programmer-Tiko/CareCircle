@@ -23,7 +23,7 @@ For tomorrow's demo, **build "Check my voice" as the fully real, deeply polished
 
 2. **Enrollment (first time only).** Explain in one sentence: "Read this short passage a few times so we learn what's normal for you." Record 3–5 takes of the fixed passage (a short excerpt of the Rainbow Passage — a real standardized passage speech clinicians already use, ~15–20 seconds each). Simple record → stop → "sounds good, one more" loop.
 
-3. **Daily check-in.** One screen: the passage text displayed, a record button, explicit "Finish" when done (not auto-cutoff). If the person has Parkinson's, add one extra ~5 second step after: "hold a steady 'ahh' for 5 seconds."
+3. **Daily check-in.** One screen: the passage text displayed, a record button, explicit "Finish" when done (not auto-cutoff).
 
 4. **Processing (brief, 1–2 seconds).** A simple "comparing to your usual" state — this is the moment the "Understand" step happens, worth a small deliberate pause/animation so it's visible in the demo rather than instant.
 
@@ -32,7 +32,6 @@ For tomorrow's demo, **build "Check my voice" as the fully real, deeply polished
 6. **Outcome B — persistent change detected.** This is the moment to make visually clear in the demo: show, plainly, *what* changed (e.g., "today's reading had more pauses than usual") — not a scary alert, a neutral observation — followed by the adaptive question. Use the real condition-specific language:
    - **COPD:** "What happened during that pause?" → if "I stopped to catch my breath" → "Is that more frequent than usual? What were you doing at the time?"
    - **Parkinson's:** "What happened there?" → if "it's harder to get words out" → "Where have you noticed that — and has being understood in everyday conversation changed?"
-   - For Parkinson's profiles only, also show a secondary, separately-labeled "voice quality index" number with a tooltip: *"research-informed, not a diagnosis."* Never put this number next to anything that looks like a diagnosis or a red/green status light.
 
 7. **Note review.** Three clearly separate sections, always: **Measured** (the acoustic observation, in plain language), **You said** (their actual words), **Still unclear** (anything unresolved). Editable. A "Looks right" confirm button. Nothing leaves this screen un-confirmed.
 
@@ -84,7 +83,6 @@ Build against this shape now; it'll match what the backend actually returns late
 - Never say "detected," "diagnosed," or imply a medical finding. Say "noticed a change" or "different than usual."
 - Never show a measurement without also showing what the person actually said about it, once available.
 - A missed call or missing audio is never framed as bad news — it's just "no reading available today."
-- Keep the voice quality index (Parkinson's only) visually and verbally separate from the baseline-deviation question — one is a research-informed number, the other is what actually drives the conversation.
 - No red alert styling anywhere. This is a daily habit tool, not an ICU monitor.
 
 ## What's explicitly out of scope — don't build screens for these

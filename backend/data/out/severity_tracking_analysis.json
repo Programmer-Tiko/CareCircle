@@ -1,0 +1,26 @@
+{
+  "n_subjects_analyzed": 42,
+  "features": {
+    "HNR": {
+      "median_r": 0.028446750635399844,
+      "mean_r": 0.02707378454985885,
+      "pct_subjects_same_sign": 57.14285714285714
+    },
+    "Jitter(%)": {
+      "median_r": 0.02050554317588721,
+      "mean_r": -0.01578703850943625,
+      "pct_subjects_same_sign": 59.523809523809526
+    },
+    "Shimmer": {
+      "median_r": -0.0212739193899674,
+      "mean_r": -0.03213859488998551,
+      "pct_subjects_same_sign": 52.38095238095239
+    },
+    "NHR": {
+      "median_r": -0.017785029599701727,
+      "mean_r": -0.01668564876379501,
+      "pct_subjects_same_sign": 57.14285714285714
+    }
+  },
+  "interpretation": "Near-zero median correlation and sign-consistency barely above chance (50%) across all four features means sustained-vowel jitter/shimmer/HNR do not reliably track within-person symptom change over time in this real 42-patient dataset. This matches the published claim that sustained vowels suit cross-sectional diagnosis, not longitudinal monitoring -- and is why VoiceShift's live trigger uses reading-passage pause-timing instead, and never surfaces a trained severity score to the patient."
+}
