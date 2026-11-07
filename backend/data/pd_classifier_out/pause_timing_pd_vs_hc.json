@@ -1,0 +1,251 @@
+{
+  "n_pd": 16,
+  "n_hc": 21,
+  "summary": {
+    "pause_fraction": {
+      "pd_mean": 0.3276137478153732,
+      "pd_std": 0.11315453558891618,
+      "hc_mean": 0.23268018687531308,
+      "hc_std": 0.06429132763501927,
+      "welch_t": 2.915496269988153,
+      "p_value": 0.007974817124501531
+    },
+    "longest_internal_gap": {
+      "pd_mean": 7.71875,
+      "pd_std": 3.6946276453115,
+      "hc_mean": 7.780952380952381,
+      "hc_std": 3.3619182516928867,
+      "welch_t": -0.051214148372148674,
+      "p_value": 0.9594880403801626
+    }
+  },
+  "raw": {
+    "PD": [
+      {
+        "pause_fraction": 0.23463317911434245,
+        "longest_internal_gap": 5.0,
+        "n_segments": 38,
+        "file": "ID02_pd_2_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.2078147601856808,
+        "longest_internal_gap": 4.299999999999997,
+        "n_segments": 31,
+        "file": "ID04_pd_2_0_1.wav"
+      },
+      {
+        "pause_fraction": 0.2852684144818981,
+        "longest_internal_gap": 7.100000000000001,
+        "n_segments": 54,
+        "file": "ID06_pd_3_1_1.wav"
+      },
+      {
+        "pause_fraction": 0.23640661938534277,
+        "longest_internal_gap": 7.799999999999997,
+        "n_segments": 35,
+        "file": "ID07_pd_2_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.47486033519553056,
+        "longest_internal_gap": 17.1,
+        "n_segments": 35,
+        "file": "ID13_pd_3_2_2.wav"
+      },
+      {
+        "pause_fraction": 0.3167173252279635,
+        "longest_internal_gap": 9.5,
+        "n_segments": 53,
+        "file": "ID16_pd_2_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.3333333333333336,
+        "longest_internal_gap": 6.299999999999997,
+        "n_segments": 46,
+        "file": "ID17_pd_2_1_0.wav"
+      },
+      {
+        "pause_fraction": 0.4723684210526315,
+        "longest_internal_gap": 3.3000000000000043,
+        "n_segments": 30,
+        "file": "ID18_pd_4_3_3.wav"
+      },
+      {
+        "pause_fraction": 0.4201312910284466,
+        "longest_internal_gap": 13.899999999999999,
+        "n_segments": 48,
+        "file": "ID20_pd_3_0_1.wav"
+      },
+      {
+        "pause_fraction": 0.23176895306859185,
+        "longest_internal_gap": 9.899999999999999,
+        "n_segments": 36,
+        "file": "ID24_pd_2_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.38373570520965733,
+        "longest_internal_gap": 11.200000000000001,
+        "n_segments": 36,
+        "file": "ID27_pd_4_1_1.wav"
+      },
+      {
+        "pause_fraction": 0.4860088365243005,
+        "longest_internal_gap": 6.699999999999999,
+        "n_segments": 64,
+        "file": "ID29_pd_3_1_2.wav"
+      },
+      {
+        "pause_fraction": 0.20896717373899149,
+        "longest_internal_gap": 7.400000000000006,
+        "n_segments": 29,
+        "file": "ID30_pd_2_1_1.wav"
+      },
+      {
+        "pause_fraction": 0.24869565217391312,
+        "longest_internal_gap": 3.5,
+        "n_segments": 28,
+        "file": "ID32_pd_3_1_1.wav"
+      },
+      {
+        "pause_fraction": 0.5260900767016401,
+        "longest_internal_gap": 5.300000000000001,
+        "n_segments": 57,
+        "file": "ID33_pd_3_2_2.wav"
+      },
+      {
+        "pause_fraction": 0.17501988862370724,
+        "longest_internal_gap": 5.199999999999999,
+        "n_segments": 29,
+        "file": "ID34_pd_2_0_0.wav"
+      }
+    ],
+    "HC": [
+      {
+        "pause_fraction": 0.20771312584573734,
+        "longest_internal_gap": 13.1,
+        "n_segments": 53,
+        "file": "ID00_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.14551724137931016,
+        "longest_internal_gap": 5.099999999999998,
+        "n_segments": 27,
+        "file": "ID01_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.2155731795241527,
+        "longest_internal_gap": 10.399999999999999,
+        "n_segments": 37,
+        "file": "ID03_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.18278427205100964,
+        "longest_internal_gap": 4.400000000000002,
+        "n_segments": 24,
+        "file": "ID05_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.21369294605809117,
+        "longest_internal_gap": 11.2,
+        "n_segments": 36,
+        "file": "ID08_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.3290426387771521,
+        "longest_internal_gap": 16.1,
+        "n_segments": 29,
+        "file": "ID09_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.18496621621621628,
+        "longest_internal_gap": 5.300000000000001,
+        "n_segments": 26,
+        "file": "ID10_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.2594303310238641,
+        "longest_internal_gap": 7.799999999999997,
+        "n_segments": 40,
+        "file": "ID11_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.16378525932666052,
+        "longest_internal_gap": 7.599999999999998,
+        "n_segments": 22,
+        "file": "ID12_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.24131016042780756,
+        "longest_internal_gap": 7.100000000000001,
+        "n_segments": 48,
+        "file": "ID14_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.14025974025974003,
+        "longest_internal_gap": 2.700000000000003,
+        "n_segments": 34,
+        "file": "ID15_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.25576368876080696,
+        "longest_internal_gap": 10.7,
+        "n_segments": 33,
+        "file": "ID19_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.1745098039215684,
+        "longest_internal_gap": 5.300000000000001,
+        "n_segments": 26,
+        "file": "ID21_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.2723577235772352,
+        "longest_internal_gap": 6.700000000000003,
+        "n_segments": 48,
+        "file": "ID22_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.27449030333167623,
+        "longest_internal_gap": 9.3,
+        "n_segments": 60,
+        "file": "ID23_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.31012658227848133,
+        "longest_internal_gap": 6.0,
+        "n_segments": 94,
+        "file": "ID25_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.167164179104478,
+        "longest_internal_gap": 5.299999999999997,
+        "n_segments": 42,
+        "file": "ID26_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.2122861586314156,
+        "longest_internal_gap": 4.700000000000003,
+        "n_segments": 41,
+        "file": "ID28_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.3062632696390657,
+        "longest_internal_gap": 5.200000000000001,
+        "n_segments": 64,
+        "file": "ID31_hc_0_1_1.wav"
+      },
+      {
+        "pause_fraction": 0.39527027027027006,
+        "longest_internal_gap": 12.799999999999999,
+        "n_segments": 30,
+        "file": "ID35_hc_0_0_0.wav"
+      },
+      {
+        "pause_fraction": 0.23397683397683405,
+        "longest_internal_gap": 6.600000000000001,
+        "n_segments": 44,
+        "file": "ID36_hc_0_0_0.wav"
+      }
+    ]
+  },
+  "note": "Cross-sectional PD vs HC comparison on connected read speech, using the live app's own VAD + pause-timing feature code. Not a longitudinal test -- MDVR-KCL has one session per subject."
+}
