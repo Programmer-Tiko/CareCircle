@@ -1,0 +1,47 @@
+{
+  "results_by_threshold": {
+    "0.3": {
+      "n_pd": 16,
+      "n_hc": 21,
+      "pause_fraction": {
+        "pd_mean": 0.3136367096990434,
+        "hc_mean": 0.2178816912348764,
+        "p_value": 0.006238241898331057
+      },
+      "mean_speech_segment_duration": {
+        "pd_mean": 2.351338139814022,
+        "hc_mean": 3.1886313828357733,
+        "p_value": 0.025273620993977928
+      }
+    },
+    "0.5": {
+      "n_pd": 16,
+      "n_hc": 21,
+      "pause_fraction": {
+        "pd_mean": 0.3276137478153732,
+        "hc_mean": 0.23268018687531308,
+        "p_value": 0.007974817124501531
+      },
+      "mean_speech_segment_duration": {
+        "pd_mean": 2.0948674088119956,
+        "hc_mean": 2.8067548024944844,
+        "p_value": 0.016408028980997892
+      }
+    },
+    "0.7": {
+      "n_pd": 16,
+      "n_hc": 21,
+      "pause_fraction": {
+        "pd_mean": 0.34165310548181377,
+        "hc_mean": 0.24189309766402803,
+        "p_value": 0.007485301030976407
+      },
+      "mean_speech_segment_duration": {
+        "pd_mean": 1.9913781578048493,
+        "hc_mean": 2.584244988244994,
+        "p_value": 0.02095024561384526
+      }
+    }
+  },
+  "note": "Default VAD threshold is 0.5. If pause_fraction and mean_speech_segment_duration stay significant (p<0.05) with the same direction across 0.3/0.5/0.7, the PD vs HC finding is not an artifact of one specific VAD sensitivity setting."
+}

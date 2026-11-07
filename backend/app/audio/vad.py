@@ -31,7 +31,9 @@ def load_mono_16k(path: str | Path) -> torch.Tensor:
     return waveform.squeeze(0)
 
 
-def detect_speech_segments(path: str | Path) -> list[tuple[float, float]]:
+def detect_speech_segments(path: str | Path, threshold: float = 0.5) -> list[tuple[float, float]]:
     waveform = load_mono_16k(path)
-    timestamps = get_speech_timestamps(waveform, _get_model(), return_seconds=True)
+    timestamps = get_speech_timestamps(
+        waveform, _get_model(), threshold=threshold, return_seconds=True
+    )
     return [(t["start"], t["end"]) for t in timestamps]
