@@ -8,7 +8,23 @@ Not committed to the repo. Download these yourself:
    This is real data from 42 diagnosed patients, 5,875 recordings, with longitudinal
    UPDRS severity labels. Used by `app/models/train_pd_severity.py`.
 
-2. **COPD dataset** — not yet confirmed accessible without a request process.
+2. **Figshare "Voice Samples for Patients with Parkinson's Disease and Healthy Controls"**
+   (public, no request needed, DOI 10.6084/m9.figshare.23849127):
+   https://figshare.com/articles/dataset/Voice_Samples_for_Patients_with_Parkinson_s_Disease_and_Healthy_Controls/23849127
+   Real raw audio (.wav) from 40 diagnosed PD patients and 41 healthy controls,
+   sustained vowel /a/, recorded on participants' own phones. Download via the
+   figshare API (no login):
+   ```
+   curl -sL -o Demographics.xlsx "https://ndownloader.figshare.com/files/41836707"
+   curl -sL -o PD_AH.zip "https://ndownloader.figshare.com/files/41836710"
+   curl -sL -o HC_AH.zip "https://ndownloader.figshare.com/files/41836713"
+   unzip PD_AH.zip && unzip HC_AH.zip
+   ```
+   Already downloaded, run, and validated locally — see `backend/data/pd_classifier_out/`
+   for the real results (5-fold CV accuracy 0.617, ROC-AUC 0.630). Reproduce with:
+   `python app/models/train_pd_classifier.py --dataset-dir <dir with Demographics.xlsx, PD_AH/, HC_AH/> --out data/pd_classifier_out`
+
+3. **COPD dataset** — not yet confirmed accessible without a request process.
    If you find a public one with raw audio or extracted jitter/shimmer/HNR-style
    features in the next ~20 minutes, drop it here and flag it; otherwise the
    COPD side stays rule-based (personal baseline + ALA/GOLD-sourced question

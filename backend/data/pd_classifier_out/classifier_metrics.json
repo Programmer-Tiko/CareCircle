@@ -1,0 +1,17 @@
+{
+  "n_pd": 40,
+  "n_hc": 41,
+  "cv_accuracy": 0.6172839506172839,
+  "cv_roc_auc": 0.6304878048780488,
+  "confusion_matrix": [
+    [
+      26,
+      15
+    ],
+    [
+      16,
+      24
+    ]
+  ],
+  "note": "5-fold stratified cross-validation, one recording per subject so there is no subject leakage between folds."
+}
