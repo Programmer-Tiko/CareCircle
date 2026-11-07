@@ -1,0 +1,414 @@
+{
+  "n_pd": 16,
+  "n_hc": 21,
+  "pd_vs_hc_by_feature": {
+    "pause_fraction": {
+      "pd_mean": 0.3276137478153732,
+      "hc_mean": 0.23268018687531308,
+      "p_value": 0.007974817124501531,
+      "cohens_d": 1.000754619628456
+    },
+    "mean_speech_segment_duration": {
+      "pd_mean": 2.0948674088119956,
+      "hc_mean": 2.8067548024944844,
+      "p_value": 0.016408028980997892,
+      "cohens_d": -0.8436320225513709
+    },
+    "Jitter(Abs)": {
+      "pd_mean": 0.00018564097178570447,
+      "hc_mean": 0.00013290129168677645,
+      "p_value": 0.02089295684794678,
+      "cohens_d": 0.8481325976902558
+    },
+    "std_speech_segment_duration": {
+      "pd_mean": 1.3370769904041908,
+      "hc_mean": 1.9336995269652373,
+      "p_value": 0.027453896974600548,
+      "cohens_d": -0.7502808450553871
+    },
+    "Shimmer:APQ11": {
+      "pd_mean": 0.09946686136988092,
+      "hc_mean": 0.08462666872036642,
+      "p_value": 0.038766260703546086,
+      "cohens_d": 0.7347952906236563
+    },
+    "Shimmer(dB)": {
+      "pd_mean": 1.0139902767052467,
+      "hc_mean": 0.9000320213660116,
+      "p_value": 0.0393253922023619,
+      "cohens_d": 0.7326152105319942
+    },
+    "Jitter:PPQ5": {
+      "pd_mean": 0.012205688586217536,
+      "hc_mean": 0.010377925140348594,
+      "p_value": 0.041306900106869306,
+      "cohens_d": 0.6989060242347008
+    },
+    "pause_rate_per_min": {
+      "pd_mean": 20.741080684690083,
+      "hc_mean": 17.198389661176947,
+      "p_value": 0.055334303701496466,
+      "cohens_d": 0.6631214112175687
+    },
+    "Shimmer:APQ5": {
+      "pd_mean": 0.056339579376707555,
+      "hc_mean": 0.04790011388951345,
+      "p_value": 0.07843262099085822,
+      "cohens_d": 0.6295417723271557
+    },
+    "Jitter(%)": {
+      "pd_mean": 2.576542067719193,
+      "hc_mean": 2.275271404004588,
+      "p_value": 0.10180069424616278,
+      "cohens_d": 0.5582372754962796
+    },
+    "Shimmer": {
+      "pd_mean": 0.10335197055807875,
+      "hc_mean": 0.09190978296865167,
+      "p_value": 0.10971814169840709,
+      "cohens_d": 0.5665241498704686
+    },
+    "mean_pause_duration": {
+      "pd_mean": 0.9439760010645137,
+      "hc_mean": 0.8353634137881071,
+      "p_value": 0.12276270385780184,
+      "cohens_d": 0.5210678344378423
+    },
+    "Shimmer:APQ3": {
+      "pd_mean": 0.03978969512688714,
+      "hc_mean": 0.03460635533308186,
+      "p_value": 0.13231348440301716,
+      "cohens_d": 0.527329873363252
+    },
+    "Shimmer:DDA": {
+      "pd_mean": 0.11936908538066143,
+      "hc_mean": 0.1038190659992456,
+      "p_value": 0.1323134844030175,
+      "cohens_d": 0.5273298733632515
+    },
+    "Jitter:RAP": {
+      "pd_mean": 0.01121998056415725,
+      "hc_mean": 0.009949951284438804,
+      "p_value": 0.19745925030154937,
+      "cohens_d": 0.43600782106125685
+    },
+    "Jitter:DDP": {
+      "pd_mean": 0.033659941692471745,
+      "hc_mean": 0.029849853853316417,
+      "p_value": 0.19745925030155004,
+      "cohens_d": 0.4360078210612561
+    },
+    "NHR": {
+      "pd_mean": 0.04453617614006491,
+      "hc_mean": 0.04076761767622661,
+      "p_value": 0.5445037583649444,
+      "cohens_d": 0.21205460121911907
+    },
+    "std_pause_duration": {
+      "pd_mean": 1.38231121338487,
+      "hc_mean": 1.4333809734137137,
+      "p_value": 0.80048809895631,
+      "cohens_d": -0.08505834089782834
+    },
+    "HNR": {
+      "pd_mean": 13.976166935083935,
+      "hc_mean": 14.078863777762024,
+      "p_value": 0.862719538136593,
+      "cohens_d": -0.059614157794658465
+    },
+    "num_pauses": {
+      "pd_mean": 39.5625,
+      "hc_mean": 39.857142857142854,
+      "p_value": 0.9499684694702536,
+      "cohens_d": -0.02044969863604438
+    },
+    "longest_internal_gap": {
+      "pd_mean": 7.71875,
+      "hc_mean": 7.780952380952381,
+      "p_value": 0.9594880403801626,
+      "cohens_d": -0.017111598876051803
+    }
+  },
+  "severity_gradient_within_pd": {
+    "mean_speech_segment_duration__vs__hoehn_yahr": {
+      "spearman_r": -0.7972905799691621,
+      "p_value": 0.00021650379859529696
+    },
+    "std_speech_segment_duration__vs__hoehn_yahr": {
+      "spearman_r": -0.7972905799691621,
+      "p_value": 0.00021650379859529696
+    },
+    "mean_speech_segment_duration__vs__updrs_iii_18": {
+      "spearman_r": -0.7633176623271966,
+      "p_value": 0.000580863694915289
+    },
+    "mean_speech_segment_duration__vs__updrs_ii_5": {
+      "spearman_r": -0.7511911975563309,
+      "p_value": 0.0007955655943035315
+    },
+    "pause_fraction__vs__hoehn_yahr": {
+      "spearman_r": 0.7259881703784241,
+      "p_value": 0.001451943930274541
+    },
+    "pause_rate_per_min__vs__hoehn_yahr": {
+      "spearman_r": 0.7259881703784241,
+      "p_value": 0.001451943930274541
+    },
+    "pause_fraction__vs__updrs_ii_5": {
+      "spearman_r": 0.6642111641550715,
+      "p_value": 0.005011413947074748
+    },
+    "pause_fraction__vs__updrs_iii_18": {
+      "spearman_r": 0.6636190288803792,
+      "p_value": 0.005064521739390907
+    },
+    "pause_rate_per_min__vs__updrs_ii_5": {
+      "spearman_r": 0.6610482538495711,
+      "p_value": 0.005300337486953486
+    },
+    "std_speech_segment_duration__vs__updrs_iii_18": {
+      "spearman_r": -0.6573878642899531,
+      "p_value": 0.0056511679619889905
+    },
+    "Jitter:PPQ5__vs__updrs_iii_18": {
+      "spearman_r": 0.6184430855997899,
+      "p_value": 0.010657907575321588
+    },
+    "pause_rate_per_min__vs__updrs_iii_18": {
+      "spearman_r": 0.6090963387141508,
+      "p_value": 0.012265576703801075
+    },
+    "std_speech_segment_duration__vs__updrs_ii_5": {
+      "spearman_r": -0.5883013168230633,
+      "p_value": 0.016524580388143383
+    },
+    "Jitter(%)__vs__updrs_iii_18": {
+      "spearman_r": 0.5608048131383486,
+      "p_value": 0.023827731974188946
+    },
+    "Jitter:RAP__vs__updrs_iii_18": {
+      "spearman_r": 0.5249756167433985,
+      "p_value": 0.036795928877538284
+    },
+    "Jitter:DDP__vs__updrs_iii_18": {
+      "spearman_r": 0.5249756167433985,
+      "p_value": 0.036795928877538284
+    },
+    "Jitter:PPQ5__vs__hoehn_yahr": {
+      "spearman_r": 0.4991168671351665,
+      "p_value": 0.04904286431363581
+    },
+    "mean_pause_duration__vs__updrs_iii_18": {
+      "spearman_r": 0.49849316723408754,
+      "p_value": 0.04937152096739923
+    },
+    "Jitter(%)__vs__hoehn_yahr": {
+      "spearman_r": 0.4893938112818841,
+      "p_value": 0.05435483332243673
+    },
+    "Jitter(Abs)__vs__hoehn_yahr": {
+      "spearman_r": 0.4699476995753191,
+      "p_value": 0.06623876329078801
+    },
+    "Jitter:PPQ5__vs__updrs_ii_5": {
+      "spearman_r": 0.43173725670079643,
+      "p_value": 0.09494371886872406
+    },
+    "Jitter:RAP__vs__updrs_ii_5": {
+      "spearman_r": 0.4159227051732947,
+      "p_value": 0.10908353388863119
+    },
+    "Jitter:DDP__vs__updrs_ii_5": {
+      "spearman_r": 0.4159227051732947,
+      "p_value": 0.10908353388863119
+    },
+    "Jitter(Abs)__vs__updrs_iii_18": {
+      "spearman_r": 0.37698545772077874,
+      "p_value": 0.15004540709676664
+    },
+    "mean_pause_duration__vs__hoehn_yahr": {
+      "spearman_r": 0.36947612242473366,
+      "p_value": 0.15899849371740973
+    },
+    "mean_pause_duration__vs__updrs_ii_5": {
+      "spearman_r": 0.35740886452153847,
+      "p_value": 0.17412469230443614
+    },
+    "Shimmer:APQ3__vs__updrs_iii_18": {
+      "spearman_r": 0.31155822952130474,
+      "p_value": 0.24012804383942535
+    },
+    "Shimmer:DDA__vs__updrs_iii_18": {
+      "spearman_r": 0.31155822952130474,
+      "p_value": 0.24012804383942535
+    },
+    "Jitter(%)__vs__updrs_ii_5": {
+      "spearman_r": 0.3020579341752825,
+      "p_value": 0.25552323701319485
+    },
+    "Shimmer:APQ3__vs__updrs_ii_5": {
+      "spearman_r": 0.27833610688402993,
+      "p_value": 0.29655837431000726
+    },
+    "Shimmer:DDA__vs__updrs_ii_5": {
+      "spearman_r": 0.27833610688402993,
+      "p_value": 0.29655837431000726
+    },
+    "Jitter:RAP__vs__hoehn_yahr": {
+      "spearman_r": 0.26252250803862653,
+      "p_value": 0.32596065594475826
+    },
+    "Jitter:DDP__vs__hoehn_yahr": {
+      "spearman_r": 0.26252250803862653,
+      "p_value": 0.32596065594475826
+    },
+    "Shimmer(dB)__vs__updrs_iii_18": {
+      "spearman_r": 0.2570355393550764,
+      "p_value": 0.33654150414721185
+    },
+    "std_pause_duration__vs__updrs_iii_18": {
+      "spearman_r": -0.25080437476465034,
+      "p_value": 0.3487919874652933
+    },
+    "std_pause_duration__vs__updrs_ii_5": {
+      "spearman_r": -0.2498699141345269,
+      "p_value": 0.3506505409932184
+    },
+    "Shimmer(dB)__vs__updrs_ii_5": {
+      "spearman_r": 0.1945189837882709,
+      "p_value": 0.4703554726506208
+    },
+    "Shimmer__vs__updrs_iii_18": {
+      "spearman_r": 0.18070377312235678,
+      "p_value": 0.5030304047625261
+    },
+    "num_pauses__vs__hoehn_yahr": {
+      "spearman_r": 0.14616862499850064,
+      "p_value": 0.5890848883691604
+    },
+    "longest_internal_gap__vs__updrs_ii_5": {
+      "spearman_r": -0.13916805344201497,
+      "p_value": 0.6072314608486261
+    },
+    "Shimmer:APQ11__vs__updrs_ii_5": {
+      "spearman_r": -0.12493495706726344,
+      "p_value": 0.6447874138038036
+    },
+    "Shimmer:APQ3__vs__hoehn_yahr": {
+      "spearman_r": 0.12315870747491123,
+      "p_value": 0.6495336630495199
+    },
+    "Shimmer:DDA__vs__hoehn_yahr": {
+      "spearman_r": 0.12315870747491123,
+      "p_value": 0.6495336630495199
+    },
+    "longest_internal_gap__vs__updrs_iii_18": {
+      "spearman_r": -0.10748758918485014,
+      "p_value": 0.6919390355285913
+    },
+    "std_pause_duration__vs__hoehn_yahr": {
+      "spearman_r": -0.09398953991506383,
+      "p_value": 0.7291706117912976
+    },
+    "Shimmer:APQ11__vs__hoehn_yahr": {
+      "spearman_r": -0.09398953991506383,
+      "p_value": 0.7291706117912976
+    },
+    "Shimmer:APQ5__vs__updrs_iii_18": {
+      "spearman_r": 0.08723630426596533,
+      "p_value": 0.7480190178070647
+    },
+    "Shimmer__vs__hoehn_yahr": {
+      "spearman_r": 0.0745434282084989,
+      "p_value": 0.7838019988316612
+    },
+    "num_pauses__vs__updrs_iii_18": {
+      "spearman_r": 0.067913890570779,
+      "p_value": 0.80265912238176
+    },
+    "NHR__vs__updrs_ii_5": {
+      "spearman_r": -0.05218802004075562,
+      "p_value": 0.8477827954006818
+    },
+    "HNR__vs__updrs_ii_5": {
+      "spearman_r": 0.05218802004075562,
+      "p_value": 0.8477827954006818
+    },
+    "Shimmer(dB)__vs__hoehn_yahr": {
+      "spearman_r": 0.05185629788417315,
+      "p_value": 0.8487399195468611
+    },
+    "Jitter(Abs)__vs__updrs_ii_5": {
+      "spearman_r": 0.04902510973525527,
+      "p_value": 0.8569167350378931
+    },
+    "longest_internal_gap__vs__hoehn_yahr": {
+      "spearman_r": 0.04213324203089069,
+      "p_value": 0.8768768563654095
+    },
+    "NHR__vs__updrs_iii_18": {
+      "spearman_r": 0.04050256983776962,
+      "p_value": 0.8816102125431842
+    },
+    "HNR__vs__updrs_iii_18": {
+      "spearman_r": -0.04050256983776962,
+      "p_value": 0.8816102125431842
+    },
+    "NHR__vs__hoehn_yahr": {
+      "spearman_r": 0.03889222341312986,
+      "p_value": 0.8862882587837857
+    },
+    "HNR__vs__hoehn_yahr": {
+      "spearman_r": -0.03889222341312986,
+      "p_value": 0.8862882587837857
+    },
+    "num_pauses__vs__updrs_ii_5": {
+      "spearman_r": 0.019811940527614386,
+      "p_value": 0.9419447465133114
+    },
+    "Shimmer:APQ5__vs__updrs_ii_5": {
+      "spearman_r": -0.01739600668025187,
+      "p_value": 0.9490150347304778
+    },
+    "Shimmer:APQ5__vs__hoehn_yahr": {
+      "spearman_r": -0.016205093088804107,
+      "p_value": 0.9525016153878813
+    },
+    "Shimmer:APQ11__vs__updrs_iii_18": {
+      "spearman_r": 0.007788955738032618,
+      "p_value": 0.9771607458300714
+    },
+    "Shimmer__vs__updrs_ii_5": {
+      "spearman_r": 0.0031629103055003404,
+      "p_value": 0.990724580459121
+    }
+  },
+  "combined_classifier": {
+    "features_used": [
+      "pause_fraction",
+      "longest_internal_gap",
+      "num_pauses",
+      "mean_pause_duration",
+      "std_pause_duration",
+      "mean_speech_segment_duration",
+      "std_speech_segment_duration",
+      "pause_rate_per_min",
+      "Jitter(%)",
+      "Jitter(Abs)",
+      "Jitter:RAP",
+      "Jitter:PPQ5",
+      "Jitter:DDP",
+      "Shimmer",
+      "Shimmer(dB)",
+      "Shimmer:APQ3",
+      "Shimmer:APQ5",
+      "Shimmer:APQ11",
+      "Shimmer:DDA",
+      "NHR",
+      "HNR"
+    ],
+    "n_samples": 37,
+    "cv_roc_auc": 0.7529761904761905
+  },
+  "note": "pd_vs_hc_by_feature: every feature tested individually, sorted by p-value, on real patients reading connected speech. severity_gradient_within_pd: Spearman correlation against real Hoehn-Yahr/UPDRS scores encoded in the dataset's filenames -- a dose-response check, not just binary PD/HC. combined_classifier: all usable features together, not just pause_fraction alone."
+}
