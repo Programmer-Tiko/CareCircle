@@ -1,0 +1,92 @@
+# VoiceShift
+## Build specification for UB Hacking 2026 · Radial Atoms
+
+VoiceShift uses the microphone as a physical sensor. A change in speech timing can alter what the software asks next, even when the spoken words are the same. The conversation establishes what the patient experienced and creates a record they can share between visits.
+
+## Pitch framing
+
+VoiceShift maps directly onto a Sense → Understand → Act loop. **Sense:** the phone or laptop microphone is the physical sensor — no hardware required. **Understand:** each check-in is compared only against that person's own prior baseline, not a population norm, using measurable timing features from a standardized reading passage. **Act:** a persistent, repeatable deviation changes which question the system asks next and shapes a patient-confirmed note. Lead every pitch and demo with this three-step loop, not with disease-detection language — the evidence below explains why.
+
+## Evidence and Buffalo relevance
+
+- **COPD:** A 50-person single-center study reported differences in structured speech during and after exacerbation, with associations between speech timing and pulmonary measures. The study used a multifeature model. It does not validate using pauses alone in an at-home check-in. [Study](https://pmc.ncbi.nlm.nih.gov/articles/PMC11761136/)
+- **Parkinson’s:** A systematic review examined acoustic changes relevant to speech monitoring and identified longitudinal evidence gaps. Use speech timing to prompt questions about everyday communication. [Review](https://pmc.ncbi.nlm.nih.gov/articles/PMC11939921/)
+- **Recording setup:** Telehealth acoustic measurements can be affected by device settings and mic distance. Keeping comparable references is central to the design. [Recording study](https://pmc.ncbi.nlm.nih.gov/articles/PMC8740561/)
+- **Elicitation protocol:** The COPD study above elicited speech with a standardized reading passage ("Der Nordwind und die Sonne," the international phonetics-standard text), not free speech, specifically because fixed text keeps acoustic measurements comparable across sessions. English-language speech-language pathology uses the same approach with the Rainbow Passage. VoiceShift uses a short Rainbow Passage excerpt as its fixed phrase for the same reason — a named, standardized elicitation text instead of an arbitrary one. [Rainbow Passage](https://dailycues.com/learn/iqpedia/pages/rainbow-passage/) · [ASHA voice assessment protocol](https://pubs.asha.org/doi/10.1044/2018_AJSLP-17-0009)
+- **Buffalo:** CDC’s 2021 age-adjusted estimate for diagnosed COPD in Erie County was 6.5% of adults. ECMC’s pulmonary clinic and UB’s Neurodegenerative Disease Clinic are potential discovery contacts. No partnership is established. [CDC](https://www.cdc.gov/copd/php/case-reporting/county-level-estimates-in-copd.html) · [ECMC](https://www.ecmc.edu/health-services/outpatient-services/pulmonary-sleep-clinic-and-function-testing-lab/) · [UB](https://arts-sciences.buffalo.edu/cds/clinic/specialty-clinics/neurodegenerative-disease.html)
+
+## Design decisions after review
+
+1. **Track fit:** Use actual audio measurements alongside the transcript. Check whether they change a question and uncover a useful detail.
+2. **Clinical validity:** Compare the person with their own reference. Confirm the meaning of a difference through conversation.
+3. **Product value:** Benchmark against a fixed questionnaire. Acoustic monitoring already exists, including Hyfe’s cough monitoring. Patient correction and condition-aware follow-up are the workflow to test.
+4. **Scope:** Reuse the measurement engine across COPD and Parkinson’s. Give phone and web distinct capture adapters and reference sets. Cough detection is optional.
+5. **Operational fit:** Let the patient confirm the note. Before a pilot, ask local clinicians whether the note is useful, who would review it, and how patients would share it.
+6. **Cadence:** Default to a daily, optional check-in (~30 seconds). Longitudinal home-monitoring precedent ranges from daily (HopkinsPD smartphone monitoring) to weekly (Oxford PD Telemonitoring Voice Dataset) — no study validates one correct cadence. Daily matches the timescale a COPD exacerbation actually develops on and is consistent with available precedent. Taper to every 2–3 days after a stable run to protect adherence; tighten back to daily after a persistent deviation.
+7. **Population-trained signal, not teammate-trained.** Never train anything that makes a disease-correlated claim on our own recordings — three healthy teammates is not evidence of anything and would undercut the project's own evidence-based framing the moment anyone asks how it was validated. Where a trained model is used, train it on real diagnosed-patient data: the public [UCI Oxford Parkinson's Telemonitoring dataset](https://archive.ics.uci.edu/dataset/189/parkinsons+telemonitoring) (42 diagnosed patients, 5,875 recordings, longitudinal UPDRS severity labels). No comparable public COPD dataset with accessible raw audio was confirmed in time; the COPD path stays rule-based (personal baseline plus guideline-sourced question cards) and the trained-model tier is explicitly future work for that condition, not quietly skipped.
+
+## Product requirements
+
+VoiceShift is an opt-in between-visit check-in for adults already diagnosed with COPD or Parkinson’s. The app offers two entry points. **Call my parent** starts an outbound AI call to an enrolled, linked parent. **Check my voice** starts a self-check in the app. Offer either flow according to preference and access. A short excerpt of the Rainbow Passage — a standardized reading passage already used in clinical voice assessment — supplies the audio sample, offered once daily by default. Compare speech timing with that person’s prior comparable samples. Use a repeatable difference to choose the next question in the same session. Ask what the person experienced and produce a patient-confirmed note. Keep measured changes, patient reports, and unresolved questions separate.
+
+| Known care context | After a persistent timing difference |
+|---|---|
+| COPD | Ask neutrally what happened during the pause. If the person says they stopped for breath, ask whether this is more frequent than usual and what activity it affects. |
+| Parkinson’s | Ask what happened during the pause. If the person reports difficulty speaking, ask where they noticed it and whether being understood in everyday conversations has changed. |
+
+Use fictional profiles and consenting teammate audio. The system measures speech timing and collects context. Diagnosis, disease progression, flare-up prediction, and treatment decisions require separate clinical work.
+
+## Caregiver and self-check workflows
+
+- **Call my parent.** Start with one fictional family pair. The parent enrolls and explicitly authorizes the account link and preferred sharing scope. The caregiver taps the button. The backend checks the active link, applies rate limits, and creates an idempotent call request to the stored number. The AI conducts the check-in using the parent's phone reference and existing care context. It reads back the proposed report, offers correction, and asks separately for permission to share. Publish only the approved version to the linked caregiver’s app. Check that the link is still active at publication and on report access.
+- **Check my voice.** Start a self-check from the app at any time. Use the participant’s web reference. Show an editable note for their own review and keep it private unless they choose to share.
+- **Call status.** Track queued, ringing, in progress, no answer, declined, failed, awaiting approval, completed privately, and report available. Do not record or disclose health details on voicemail or to an unverified answerer. If the call drops before approval or the parent declines sharing, the caregiver receives status only. No phone baseline means continue with questions and mark the acoustic comparison unavailable.
+- **Report contents.** Distinguish measured speech changes, patient-confirmed observations, and unresolved questions. Allow the parent to correct the content before approval. Never send an unapproved draft or imply that a missed call is a medical finding.
+
+## Shared implementation
+
+1. **Capture.** On the web, offer microphone capture, explicit Finish, and a text check-in. For Parkinson's profiles, also capture a short (~5 second) sustained vowel after the passage, for the tier-two voice quality index. On the phone, place an outbound call to the linked parent’s verified, allowlisted number. Identify VoiceShift and ask whether now is a good time. Confirm the intended participant and obtain permission before recording. Let the parent finish the sample with a keypad command such as #. Verify provider support for preserving internal silence and for the recording callback before committing. Transcribe follow-up answers or use keypad choices as a clearly labeled fallback.
+2. **Normalize and measure.** Decode bounded recordings to mono 16 kHz for the VAD. Preserve original channel metadata. Use speech segment timestamps to compute pause fraction (internal gaps divided by first-to-last speech span), longest internal gap, and speaking rate (the passage's fixed syllable count divided by total speech duration). Ignore edge silence. Use silence between speech segments as an observation and keep its cause unknown. Retain timestamps. Reject unusable recordings and handle missing phrase verification explicitly.
+3. **Personal reference.** Key references by profile, channel, phrase, and comparable capture setup. App and phone references stay separate even after resampling. Use several clean reference takes for each supported profile/channel combination, comparing median and spread with a minimum absolute difference. Keep thresholds configurable and label them as prototype thresholds. Avoid silently adding flagged, noisy, or unconfirmed takes to the reference. Changed setups or missing references fall back to re-enrollment or symptom questions.
+4. **Dialogue policy.** Explicit patient reports take priority over acoustic cues. Route the supported emergency scenario through fixed, source-linked copy outside the generative model and without automated dispatch. A persistent timing change earns a neutral question after one optional repeat. If the person was distracted, capture the correction and continue. If audio is missing, unusable, or inconclusive, continue with routine questions. Never interpret a typical sample as reassurance.
+5. **Decision and dialogue, three tiers.** Tier one is deterministic and model-free: per-profile personal-baseline comparison (robust multivariate z-score across pause fraction, longest gap, and speaking rate, fit on that person's own clean reference takes) plus a repeatability check across consecutive check-ins. This tier alone decides whether a follow-up question fires — fully explainable, no learned model involved beyond the pretrained VAD. Tier two is a secondary, clearly-labeled research signal for Parkinson's profiles only: a short sustained-vowel sample, scored by a model trained on the public UCI dataset (see design decision 7), surfaced to the patient as a "voice quality index, research-informed, not diagnostic" — it never gates the dialogue trigger. Tier three is generative: store source-linked question cards with condition, cue, intent, source, and review status; retrieve by known care context and the triggered cue; constrain generation to the retrieved card and confirmed facts, validate output, and fall back to exact question text. Apply the same constraint when summarizing the patient's reply into the note. If only selecting cards, describe it as retrieval, not generation. Keep medication and treatment generation outside the workflow.
+6. **Notes and privacy.** Web shows an editable note. Phone reads key details back and accepts confirmation or correction before finalizing. Use ephemeral raw audio by default, protect secrets, and avoid logging personal audio or transcripts. Authenticate provider callbacks, deduplicate retries, and bind callbacks to the correct turn. Keep phone sessions isolated and invalidate stale responses after reset. Sharing is patient-controlled. A caregiver sees only the approved summary and call status. Keep raw recordings and full transcripts private.
+
+## Build order and acceptance
+
+Three people over 24 hours. One owns shared speech analysis and dialogue, one owns web, and one owns phone. The CCR training run (design decision 7) is a fourth, parallel track: non-blocking, does not touch the live pipeline until a trained model file comes back, and can start the moment the UCI dataset is downloaded. Agree on the session and audio-analysis contract immediately. Prove browser microphone capture and one app-triggered outbound call with recording transport in parallel in the first two hours. Then finish both channel adapters against the same backend before adding visual polish, additional features, or scheduled calls.
+
+Verify a repeatable internal pause, ordinary repeats, wrong phrase, noise, changed mic, different channel, direct symptom reports with typical audio, and both condition-specific paths. Verify app-triggered calling, duplicate taps and provider callbacks, keypad completion, approval and correction, no answer, dropped calls, revoked links, and denial of access by an unrelated caregiver. Test that a phone recording never compares against a web reference. Measure time from finishing a sample to the next question. Compare confirmed useful facts and unnecessary questions against a fixed questionnaire. Keep simulated or fixture-driven events visibly labeled. Add cough only after timing and both channels work. Defer pitch, loudness, disease scoring, scheduled calls, and inbound calling.
+
+## Demo fixture plan
+
+Seed one profile with five pre-recorded takes of the passage so the adaptive-question path can be demoed live without waiting on real elapsed days.
+
+| Take | Label | What it should sound like | What it proves |
+|---|---|---|---|
+| Day 1–3 | Clean baseline | Normal, comfortable pace, no inserted pauses | Builds the median/spread reference |
+| Day 4 | Typical variation | Slightly faster or slower, within normal spread | Confirms the system does not false-positive on ordinary variation |
+| Day 5 (×2) | Acted deviation | One teammate deliberately inserts a breath pause (COPD) or slows/slurs a phrase (Parkinson's) in the same spot, on two separate takes | Confirms a persistent, repeatable deviation fires the correct condition-specific question, not just a single noisy outlier |
+
+Label every fixture file with its day number and clean/acted status in the filename. The acceptance section already requires simulated events to be visibly labeled; this is where that labeling starts.
+
+## Additional sources from the original research
+
+
+1. [CDC county COPD estimates](https://www.cdc.gov/copd/php/case-reporting/county-level-estimates-in-copd.html)
+2. [ECMC Pulmonary & Sleep Clinic](https://www.ecmc.edu/health-services/outpatient-services/pulmonary-sleep-clinic-and-function-testing-lab/)
+3. [Can Passive Cough Monitoring Predict COPD Exacerbations?](https://pubmed.ncbi.nlm.nih.gov/40223505/)
+4. [Improved Precision of COPD Exacerbation Detection in Night-Time Cough Monitoring](https://pmc.ncbi.nlm.nih.gov/articles/PMC12387909/)
+5. [Systematic review of cough monitoring in chronic respiratory disease](https://pubmed.ncbi.nlm.nih.gov/40044185/)
+6. [American Lung Association COPD Action Plan and Management Tools](https://www.lung.org/lung-health-diseases/lung-disease-lookup/copd/living-with-copd/copd-management-tools)
+7. [GOLD 2026 Report and Pocket Guide](https://goldcopd.org/2026-gold-report-and-pocket-guide/)
+8. [Hyfe Cough Monitoring](https://hyfe.com/faq)
+9. [TensorFlow YAMNet tutorial](https://www.tensorflow.org/tutorials/audio/transfer_learning_audio)
+10. [Official YAMNet source and class map](https://github.com/tensorflow/models/tree/master/research/audioset/yamnet)
+11. [UB Hacking](https://ubhacking.cse.buffalo.edu/)
+12. [Silero VAD reference implementation](https://github.com/snakers4/silero-vad)
+13. [Rainbow Passage](https://dailycues.com/learn/iqpedia/pages/rainbow-passage/)
+14. [ASHA Recommended Protocols for Instrumental Assessment of Voice](https://pubs.asha.org/doi/10.1044/2018_AJSLP-17-0009)
+15. [High Frequency Remote Monitoring of Parkinson's Disease via Smartphone (HopkinsPD)](https://arxiv.org/pdf/1601.00960)
+16. [Oxford Parkinson's Telemonitoring Voice Dataset](https://www.emergentmind.com/topics/oxford-parkinson-s-telemonitoring-voice-dataset)
+
