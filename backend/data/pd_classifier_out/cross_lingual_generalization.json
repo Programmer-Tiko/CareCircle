@@ -1,0 +1,15 @@
+{
+  "train_english_test_italian": {
+    "auc": 0.612012987012987,
+    "null_mean": 0.5025216450216451,
+    "null_max": 0.784090909090909,
+    "empirical_p_value": 0.19666666666666666
+  },
+  "train_italian_test_english": {
+    "auc": 0.5535714285714286,
+    "null_mean": 0.4968055555555556,
+    "null_max": 0.8065476190476191,
+    "empirical_p_value": 0.34
+  },
+  "note": "No cross-validation, no resampling -- train and test are two fully independent real-world datasets, so there is no leakage risk at all. permutation_p_value shuffles only the TRAINING labels and refits, never touching the held-out test set, so it's a clean significance check on a genuinely held-out generalization test."
+}
