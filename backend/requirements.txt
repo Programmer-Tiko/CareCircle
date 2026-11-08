@@ -10,6 +10,9 @@ openpyxl
 torch
 torchaudio
 silero-vad
-fastapi
+fastapi>=0.121.0
 uvicorn[standard]
 python-multipart
+psycopg[binary]
+httpx
+python-dotenv
