@@ -73,8 +73,14 @@ synthesis check additionally needs a real key and consumes provider quota.
 
 Implementation verification: the unchanged baseline suite passed 21 tests before
 the API work. The completed suite passed 34 tests with the real database tests
-enabled against local TimescaleDB 2.31.0 / PostgreSQL 17. Startup initialization
-was also run twice and `checkins` was verified in
-`timescaledb_information.hypertables`. Tiger Cloud signup was not completed;
-the permitted local TimescaleDB fallback was used. ElevenLabs was verified with
-mock HTTP responses only; live synthesis still requires an account/API key.
+enabled against both local TimescaleDB 2.31.0 / PostgreSQL 17 and a free shared
+Tiger Cloud service running TimescaleDB 2.31.0 / PostgreSQL 18. Startup
+initialization was run twice and `checkins` was verified in
+`timescaledb_information.hypertables` on both databases. The cloud integration
+tests exercised the same real-audio flow, fresh-app persistence, and concurrent
+requests as the local tests, using isolated schemas removed after each test.
+Live ElevenLabs synthesis was also verified: `/speak` returned HTTP 200,
+`audio/mpeg`, and 41,838 bytes for a short non-patient demo sentence. Credentials
+and the cloud connection string remain in ignored backend/.env only. The prior
+local URL is preserved there as `LOCAL_TIGER_DATA_URL` for manual fallback; the
+API itself always uses `TIGER_DATA_URL` and never silently switches databases.
