@@ -4,6 +4,7 @@ import math
 import os
 from pathlib import Path
 import re
+from app.api.conversations import get_selector, install_routes
 from tempfile import TemporaryDirectory
 from typing import Annotated, Literal
 
@@ -18,6 +19,7 @@ from psycopg.types.json import Jsonb
 from pydantic import BaseModel, StringConstraints
 import soundfile as sf
 
+from app.dialogue.conversation_adapter import selector_adapter
 from app.models.personal_baseline import BaselineStats, PersistentDeviationTracker, fit_baseline
 from app.pipeline import build_take_from_audio, evaluate_checkin, process_answer
 
@@ -140,18 +142,24 @@ def checkin(profile_id: str, db: Database, file: Annotated[UploadFile, File()]):
         raise HTTPException(400, 'Recording produced invalid measurements.')
     # Timestamp also identifies the row for answer/confirm. The profile lock and
     # monotonic timestamp prevent ties even when transactions start out of order.
-    db.execute('INSERT INTO checkins (time, profile_id, pause_fraction, longest_internal_gap, '
+    inserted = db.execute('INSERT INTO checkins (time, profile_id, pause_fraction, longest_internal_gap, '
                'speaking_rate, deviation_score, triggered, question_text) '
                "VALUES (GREATEST(clock_timestamp(), (SELECT max(time) + interval '1 microsecond' "
-               'FROM checkins WHERE profile_id = %s)), %s, %s, %s, %s, %s, %s, %s)',
+               'FROM checkins WHERE profile_id = %s)), %s, %s, %s, %s, %s, %s, %s) RETURNING time',
                (profile_id, profile_id, take['pause_fraction'], take['longest_internal_gap'],
-                take['speaking_rate'], result.deviation_score, result.triggered, result.question_text))
-    return {'profile_id': profile_id,
+                take['speaking_rate'], result.deviation_score, result.triggered, result.question_text)).fetchone()
+    return {'profile_id': profile_id, 'checkin_time': inserted['time'],
             'measured': {'deviation_score': result.deviation_score,
                          'deviation_from_baseline': 'persistent' if result.triggered else
                          ('elevated' if result.deviation_score >= DEVIATION_THRESHOLD else 'usual')},
             'triggered_question': result.question_text,
             'status': 'awaiting_answer' if result.triggered else 'no_change'}
+
+
+def reject_conversation_owned(db, profile_id, checkin_time):
+    if db.execute('SELECT session_id FROM conversations WHERE profile_id=%s AND checkin_time=%s',
+                  (profile_id, checkin_time)).fetchone():
+        raise HTTPException(409, 'Use the conversation turn endpoints for this check-in.')
 
 
 class AnswerRequest(BaseModel):
@@ -164,6 +172,7 @@ def answer(profile_id: str, body: AnswerRequest, db: Database):
     row = latest_checkin(db, profile_id)
     if row is None or not row['triggered'] or row['note_status'] is not None:
         raise HTTPException(404, 'No pending question to answer.')
+    reject_conversation_owned(db, profile_id, row['time'])
     note, follow_up = process_answer(profile['condition'], row['deviation_score'], body.answer_text)
     db.execute('UPDATE checkins SET patient_said = %s, note_status = %s '
                'WHERE profile_id = %s AND time = %s',
@@ -175,6 +184,8 @@ def answer(profile_id: str, body: AnswerRequest, db: Database):
 def confirm(profile_id: str, db: Database):
     locked_profile(db, profile_id)
     row = latest_checkin(db, profile_id)
+    if row is not None:
+        reject_conversation_owned(db, profile_id, row['time'])
     if row is None or row['note_status'] not in ('awaiting_confirmation', 'confirmed'):
         raise HTTPException(404, 'No answered note to confirm.')
     db.execute("UPDATE checkins SET note_status = 'confirmed' WHERE profile_id = %s AND time = %s",
@@ -227,6 +238,11 @@ def create_app():
     application.add_middleware(CORSMiddleware, allow_origins=['*'],
                                allow_methods=['*'], allow_headers=['*'])
     application.include_router(router)
+    install_routes(application, get_db, locked_profile)
+    # The default selector always abstains (conversations.py's own safe
+    # default); this wires in the validated RAG adapter so conversations
+    # actually ask something beyond the legacy initial question.
+    application.dependency_overrides[get_selector] = lambda: selector_adapter
 
     @application.exception_handler(psycopg.Error)
     async def database_error(request, exc):

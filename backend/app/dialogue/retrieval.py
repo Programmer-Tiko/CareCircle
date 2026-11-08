@@ -21,6 +21,11 @@ def load_corpus() -> list[dict]:
     return data["units"]
 
 
+def load_corpus_version() -> str:
+    data = json.loads(_CORPUS_PATH.read_text())
+    return data["version"]
+
+
 def compute_context_flags(
     feature_scores: dict[str, float],
     prior_answers: list[str],

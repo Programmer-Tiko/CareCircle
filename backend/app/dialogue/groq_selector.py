@@ -19,7 +19,10 @@ def _default_model_call(prompt: str) -> str:
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
         raise RuntimeError("Set GROQ_API_KEY to call the real selector.")
-    client = Groq(api_key=api_key)
+    # Bounded timeout -- this runs synchronously inside a request handler,
+    # under the profile's transaction lock, so a slow provider call must
+    # not be allowed to hang a conversation turn indefinitely.
+    client = Groq(api_key=api_key, timeout=8.0)
     response = client.chat.completions.create(
         model=MODEL,
         messages=[

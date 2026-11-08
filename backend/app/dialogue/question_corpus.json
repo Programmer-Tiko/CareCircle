@@ -2,19 +2,6 @@
   "version": "2026-11-08",
   "units": [
     {
-      "id": "pd_initial",
-      "condition": "parkinsons",
-      "information_sought": "open_description",
-      "preconditions": ["persistent_deviation_triggered"],
-      "exclusions": [],
-      "question_template": "What happened there?",
-      "source_type": "design_policy",
-      "source_url": null,
-      "source_excerpt": null,
-      "source_version": null,
-      "review_status": "prototype"
-    },
-    {
       "id": "everyday_communication_impact",
       "condition": "parkinsons",
       "information_sought": "everyday_communication_impact",
