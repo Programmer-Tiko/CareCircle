@@ -186,3 +186,45 @@ research artifacts intact.
 Demo-fixture status: user's final correction is **not yet created** (supersedes
 an initial "ready elsewhere" reply). Consenting human clean/variation/acted
 recordings remain outstanding. UI remains deprioritized and untouched.
+
+## Independent waveform channels — November 8, 2026
+
+User explicitly authorized parallel agents and a larger CCR/product exploration.
+Two coding agents built waveform prosody extraction and the CCR ablation runner;
+a third reviewed primary-source evidence. External Antigravity is in this same
+workspace but has no control connection here. Its concrete assignment is
+`ANTIGRAVITY-TASK.md`: fixed-passage verification and word-level pause placement,
+with a later path toward articulation, without editing others' API/extractor work.
+
+Added experimental waveform-derived F0 p90-p10 range in semitones and voiced
+frame RMS p90-p10 spread in dB, plus voicing coverage, octave-jump and clipping/
+cancellation diagnostics. Uses Praat raw autocorrelation on continuous audio,
+not Silero segment boundaries. Unreliable measurements are null. This does not
+revive the retired severity classifier or label ASR/acoustic values as disease.
+
+Live integration: opt-in `/profiles/{id}/checkin?experimental=true` persists
+`waveform_evidence` JSONB and returns it under measured; conversation snapshots
+retain it. It does not change the timing trigger. Candidate-feature promotion
+requires incremental value, capture robustness and scoring recalibration.
+
+Actual local runs: all 37 MDVR-KCL recordings extracted without errors/flags;
+74 paired perturbations tested half gain and 30dB noise. Half gain left spread
+metrics effectively unchanged; median absolute noise-induced deltas were
+0.01670 semitones and 0.09273dB. Unknown dataset passage counts made speaking rate
+explicitly unavailable in 37 rows; other timing and prosody fields were present.
+No disease-performance improvement is claimed. Evidence is in
+`docs/PROSODY-EXTRACTION-SMOKE.json` and `docs/PROSODY-ROBUSTNESS-SMOKE.json`.
+
+CCR runner compares timing/prosody/combined, aggregates participant medians,
+uses fold-local preprocessing and participant-disjoint evaluation, and evaluates
+frozen cross-dataset transfer in both directions. Perturbations never become
+training samples. Added a verified-layout manifest builder and an sbatch runner.
+See `docs/MULTISIGNAL-PLAN.md` for exact commands and promotion criteria.
+SSH access here failed with publickey; no CCR job was submitted. User's existing
+authenticated CCR session can run the prepared job. No GPU is required for this
+CPU extraction/ablation; alignment may later justify GPU work.
+
+Full regression with isolated local PostgreSQL: 83 passed, 3 TimescaleDB-specific
+tests skipped. Seven new extractor tests, five ablation tests, and an API/SQL
+persistence test cover the new work. UI untouched. Demo recordings remain a
+human task; no new clinical results are inferred from constructed fixtures.

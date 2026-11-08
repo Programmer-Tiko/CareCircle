@@ -125,7 +125,8 @@ def enroll(profile_id: str, db: Database,
 
 
 @router.post('/profiles/{profile_id}/checkin')
-def checkin(profile_id: str, db: Database, file: Annotated[UploadFile, File()]):
+def checkin(profile_id: str, db: Database, file: Annotated[UploadFile, File()],
+            experimental: Annotated[bool, Query()] = False):
     profile = locked_profile(db, profile_id)
     if any(feature not in (profile['baseline_median'] or {}) or
            feature not in (profile['baseline_mad'] or {}) for feature in FEATURE_ORDER):
@@ -139,20 +140,25 @@ def checkin(profile_id: str, db: Database, file: Annotated[UploadFile, File()]):
     with audio_path(file) as path:
         result = evaluate_checkin(path, baseline, tracker, profile['condition'], PASSAGE_SYLLABLE_COUNT)
         take = build_take_from_audio(path, PASSAGE_SYLLABLE_COUNT)
+        waveform_evidence = None
+        if experimental:
+            from app.audio.prosody_features import extract_prosody_features
+            waveform_evidence = extract_prosody_features(path)
     feature_scores = per_feature_deviation(baseline, take)
     if not all(math.isfinite(v) for v in [*take.values(), *feature_scores.values(), result.deviation_score]):
         raise HTTPException(400, 'Recording produced invalid measurements.')
     # Timestamp also identifies the row for answer/confirm. The profile lock and
     # monotonic timestamp prevent ties even when transactions start out of order.
     inserted = db.execute('INSERT INTO checkins (time, profile_id, pause_fraction, longest_internal_gap, '
-               'speaking_rate, mean_speech_segment_duration, feature_scores, deviation_score, triggered, question_text) '
+               'speaking_rate, mean_speech_segment_duration, feature_scores, waveform_evidence, deviation_score, triggered, question_text) '
                "VALUES (GREATEST(clock_timestamp(), (SELECT max(time) + interval '1 microsecond' "
-               'FROM checkins WHERE profile_id = %s)), %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING time',
+               'FROM checkins WHERE profile_id = %s)), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING time',
                (profile_id, profile_id, take['pause_fraction'], take['longest_internal_gap'],
                 take['speaking_rate'], take['mean_speech_segment_duration'], Jsonb(feature_scores),
-                result.deviation_score, result.triggered, result.question_text)).fetchone()
+                Jsonb(waveform_evidence) if waveform_evidence is not None else None, result.deviation_score, result.triggered, result.question_text)).fetchone()
     return {'profile_id': profile_id, 'checkin_time': inserted['time'],
             'measured': {'features': take, 'feature_scores': feature_scores,
+                         'waveform_evidence': waveform_evidence,
                          'deviation_score': result.deviation_score,
                          'deviation_from_baseline': 'persistent' if result.triggered else
                          ('elevated' if result.deviation_score >= DEVIATION_THRESHOLD else 'usual')},

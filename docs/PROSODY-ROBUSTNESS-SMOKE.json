@@ -1,0 +1,30 @@
+{
+  "recordings": 37,
+  "perturbation_pairs": 74,
+  "unavailable_reasons": {
+    "speaking_rate:UnavailablePassageCount": 37
+  },
+  "measurements_complete": true,
+  "paired_deltas": {
+    "gain_half": {
+      "f0_spread_semitones_delta": {
+        "median_abs_delta": 0.0,
+        "p90_abs_delta": 0.0
+      },
+      "voiced_energy_spread_db_delta": {
+        "median_abs_delta": 3.552713678800501e-15,
+        "p90_abs_delta": 7.105427357601002e-15
+      }
+    },
+    "noise_30db": {
+      "f0_spread_semitones_delta": {
+        "median_abs_delta": 0.016695305537993477,
+        "p90_abs_delta": 0.15433979997797265
+      },
+      "voiced_energy_spread_db_delta": {
+        "median_abs_delta": 0.09272887114939365,
+        "p90_abs_delta": 0.2908915265275965
+      }
+    }
+  }
+}

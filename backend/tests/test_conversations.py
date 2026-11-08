@@ -187,3 +187,27 @@ def test_real_audio_four_feature_roundtrip_and_legacy_rows(conversation_clients)
     with factory() as client:
         response = client.get('/profiles/audio/conversations/'+saved['session_id'])
         assert response.json()['measured'] == saved['measured']
+
+
+def test_experimental_waveform_evidence_is_persisted_without_changing_timing_score(conversation_clients):
+    from test_api import enroll, recording
+    factory, stamp = conversation_clients
+    with factory() as client:
+        assert enroll(client, profile='probe').status_code == 200
+        def check(experimental):
+            return client.post('/profiles/probe/checkin?experimental='+str(experimental).lower(),
+                files={'file':('sample.wav',recording(4.),'audio/wav')})
+        plain=check(False)
+        probe=check(True)
+        assert plain.status_code == probe.status_code == 200
+        measured=probe.json()['measured']
+        assert plain.json()['measured']['waveform_evidence'] is None
+        assert measured['deviation_score'] == plain.json()['measured']['deviation_score']
+        assert measured['waveform_evidence']['experimental'] is True
+        assert 'f0_spread_semitones' in measured['waveform_evidence']['metrics']
+        session=client.post('/profiles/probe/conversations',json={'checkin_time':probe.json()['checkin_time']})
+        assert session.status_code == 200, session.text
+        assert session.json()['measured']['waveform_evidence'] == measured['waveform_evidence']
+        with factory.connect() as db:
+            row=db.execute("SELECT waveform_evidence FROM checkins WHERE profile_id='probe' ORDER BY time DESC LIMIT 1").fetchone()
+            assert row['waveform_evidence'] == measured['waveform_evidence']

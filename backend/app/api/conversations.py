@@ -107,6 +107,8 @@ def install_routes(app, get_db, locked_profile):
             else:
                 scores = {}  # Legacy rows cannot invent a missing fourth measurement.
         measured['feature_scores'] = scores
+        if row.get('waveform_evidence') is not None:
+            measured['waveform_evidence'] = row['waveform_evidence']
         if not all(math.isfinite(value) for value in measured['feature_scores'].values()):
             raise HTTPException(409, 'Check-in produced nonfinite feature scores.')
         db.execute('INSERT INTO conversations (session_id, profile_id, checkin_time, measured) VALUES (%s,%s,%s,%s)',
