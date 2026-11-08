@@ -1,0 +1,10 @@
+{
+  "n_samples": 37,
+  "n_features": 21,
+  "point_estimate_auc": 0.7529761904761905,
+  "bootstrap_mean_auc": 0.7722818963149639,
+  "bootstrap_95ci_low": 0.5759610423116616,
+  "bootstrap_95ci_high": 0.9224416835699797,
+  "n_valid_resamples": 1000,
+  "note": "A wide CI reflects real uncertainty from small N (37), not a bug. The point estimate being real and non-trivial matters more than its exact value -- report the range, not just 0.75."
+}
