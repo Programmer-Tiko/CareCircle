@@ -4,6 +4,10 @@
   let busy = false, connected = null, enrolled = false, compatible = true, capabilities = {};
   let session = null, latestMeasured = null, latestCheckin = null;
   let recording = null, checkinTake = null, speechUrl = null;
+  // Which turn/note has already been spoken aloud this page session -- so a
+  // re-render (reload recovery, confirm(), unrelated updates) doesn't replay
+  // audio for a question the patient already heard.
+  let spokenTurnId = null, spokenNoteSessionId = null;
   const references = [], retryAnswers = new Map();
   const featureLabels = {
     pause_fraction: ['Time in internal pauses', value => `${(value * 100).toFixed(1)}%`],
@@ -287,6 +291,13 @@
     $('questionText').textContent = turn?.question.text || '';
     $('questionSources').replaceChildren(); if (turn) appendSources($('questionSources'), turn.question.sources || []);
     $('answerText').value = '';
+    // Speak the question the moment it's new, instead of making the patient
+    // press a separate button to hear it -- this is what actually makes the
+    // check-in feel like a conversation rather than a form to fill out.
+    if (turn && turn.turn_id !== spokenTurnId) {
+      spokenTurnId = turn.turn_id;
+      speak(turn.question.text).catch(() => message('Could not play the question aloud automatically. It is shown above; use the speaker button to try again.'));
+    }
     $('conversationState').textContent = value.state === 'abstained' ? 'No further supported question was selected. Uncertainty remains in your note.' : value.state === 'complete' ? 'The question sequence has ended. Please review your note.' : value.state === 'confirmed' ? 'Your note is confirmed and saved.' : '';
     $('notePanel').hidden = !value.note;
     if (value.note) {
@@ -305,6 +316,13 @@
       $('correctionPanel').hidden = !['complete', 'abstained'].includes(value.state);
       $('correctionText').value = '';
       $('noteStatus').textContent = `Revision ${value.revision} · ${value.state === 'confirmed' ? 'Confirmed' : 'Not yet confirmed'}`;
+      // Read the wrap-up note aloud too, once, when the sequence has ended --
+      // but never while a question is still active, so the two don't talk
+      // over each other.
+      if (!turn && value.session_id !== spokenNoteSessionId) {
+        spokenNoteSessionId = value.session_id;
+        speak(noteText(note)).catch(() => message('Could not read the note aloud automatically. It is shown above; use the speaker button to try again.'));
+      }
     }
     updateControls();
   }
