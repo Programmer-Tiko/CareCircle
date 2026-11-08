@@ -1,0 +1,776 @@
+[
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID02/ID02_pd_2_0_0.wav",
+    "subject_id": "mdvr_ID02",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID04/ID04_pd_2_0_1.wav",
+    "subject_id": "mdvr_ID04",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID06/ID06_pd_3_1_1.wav",
+    "subject_id": "mdvr_ID06",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID07/ID07_pd_2_0_0.wav",
+    "subject_id": "mdvr_ID07",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID13/ID13_pd_3_2_2.wav",
+    "subject_id": "mdvr_ID13",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID16/ID16_pd_2_0_0.wav",
+    "subject_id": "mdvr_ID16",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID17/ID17_pd_2_1_0.wav",
+    "subject_id": "mdvr_ID17",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID18/ID18_pd_4_3_3.wav",
+    "subject_id": "mdvr_ID18",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID20/ID20_pd_3_0_1.wav",
+    "subject_id": "mdvr_ID20",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID24/ID24_pd_2_0_0.wav",
+    "subject_id": "mdvr_ID24",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID27/ID27_pd_4_1_1.wav",
+    "subject_id": "mdvr_ID27",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID29/ID29_pd_3_1_2.wav",
+    "subject_id": "mdvr_ID29",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID30/ID30_pd_2_1_1.wav",
+    "subject_id": "mdvr_ID30",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID32/ID32_pd_3_1_1.wav",
+    "subject_id": "mdvr_ID32",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID33/ID33_pd_3_2_2.wav",
+    "subject_id": "mdvr_ID33",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID34/ID34_pd_2_0_0.wav",
+    "subject_id": "mdvr_ID34",
+    "label": 1,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID00/ID00_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID00",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID01/ID01_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID01",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID03/ID03_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID03",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID05/ID05_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID05",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID08/ID08_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID08",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID09/ID09_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID09",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID10/ID10_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID10",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID11/ID11_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID11",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID12/ID12_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID12",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID14/ID14_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID14",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID15/ID15_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID15",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID19/ID19_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID19",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID21/ID21_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID21",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID22/ID22_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID22",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID23/ID23_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID23",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID25/ID25_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID25",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID26/ID26_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID26",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID28/ID28_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID28",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID31/ID31_hc_0_1_1.wav",
+    "subject_id": "mdvr_ID31",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID35/ID35_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID35",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/mdvr_kcl/mdvr_ID36/ID36_hc_0_0_0.wav",
+    "subject_id": "mdvr_ID36",
+    "label": 0,
+    "dataset": "mdvr_kcl",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_00/pd_00.wav",
+    "subject_id": "italian_b1_pd_00",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_01/pd_01.wav",
+    "subject_id": "italian_b1_pd_01",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_02/pd_02.wav",
+    "subject_id": "italian_b1_pd_02",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_03/pd_03.wav",
+    "subject_id": "italian_b1_pd_03",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_04/pd_04.wav",
+    "subject_id": "italian_b1_pd_04",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_05/pd_05.wav",
+    "subject_id": "italian_b1_pd_05",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_06/pd_06.wav",
+    "subject_id": "italian_b1_pd_06",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_07/pd_07.wav",
+    "subject_id": "italian_b1_pd_07",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_08/pd_08.wav",
+    "subject_id": "italian_b1_pd_08",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_09/pd_09.wav",
+    "subject_id": "italian_b1_pd_09",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_10/pd_10.wav",
+    "subject_id": "italian_b1_pd_10",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_11/pd_11.wav",
+    "subject_id": "italian_b1_pd_11",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_12/pd_12.wav",
+    "subject_id": "italian_b1_pd_12",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_13/pd_13.wav",
+    "subject_id": "italian_b1_pd_13",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_14/pd_14.wav",
+    "subject_id": "italian_b1_pd_14",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_15/pd_15.wav",
+    "subject_id": "italian_b1_pd_15",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_16/pd_16.wav",
+    "subject_id": "italian_b1_pd_16",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_17/pd_17.wav",
+    "subject_id": "italian_b1_pd_17",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_18/pd_18.wav",
+    "subject_id": "italian_b1_pd_18",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_19/pd_19.wav",
+    "subject_id": "italian_b1_pd_19",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_20/pd_20.wav",
+    "subject_id": "italian_b1_pd_20",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_21/pd_21.wav",
+    "subject_id": "italian_b1_pd_21",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_22/pd_22.wav",
+    "subject_id": "italian_b1_pd_22",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_23/pd_23.wav",
+    "subject_id": "italian_b1_pd_23",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_24/pd_24.wav",
+    "subject_id": "italian_b1_pd_24",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_25/pd_25.wav",
+    "subject_id": "italian_b1_pd_25",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_26/pd_26.wav",
+    "subject_id": "italian_b1_pd_26",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_pd_27/pd_27.wav",
+    "subject_id": "italian_b1_pd_27",
+    "label": 1,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_00/hc_00.wav",
+    "subject_id": "italian_b1_hc_00",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_01/hc_01.wav",
+    "subject_id": "italian_b1_hc_01",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_02/hc_02.wav",
+    "subject_id": "italian_b1_hc_02",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_03/hc_03.wav",
+    "subject_id": "italian_b1_hc_03",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_04/hc_04.wav",
+    "subject_id": "italian_b1_hc_04",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_05/hc_05.wav",
+    "subject_id": "italian_b1_hc_05",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_06/hc_06.wav",
+    "subject_id": "italian_b1_hc_06",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_07/hc_07.wav",
+    "subject_id": "italian_b1_hc_07",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_08/hc_08.wav",
+    "subject_id": "italian_b1_hc_08",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_09/hc_09.wav",
+    "subject_id": "italian_b1_hc_09",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_10/hc_10.wav",
+    "subject_id": "italian_b1_hc_10",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_11/hc_11.wav",
+    "subject_id": "italian_b1_hc_11",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_12/hc_12.wav",
+    "subject_id": "italian_b1_hc_12",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_13/hc_13.wav",
+    "subject_id": "italian_b1_hc_13",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_14/hc_14.wav",
+    "subject_id": "italian_b1_hc_14",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_15/hc_15.wav",
+    "subject_id": "italian_b1_hc_15",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_16/hc_16.wav",
+    "subject_id": "italian_b1_hc_16",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_17/hc_17.wav",
+    "subject_id": "italian_b1_hc_17",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_18/hc_18.wav",
+    "subject_id": "italian_b1_hc_18",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_19/hc_19.wav",
+    "subject_id": "italian_b1_hc_19",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  },
+  {
+    "path": "/user/abadguja/cadence-audio/italian_b1/italian_b1_hc_20/hc_20.wav",
+    "subject_id": "italian_b1_hc_20",
+    "label": 0,
+    "dataset": "italian_b1",
+    "stage": "speaking_rate",
+    "error": "UnavailablePassageCount",
+    "detail": "Actual passage syllable count absent; rate deliberately unavailable."
+  }
+]
