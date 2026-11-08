@@ -15,7 +15,7 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -167,12 +167,22 @@ def group_folds(frame, seed=0):
     counts = frame.groupby('label')['subject_id'].nunique()
     if len(counts) != 2 or counts.min() < 2:
         raise ValueError('Each class needs at least two independent participants for cross-validation.')
-    split = StratifiedGroupKFold(n_splits=min(5, int(counts.min())), shuffle=True, random_state=seed)
+    # Stratify actual participants, then map back to recordings. SGKF is
+    # heuristic and can leave a class out even with one row per participant,
+    # especially during permutations. Participant-level stratification gives
+    # exact class balancing without ever separating a person's recordings.
+    subjects = frame.groupby('subject_id', sort=True)['label']
+    if (subjects.nunique() != 1).any():
+        raise ValueError('A participant has conflicting labels.')
+    subjects = subjects.first().reset_index()
+    split = StratifiedKFold(n_splits=min(5, int(counts.min())), shuffle=True, random_state=seed)
     folds = []
-    for train, test in split.split(np.zeros((len(y), 1)), y, frame['subject_id']):
+    for train_subjects, test_subjects in split.split(subjects['subject_id'], subjects['label']):
+        train = np.flatnonzero(frame['subject_id'].isin(subjects.iloc[train_subjects]['subject_id']))
+        test = np.flatnonzero(frame['subject_id'].isin(subjects.iloc[test_subjects]['subject_id']))
         assert not set(frame.iloc[train]['subject_id']) & set(frame.iloc[test]['subject_id'])
         if len(np.unique(y[train])) != 2 or len(np.unique(y[test])) != 2:
-            raise ValueError('A grouped fold lacks a class; increase sample size or revise prespecified split.')
+            raise ValueError('A participant-stratified fold lacks a class.')
         folds.append((train, test))
     return folds
 

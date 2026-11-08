@@ -97,3 +97,18 @@ def test_evaluation_rejects_total_extraction_failure():
     data[module.TIMING + module.PROSODY] = np.nan
     with pytest.raises(ValueError, match='without any acoustic measurements'):
         module.evaluate(data)
+
+
+def test_participant_stratification_keeps_both_classes_across_permutations():
+    # Match the MDVR imbalance and sorted patient/control participant IDs.
+    data = pd.DataFrame({'subject_id':[f'p{i:02}' for i in range(37)],
+                         'label':[1]*16+[0]*21})
+    rng = np.random.default_rng(42)
+    for _ in range(101):
+        data['label'] = rng.permutation(data['label'].to_numpy())
+        coverage = np.zeros(len(data), dtype=int)
+        for train, test in module.group_folds(data):
+            assert data.iloc[train]['label'].nunique() == 2
+            assert data.iloc[test]['label'].nunique() == 2
+            coverage[test] += 1
+        assert (coverage == 1).all()

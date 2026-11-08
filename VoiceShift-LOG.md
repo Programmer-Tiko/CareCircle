@@ -228,3 +228,24 @@ Full regression with isolated local PostgreSQL: 83 passed, 3 TimescaleDB-specifi
 tests skipped. Seven new extractor tests, five ablation tests, and an API/SQL
 persistence test cover the new work. UI untouched. Demo recordings remain a
 human task; no new clinical results are inferred from constructed fixtures.
+
+## CCR multisignal-v2 report — November 8, 2026
+
+User supplied terminal output for completed job 26746762 (4m39s): 86 recordings,
+86 participants. All timing fields except unknown-count speaking_rate extracted;
+one recording lacked prosody. The 86 logged issues are exclusively deliberate
+UnavailablePassageCount, not audio-read failures. Transfer timing AUC:
+Italian->MDVR 0.72619 (p=0.08911); reverse 0.70408 (p=0.17822). Prosody:
+0.46726 (p=0.49505) / 0.56973 (p=0.50495). Combined: 0.73512 (p=0.10891) /
+0.71088 (p=0.23762). These are user-reported outputs, not locally inspected raw
+artifacts. Combined gains <0.01 do not establish incremental value, and the
+permutation p-values test ranking against chance, not superiority over timing.
+Keep prosody experimental; no live trigger change justified by this run.
+
+Within-dataset evaluation reported a class-missing fold for all families. Fixed
+the runner to stratify participant IDs directly using StratifiedKFold, then map
+all participant recordings into each fold. This replaces heuristic SGKF class
+balancing without leaking participants. Regression checks 101 shuffled label
+assignments at the MDVR 16/21 imbalance; both classes remain in every fold and
+each participant appears exactly once in held-out predictions. Re-evaluation
+only needs the existing feature CSV; no audio re-extraction is necessary.
