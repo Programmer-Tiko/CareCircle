@@ -19,7 +19,17 @@ _POLICY_SOURCE = {"id": "prototype-dialogue-policy", "version": "1"}
 def _source_for(unit: dict) -> dict:
     if unit["source_type"] == "design_policy":
         return _POLICY_SOURCE
-    return {"id": unit["id"], "version": unit.get("source_version") or "unversioned"}
+    return {"id": unit["id"], "version": unit.get("source_version") or "unversioned",
+            "url":unit.get("source_url"),"excerpt":unit.get("source_excerpt")}
+
+
+
+def _sources_for(unit):
+    spans=unit.get('evidence_spans') or []
+    if not spans:return [_source_for(unit)]
+    return [{'id':f"{unit['id']}:chunk-{span['chunk_index']}",
+             'version':span['source_version'],'url':span['source_url'],
+             'excerpt':span['verbatim_text']} for span in spans]
 
 
 def selector_adapter(context: dict, model_call: Callable[[str], str] = _default_model_call) -> dict:
@@ -94,6 +104,6 @@ def selector_adapter(context: dict, model_call: Callable[[str], str] = _default_
             "id": unit["id"],
             "version": load_corpus_version(),
             "text": validated.rendered_question_text,
-            "sources": [_source_for(unit)],
+            "sources": _sources_for(unit),
         },
     }

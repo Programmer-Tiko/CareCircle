@@ -4,6 +4,7 @@ No model-generated note or question is trusted here: the selector adapter must
 return a validated Selection. The default abstains and preserves uncertainty.
 """
 import math
+import os
 from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
@@ -21,6 +22,8 @@ Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max
 class Source(BaseModel):
     id: Text
     version: Text
+    url: str | None = None
+    excerpt: str | None = None
 
 
 class Question(BaseModel):
@@ -109,6 +112,8 @@ def install_routes(app, get_db, locked_profile):
         measured['feature_scores'] = scores
         if row.get('waveform_evidence') is not None:
             measured['waveform_evidence'] = row['waveform_evidence']
+        if row.get('phrase_evidence') is not None:
+            measured['phrase_evidence'] = row['phrase_evidence']
         if not all(math.isfinite(value) for value in measured['feature_scores'].values()):
             raise HTTPException(409, 'Check-in produced nonfinite feature scores.')
         db.execute('INSERT INTO conversations (session_id, profile_id, checkin_time, measured) VALUES (%s,%s,%s,%s)',
@@ -144,16 +149,25 @@ def install_routes(app, get_db, locked_profile):
         profile = locked_profile(db, profile_id)
         history = snapshot(db, session_id)['turns']
         try:
-            selection = Selection.model_validate(selector({'condition': profile['condition'],
-                'measured': session['measured'], 'turns': history, 'answer_text': body.answer_text}))
-            if selection.question and any(t['question']['id'] == selection.question.id for t in history):
+            max_questions=max(1,min(20,int(os.getenv('CADENCE_MAX_QUESTIONS','4'))))
+        except ValueError:
+            max_questions=4
+        budget_reached=len(history)>=max_questions
+        if budget_reached:
+            # Question budget ends the interview, never asserts clinical resolution.
+            selection=Selection(decision='abstain')
+        else:
+            try:
+                selection = Selection.model_validate(selector({'condition': profile['condition'],
+                    'measured': session['measured'], 'turns': history, 'answer_text': body.answer_text}))
+                if selection.question and any(t['question']['id'] == selection.question.id for t in history):
+                    selection = Selection(decision='abstain')
+                if selection.decision == 'complete' and (not selection.resolved or any(
+                        t['answered_at'] and not t['resolved'] for t in history)):
+                    selection = Selection(decision='abstain')
+            except Exception:
+                # Provider/schema/validation failure never loses the patient's answer.
                 selection = Selection(decision='abstain')
-            if selection.decision == 'complete' and (not selection.resolved or any(
-                    t['answered_at'] and not t['resolved'] for t in history)):
-                selection = Selection(decision='abstain')
-        except Exception:
-            # Provider/schema/validation failure never loses the patient's answer.
-            selection = Selection(decision='abstain')
         db.execute('UPDATE conversation_turns SET answer=%s, answered_at=clock_timestamp(), resolved=%s, '
                    'submission_id=%s, selection=%s WHERE turn_id=%s',
                    (body.answer_text, selection.resolved, body.submission_id, Jsonb(selection.model_dump()), turn_id))
@@ -163,7 +177,9 @@ def install_routes(app, get_db, locked_profile):
         state = {'ask': 'active', 'complete': 'complete', 'abstain': 'abstained'}[selection.decision]
         answers = [t['answer'] for t in history if t['answered_at']] + [body.answer_text]
         note = {'measured': session['measured'], 'patient_said': answers,
-                'unresolved': [] if state == 'complete' else ['The conversation contains unresolved information.'],
+                'unresolved': [] if state == 'complete' else [
+                    'This check-in reached its question limit; some details remain unclear.' if budget_reached
+                    else 'The conversation contains unresolved information.'],
                 'status': 'awaiting_confirmation'}
         db.execute('UPDATE conversations SET revision=revision+1, state=%s, note=%s WHERE session_id=%s',
                    (state, Jsonb(note), session_id))

@@ -1,12 +1,14 @@
 {
-  "version": "2026-11-08-v2",
+  "version": "2026-11-08-v3-reviewed-communication",
   "units": [
     {
       "id": "fatigue_level_check",
       "condition": "parkinsons",
       "information_sought": "fatigue_level",
       "preconditions": [],
-      "exclusions": ["answer_indicates_situational_distraction"],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
       "question_template": "How's your energy right now compared to a typical day -- more tired than usual?",
       "source_type": "patient_education",
       "source_url": "https://www.parkinson.org/library/fact-sheets/fatigue",
@@ -18,8 +20,12 @@
       "id": "medication_wearing_off_check",
       "condition": "parkinsons",
       "information_sought": "fatigue_medication_timing",
-      "preconditions": ["patient_known_to_take_pd_medication"],
-      "exclusions": ["medication_status_unknown"],
+      "preconditions": [
+        "patient_known_to_take_pd_medication"
+      ],
+      "exclusions": [
+        "medication_status_unknown"
+      ],
       "question_template": "Is it closer to your next dose than usual right now -- does this happen more as a dose wears off?",
       "source_type": "patient_education",
       "source_url": "https://www.parkinson.org/library/fact-sheets/fatigue",
@@ -32,7 +38,9 @@
       "condition": "parkinsons",
       "information_sought": "anxiety_presence",
       "preconditions": [],
-      "exclusions": ["answer_indicates_situational_distraction"],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
       "question_template": "Have you been feeling anxious, worried, or on edge today?",
       "source_type": "patient_education",
       "source_url": "https://www.parkinson.org/library/fact-sheets/anxiety",
@@ -45,7 +53,9 @@
       "condition": "parkinsons",
       "information_sought": "sleep_quality",
       "preconditions": [],
-      "exclusions": ["answer_indicates_situational_distraction"],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
       "question_template": "How did you sleep last night -- any more trouble than usual falling or staying asleep?",
       "source_type": "patient_education",
       "source_url": "https://www.parkinson.org/library/fact-sheets/sleep",
@@ -71,7 +81,9 @@
       "condition": "parkinsons",
       "information_sought": "balance_unsteadiness",
       "preconditions": [],
-      "exclusions": ["answer_indicates_situational_distraction"],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
       "question_template": "Have you noticed any new unsteadiness, trouble with balance, or near-falls recently?",
       "source_type": "patient_education",
       "source_url": "https://www.parkinson.org/library/fact-sheets/fall-prevention",
@@ -83,8 +95,12 @@
       "id": "everyday_communication_impact",
       "condition": "parkinsons",
       "information_sought": "everyday_communication_impact",
-      "preconditions": ["initial_answer_mentions_speech_difficulty"],
-      "exclusions": ["answer_indicates_situational_distraction"],
+      "preconditions": [
+        "initial_answer_mentions_speech_difficulty"
+      ],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
       "question_template": "Where have you noticed that, and has being understood in everyday conversations changed?",
       "source_type": "patient_education",
       "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
@@ -96,8 +112,12 @@
       "id": "repetition_frequency",
       "condition": "parkinsons",
       "information_sought": "repetition_frequency",
-      "preconditions": ["initial_answer_mentions_speech_difficulty"],
-      "exclusions": ["answer_indicates_situational_distraction"],
+      "preconditions": [
+        "initial_answer_mentions_speech_difficulty"
+      ],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
       "question_template": "How often do people ask you to repeat what you said -- has that changed recently?",
       "source_type": "patient_education",
       "source_url": "https://www.parkinson.org/library/fact-sheets/speech-swallowing",
@@ -109,8 +129,12 @@
       "id": "breath_support_phrasing",
       "condition": "parkinsons",
       "information_sought": "breath_support_during_speech",
-      "preconditions": ["measured_pause_fraction_elevated"],
-      "exclusions": ["answer_indicates_situational_distraction"],
+      "preconditions": [
+        "measured_pause_fraction_elevated"
+      ],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
       "question_template": "Do you notice yourself running out of breath partway through a sentence, or needing to break sentences into shorter pieces?",
       "source_type": "patient_education",
       "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
@@ -123,7 +147,9 @@
       "condition": "parkinsons",
       "information_sought": "voice_volume_change",
       "preconditions": [],
-      "exclusions": ["answer_indicates_situational_distraction"],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
       "question_template": "Have people been asking you to speak up, or mentioning your voice sounds softer than usual?",
       "source_type": "patient_education",
       "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
@@ -136,7 +162,9 @@
       "condition": "parkinsons",
       "information_sought": "speech_rate_direction",
       "preconditions": [],
-      "exclusions": ["answer_indicates_situational_distraction"],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
       "question_template": "Does it feel like your speech has been coming out faster or slower than usual lately?",
       "source_type": "patient_education",
       "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
@@ -148,8 +176,12 @@
       "id": "off_period_timing",
       "condition": "parkinsons",
       "information_sought": "medication_timing_correlation",
-      "preconditions": ["patient_known_to_take_pd_medication"],
-      "exclusions": ["medication_status_unknown"],
+      "preconditions": [
+        "patient_known_to_take_pd_medication"
+      ],
+      "exclusions": [
+        "medication_status_unknown"
+      ],
       "question_template": "Does this tend to happen more at certain times of day, especially before your next dose of medication?",
       "source_type": "patient_education",
       "source_url": "https://www.parkinson.org/library/fact-sheets/speech-swallowing",
@@ -161,7 +193,9 @@
       "id": "swallow_check",
       "condition": "parkinsons",
       "information_sought": "swallowing_signs",
-      "preconditions": ["speech_motor_cue_present"],
+      "preconditions": [
+        "speech_motor_cue_present"
+      ],
       "exclusions": [],
       "question_template": "Have you noticed yourself clearing your throat more while eating or drinking, or taking longer to eat than you used to?",
       "source_type": "patient_education",
@@ -174,7 +208,9 @@
       "id": "distraction_check",
       "condition": "parkinsons",
       "information_sought": "situational_vs_symptom",
-      "preconditions": ["persistent_deviation_triggered"],
+      "preconditions": [
+        "persistent_deviation_triggered"
+      ],
       "exclusions": [],
       "question_template": "Was anything going on around you during that pause -- noise, a distraction, or someone interrupting?",
       "source_type": "design_policy",
@@ -182,6 +218,117 @@
       "source_excerpt": null,
       "source_version": null,
       "review_status": "prototype"
+    },
+    {
+      "id": "vocal_fatigue_check",
+      "condition": "parkinsons",
+      "information_sought": "vocal_fatigue_or_evening_decline",
+      "preconditions": [
+        "speech_motor_cue_present"
+      ],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
+      "question_template": "Does your voice feel weaker or more tired as the day goes on?",
+      "review_status": "prototype",
+      "source_type": "patient_education",
+      "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+      "source_excerpt": "My voice is worse in the evening",
+      "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.23",
+      "evidence_spans": [
+        {
+          "chunk_index": 2,
+          "source_url": "https://www.parkinson.org/library/fact-sheets/speech-swallowing",
+          "source_version": "Parkinson's Foundation, Speech & Swallowing fact sheet",
+          "verbatim_text": "Is my voice weak or does it tire easily?"
+        },
+        {
+          "chunk_index": 281,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.23",
+          "verbatim_text": "My voice is worse in the evening"
+        },
+        {
+          "chunk_index": 282,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.23",
+          "verbatim_text": "My voice \u201cgives out\u201d on me in the middle of speaking"
+        }
+      ]
+    },
+    {
+      "id": "vocal_quality_hoarseness",
+      "condition": "parkinsons",
+      "information_sought": "vocal_quality_change",
+      "preconditions": [
+        "speech_motor_cue_present"
+      ],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
+      "question_template": "Have you noticed your voice sounding hoarse, breathy, or strained recently?",
+      "review_status": "prototype",
+      "source_type": "patient_education",
+      "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+      "source_excerpt": "When the airflow is reduced, it lowers the volume of the voice and makes the voice breathy and/or hoarse in quality.",
+      "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.5",
+      "evidence_spans": [
+        {
+          "chunk_index": 218,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.5",
+          "verbatim_text": "When the airflow is reduced, it lowers the volume of the voice and makes the voice breathy and/or hoarse in quality."
+        },
+        {
+          "chunk_index": 219,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.5",
+          "verbatim_text": "This changes the quality of the voice, making it sound breathy and/or hoarse, and makes it more difficult"
+        },
+        {
+          "chunk_index": 281,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.23",
+          "verbatim_text": "I feel as though I have to strain to produce voice"
+        }
+      ]
+    },
+    {
+      "id": "group_and_noise_communication",
+      "condition": "parkinsons",
+      "information_sought": "ambient_noise_and_group_communication",
+      "preconditions": [
+        "initial_answer_mentions_speech_difficulty"
+      ],
+      "exclusions": [
+        "recording_interrupted_by_distraction"
+      ],
+      "question_template": "Is it harder for people to hear you in group conversations or when there is background noise, like in a restaurant?",
+      "review_status": "prototype",
+      "source_type": "patient_education",
+      "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+      "source_excerpt": "People have difficulty understanding me in a noisy room",
+      "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.22",
+      "evidence_spans": [
+        {
+          "chunk_index": 277,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.22",
+          "verbatim_text": "People have difficulty understanding me in a noisy room"
+        },
+        {
+          "chunk_index": 278,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.22",
+          "verbatim_text": "I tend to avoid groups of people because of my voice"
+        },
+        {
+          "chunk_index": 279,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.22",
+          "verbatim_text": "I feel left out of conversations because of my voice"
+        }
+      ]
     }
   ]
 }

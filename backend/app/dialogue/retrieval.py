@@ -20,9 +20,85 @@ EMERGENCY_KEYWORDS = (
     "hospital now", "chest pain",
 )
 
-_DISTRACTION_KEYWORDS = ("dog", "interrupt", "noise", "distract", "phone rang", "someone else")
-_SPEECH_DIFFICULTY_KEYWORDS = ("hard to", "difficult", "words", "trouble speaking", "slur", "repeat")
-_SPEECH_MOTOR_KEYWORDS = _SPEECH_DIFFICULTY_KEYWORDS + ("breath", "slower", "faster", "quiet", "soft")
+# These are deliberately narrow language rules for prototype eligibility,
+# not a diagnosis or a clinically validated understanding model.
+_SPEECH_DOMAIN = r"\b(?:speak(?:ing)?|speech|talk(?:ing)?|voice|words?|sentences?|slurr?\w*)\b"
+_SPEECH_ATTRIBUTE = r"(?:hoarse|hoarser|weak|weaker|tired|strained|soft|softer|quiet|quieter|slurred|unclear|faster|slower)"
+_SPEECH_ACTION = r"(?:speaking|talking|speech|(?:my )?voice|getting (?:the )?words out|saying words|being understood)"
+_UNCERTAIN = re.compile(r"\b(?:not sure|unsure|maybe|might|could|possibly|cannot tell|can\'t tell|do not know|don\'t know)\b")
+
+
+def _clauses(text: str) -> list[str]:
+    text = text.lower().replace("’", "'").replace("isn't", "is not").replace("wasn't", "was not")
+    text = text.replace("don't", "do not").replace("didn't", "did not").replace("can't", "cannot")
+    return [part.strip() for part in re.split(r"[.!?;,]|\b(?:but|however|although)\b", text) if part.strip()]
+
+
+def _speech_report(answer: str) -> bool | None:
+    """Last explicit speech assertion in an answer; None means no new evidence.
+
+    Neutral/uncertain answers preserve earlier explicit reports. Denial or
+    resolution must name speech, rather than borrowing a word like 'no' from
+    an unrelated answer. We do not infer symptoms from general tiredness,
+    sleep difficulty, breathlessness during exercise, or arbitrary 'words'.
+    """
+    state = None
+    for clause in _clauses(answer):
+        has_domain = bool(re.search(_SPEECH_DOMAIN, clause))
+        if _UNCERTAIN.search(clause):
+            continue
+        denial = (
+            re.search(r"\b(?:no|without) (?:trouble|difficulty|problems?|issues?)(?: with)? " + _SPEECH_ACTION, clause)
+            or re.search(r"\b(?:do not|did not) (?:have|experience)(?: any)? (?:trouble|difficulty|problems?)(?: with)? " + _SPEECH_ACTION, clause)
+            or re.search(r"\bno longer (?:have |having )?(?:trouble|difficulty|problems?)(?: with)? " + _SPEECH_ACTION, clause)
+            or re.search(r"\b(?:no|without) (?:speech|voice|speaking|communication) (?:problems?|difficulties|issues?)\b", clause)
+            or (has_domain and re.search(r"\b(?:is|sounds?|feels?) no longer " + _SPEECH_ATTRIBUTE + r"\b", clause))
+            or (has_domain and re.search(r"\b(?:is|feels|sounds|are) (?:back to )?(?:normal|fine|okay|ok|usual)\b", clause))
+            or (has_domain and re.search(r"\b(?:resolved|recovered|gone away|cleared up|no longer present)\b", clause))
+            or (has_domain and re.search(r"\b(?:do not|did not|never) (?:slur|need to repeat|have to repeat|run out of breath)\b", clause))
+            or (has_domain and re.search(r"\b(?:is|are|was|sounds?|feels?) not (?:very |at all )?" + _SPEECH_ATTRIBUTE + r"\b", clause))
+        )
+        if denial:
+            state = False
+            continue
+        if re.search(r"\bused to\b", clause) and not re.search(r"\b(?:still|again|currently)\b", clause):
+            continue  # A past-only report does not establish a current symptom.
+        affirmative = (
+            re.search(r"\b(?:hard|difficult)(?: for me)? to (?:speak|talk|get (?:the )?words out|say words|be understood)\b", clause)
+            or re.search(r"\b(?:trouble|difficulty|problems?)(?: with)? " + _SPEECH_ACTION, clause)
+            or re.search(r"\b(?:cannot|unable to|struggle to) (?:speak|talk|get (?:the )?words out|be understood)\b", clause)
+            or re.search(r"\b(?:voice|speech)(?: (?:is|feels|sounds|gets|has become|seems))?(?: (?:very|more|a bit|too|unusually))? " + _SPEECH_ATTRIBUTE + r"\b", clause)
+            or re.search(r"\b(?:slur|slurring|slurred) (?:my |the )?words\b", clause)
+            or re.search(r"\b(?:ask|asks|asked|asking) me to repeat\b|\b(?:need|have) to repeat myself\b", clause)
+            or re.search(r"\b(?:people|others|family|they) (?:cannot|do not) (?:hear|understand) me\b", clause)
+            or (has_domain and re.search(r"\b(?:run|running) out of (?:air|breath)\b", clause))
+        )
+        if affirmative:
+            state = True
+    return state
+
+
+def _recording_interruption(answer: str) -> bool:
+    """Only an interruption of this capture, not everyday noisy communication.
+
+    Clear short answers such as 'the dog interrupted me' are accepted in the
+    check-in context. Generic noise/distraction needs a recording/reading cue.
+    This flag affects question eligibility only; it never changes scored audio
+    or replays/undoes the persistence tracker.
+    """
+    state = False
+    for clause in _clauses(answer):
+        capture = bool(re.search(r"\b(?:recording|reading|passage|microphone|mic|check[ -]?in|this take|that pause)\b", clause))
+        everyday = bool(re.search(r"\b(?:restaurant|crowd|party|dinner|social|conversation|noisy room|at work)\b", clause))
+        disruption = bool(re.search(r"\b(?:interrupt\w*|distract\w*|noise|bark\w*|doorbell|phone rang|someone spoke)\b", clause))
+        if disruption and re.search(r"\b(?:no|nothing|not|never)\b", clause):
+            state = False
+            continue
+        clear_event = bool(re.search(r"\b(?:dog|cat|someone|child|kid)\b.{0,30}\binterrupted me\b|\b(?:phone|doorbell) rang\b", clause))
+        if disruption and (capture or (clear_event and not everyday)):
+            state = True
+    return state
+
 
 _STOPWORDS = {"the", "a", "an", "and", "or", "to", "of", "in", "on", "at", "is", "it", "that", "this", "was", "were"}
 
@@ -53,23 +129,30 @@ def compute_context_flags(
     derivable (we don't track medication status yet) defaults to False/
     excluded, rather than guessing.
     """
-    latest_answer = prior_answers[-1].lower() if prior_answers else ""
+    # Replay explicit reports, not substrings in only the latest sentence.
+    speech_reported = False
+    for answer in prior_answers:
+        update = _speech_report(answer)
+        if update is not None:
+            speech_reported = update
+    interruption = _recording_interruption(prior_answers[-1]) if prior_answers else False
     return {
         "persistent_deviation_triggered": True,
         "measured_pause_fraction_elevated": feature_scores.get("pause_fraction", 0.0) > 1.5,
-        "initial_answer_mentions_speech_difficulty": any(
-            kw in latest_answer for kw in _SPEECH_DIFFICULTY_KEYWORDS
-        ),
-        "speech_motor_cue_present": any(kw in latest_answer for kw in _SPEECH_MOTOR_KEYWORDS),
-        "answer_indicates_situational_distraction": any(
-            kw in latest_answer for kw in _DISTRACTION_KEYWORDS
-        ),
+        "initial_answer_mentions_speech_difficulty": speech_reported,
+        "speech_motor_cue_present": speech_reported,
+        "recording_interrupted_by_distraction": interruption,
+        "answer_indicates_situational_distraction": interruption,  # compatibility alias
         "patient_known_to_take_pd_medication": medication_status_known,
         "medication_status_unknown": not medication_status_known,
     }
 
 
 def is_eligible(unit: dict, context: dict[str, bool]) -> bool:
+    if unit.get("blocked", False):
+        return False
+    if any(flag not in context for flag in unit["preconditions"] + unit["exclusions"]):
+        return False
     for flag in unit["preconditions"]:
         if not context.get(flag, False):
             return False

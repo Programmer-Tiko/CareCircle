@@ -1,0 +1,89 @@
+{
+  "result": "PASS",
+  "browser": "installed Chrome headless",
+  "microphone": "file-backed fake microphone through real MediaRecorder",
+  "tts": "browser request stub, not ElevenLabs verification",
+  "asr": "browser request stub, not transcription-model verification",
+  "events": [
+    {
+      "checkin_status": "no_change",
+      "experimental": true
+    },
+    {
+      "checkin_status": "no_change",
+      "experimental": true
+    },
+    {
+      "checkin_status": "awaiting_answer",
+      "experimental": true
+    },
+    {
+      "turn": 1,
+      "state": "active",
+      "revision": 1
+    },
+    {
+      "turn": 2,
+      "state": "active",
+      "revision": 2
+    },
+    {
+      "turn": 3,
+      "state": "complete",
+      "revision": 3
+    },
+    {
+      "checkin_status": "awaiting_answer",
+      "experimental": true
+    }
+  ],
+  "screenshots": [
+    "/private/tmp/cadence-ui-desktop.png",
+    "/private/tmp/cadence-ui-final-desktop.png",
+    "/private/tmp/cadence-ui-mobile.png",
+    "/private/tmp/cadence-ui-mobile-error.png"
+  ],
+  "keyboard_record_start": "PASS",
+  "reference_recordings": 3,
+  "patient_report_without_acoustic_trigger": "PASS",
+  "pending_question_reload": true,
+  "tts_question_request": "PASS (stub response)",
+  "asr_transcript_editable": "PASS (stub response, no automatic send)",
+  "correction_and_stale_confirmation": "PASS",
+  "tts_note_readback": "PASS (stub response)",
+  "note_confirmation": "PASS",
+  "finish_for_now": {
+    "state_before_confirmation": "abstained",
+    "pending_question_retained": true,
+    "unanswered_closed_at": true,
+    "answer_stays_null": true,
+    "resolved_stays_false": true,
+    "uncertainty_visible": true,
+    "confirmed": true
+  },
+  "history_reload": "PASS",
+  "simulated_microphone_denial_visible": true,
+  "mobile_no_horizontal_overflow": true,
+  "keyboard_focus": "connectBtn",
+  "backend_error_visible": true,
+  "javascript_errors": [],
+  "persisted_checkins": 4,
+  "persisted_confirmed_sessions": 2,
+  "real_four_feature_storage": true,
+  "experimental_waveform_evidence_stored": true,
+  "database": "isolated local PostgreSQL schema; actual transactions",
+  "selection": "real retrieval/adapter/validation; deterministic provider choice; bounded completion at 3 answers",
+  "selector_calls": [
+    {
+      "turn_count": 1,
+      "decision": "ask",
+      "question_id": "repetition_frequency"
+    },
+    {
+      "turn_count": 2,
+      "decision": "ask",
+      "question_id": "volume_awareness"
+    }
+  ],
+  "schema_removed": true
+}

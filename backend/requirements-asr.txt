@@ -1,0 +1,8 @@
+# Optional local-ASR stack. Create a Python 3.11 virtual environment; the
+# project's existing Python 3.15 environment is not a supported Whisper stack.
+# pip install -r requirements.txt -r requirements-asr.txt
+# ffmpeg is also required on PATH (system package, not a pip dependency).
+# Model weights must already exist in ~/.cache/whisper/<model>.pt.
+# Runtime never downloads them. Enable with CADENCE_ASR_ENABLED=true;
+# CADENCE_WHISPER_MODEL=base is the default.
+openai-whisper==20250625

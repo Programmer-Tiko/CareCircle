@@ -96,3 +96,31 @@ fresh-app recovery, question snapshots, concurrent answers, duplicate submission
 profile isolation, stale confirmation, provider failure and the additive check-in
 timestamp. These tables do not need TimescaleDB; the existing API integration
 suite still independently requires `TEST_TIGER_DATA_URL` for hypertable behavior.
+
+## Integrated self-check additions
+
+The browser now uses the durable conversation paths, not the legacy answer
+endpoint. Source snapshots can include optional `url` and exact `excerpt` fields.
+GET `/capabilities` and GET `/profiles/{profile_id}` support setup; GET
+`/profiles/{profile_id}/history` returns actual check-ins with linked sessions and
+exact-word patient reports. POST `/profiles/{profile_id}/reports` accepts
+`{"report_text":"..."}` without requiring an acoustic trigger.
+
+POST `/profiles/{profile_id}/conversations/{session_id}/correction` accepts
+`{"revision":1,"correction_text":"..."}` for an unconfirmed terminal note.
+It adds the correction while preserving original answers/measurement, increments
+the note revision, and makes stale confirmation fail with 409.
+
+POST `/profiles/{profile_id}/conversations/{session_id}/finish` accepts
+`{"revision":0}` (or current revision) to end questions early. It preserves
+unanswered question snapshots with `closed_at`, changes the session to abstained,
+and keeps unresolved information in the reviewable note. It does not fabricate
+an answer or claim the cause is resolved.
+
+Optional `/transcribe` accepts one multipart WAV `file`, uses a cached local
+Whisper model and returns text/word evidence for review before answer submission.
+`verify_passage=true` on enrollment/check-in rejects unverified transcripts before
+scoring/inserting a new reading. Phrase match does not certify capture quality.
+`experimental=true` on enrollment fits separate pitch/energy references; check-in
+returns those descriptive comparisons inside waveform_evidence.personal_reference.
+They never change the timing trigger score.

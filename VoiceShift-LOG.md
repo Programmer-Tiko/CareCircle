@@ -308,3 +308,53 @@ and explicit resolution, non-triggered symptom reporting and editable note
 review. History is stored but not exposed as an authorized history UI. Caregiver
 sharing requires identity and separate consent; phone path remains unbuilt.
 No diagnosis/progression/medication claim follows from current research.
+
+## Integrated teammate UI — November 8, 2026
+
+The user authorized replacing unsupported dashboard content and integrating the
+real system. Fetched GitHub before editing: main remained fd9fc9d; the existing
+feature branch was 7363896. Work is on codex/ui-integration, preserving main.
+The new UI retains the purple rounded-card design while removing fictional
+families, disease tabs, invented scores/charts, medication/oxygen panels,
+host-Claude summaries, and pretend calling/sharing. FastAPI serves the page and
+assets, with profile discovery, actual history, and exact-word personal reports.
+
+Added optional local cached Whisper through a separate prepared Python 3.11
+environment; core .venv is unchanged. Voice answers are transcribed for editing
+before Send. Optional phrase verification gates enrollment/check-ins before
+scoring; matching is not overall capture certification. Enrollment can fit
+separate experimental pitch/energy references from three usable takes, and the
+UI shows descriptive differences without changing the timing trigger.
+
+Added source links/excerpts, revision-safe note corrections, Finish for now,
+manual question/note playback, and reload recovery. Tested context rules now
+handle negation, voice fatigue/hoarseness, symptom memory, and recording versus
+everyday noise. Three independently reviewed communication questions entered
+corpus v3 with exact evidence spans; three other proposals remain excluded.
+
+Final Python 3.11 suite: 243 passed, no skips, including real cloud/local SQL and
+cached-model ASR checks. Chrome acceptance used a file-simulated microphone,
+actual MediaRecorder/WAV capture and SQL; provider stubs are explicitly labeled.
+It covered enrollment, personal reports without a trigger, multi-turn answers,
+review without auto-send, correction, stale revision rejection, confirmation,
+early finish, reload/history, keyboard/mobile layout, mic denial and service
+errors. Final run stored four check-ins and two confirmed sessions, with no
+browser JavaScript errors. Its isolated schema was removed.
+
+A separate browser run used actual Tiger Cloud, local Whisper, Groq and
+ElevenLabs: the recorded answer yielded 45 recognized words, and real question
+and note MP3s played. Nine selections succeeded; the tenth rapid call hit a
+rate limit. That answer and uncertainty were preserved through correction and
+confirmation. This was graceful degradation, not natural completion. Normal
+check-ins now have a configurable four-question budget and no automatic Groq
+retries; separate tests verify the last answer is saved without another call.
+
+Real ASR passage-gating HTTP verification accepted three synthetic passage
+references and a matching check-in, rejected different-content speech with 422,
+and retained only one stored check-in. Human/device acceptance remains pending.
+No new CCR work was run and no clinical monitoring claim follows. Reports and
+reproduction commands are in docs/UI-INTEGRATION-VERIFICATION.md.
+
+Launcher acceptance also passed from the actual working folder after sync:
+Tiger Cloud additive startup, root UI/assets HTTP200, ASR ready, TTS configured,
+41-syllable passage. The temporary port18080 server was stopped cleanly.

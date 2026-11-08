@@ -383,3 +383,29 @@ numbers, don't let CCR/compute use become performative, keep the RAG layer real)
 reverting to a more conservative or more hardcoded default because the context feels unfamiliar.
 Ask the user directly for anything this file doesn't cover rather than guessing — they've been
 closely steering architecture decisions throughout and will want to keep doing so with you.
+
+## Latest delivery: integrated UI (supersedes earlier integration-pending notes)
+
+The real UI is now `Daily Hello Family.html` plus `frontend/cadence.js/css`,
+served by FastAPI at `/`. Run `./run-cadence.sh` and open localhost:8000.
+README.md describes current setup. The optional Python 3.11 environment at
+`backend/.venv-asr` is prepared locally and uses the existing cached checkpoint.
+
+Enrollment/check-in WAV capture, real measurements, experimental personal
+references, optional phrase verification, reviewed ASR answers, durable
+multi-turn questions with sources, manual TTS, note correction/confirmation,
+Finish for now, non-triggered personal reports, and history are wired.
+Unsupported mock content is removed. Three reviewed communication candidates
+are live in corpus v3; the other proposals remain excluded. Context rules now
+have tested negation/memory fixes. Ordinary sessions have a four-question budget
+and no automatic provider retries.
+
+Final suite: **243 passed, no skips**, with cloud/local database integrations and
+real cached-model ASR enabled. Chrome acceptance and a separate real
+Tiger/Groq/ElevenLabs/Whisper UI run passed; passage gating also passed positive
+and negative HTTP checks. See `docs/UI-INTEGRATION-VERIFICATION.md`.
+
+The long live run hit Groq's rate limit after nine selections and preserved the
+tenth answer under abstention. Do not claim natural conversation completion.
+Human recordings/device acceptance, authentication, caregiver sharing, phone
+calling, and clinical monitoring validation remain outstanding.

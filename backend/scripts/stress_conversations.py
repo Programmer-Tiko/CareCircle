@@ -32,6 +32,7 @@ from app.dialogue.retrieval import load_corpus, load_corpus_version
 
 def run():
     url = os.environ['TEST_CONVERSATION_DB_URL']
+    os.environ['CADENCE_MAX_QUESTIONS']='20'  # Deliberate long-conversation stress override.
     schema = 'conversation_stress_' + uuid4().hex
     corpus_path = Path(api.__file__).parents[1] / 'dialogue' / 'question_corpus.json'
     corpus_hash = hashlib.sha256(corpus_path.read_bytes()).hexdigest()
@@ -109,7 +110,7 @@ def run():
             def read(session):
                 response = client.get(root(session)); assert response.status_code == 200
                 return response.json()
-            def answer(session, marker, text='I have difficult words, repeat, breath and quiet speech', submission=None):
+            def answer(session, marker, text='My voice is weak and I have trouble speaking; people ask me to repeat myself', submission=None):
                 turn = session['turns'][-1]
                 assert turn['answered_at'] is None
                 body = {'submission_id':submission or str(uuid4()),'answer_text':marker+': '+text}

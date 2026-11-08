@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS profiles (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS waveform_baseline JSONB;
+
 CREATE TABLE IF NOT EXISTS checkins (
     time TIMESTAMPTZ NOT NULL DEFAULT now(),
     profile_id TEXT NOT NULL REFERENCES profiles(profile_id),
@@ -23,6 +25,7 @@ CREATE TABLE IF NOT EXISTS checkins (
 ALTER TABLE checkins ADD COLUMN IF NOT EXISTS mean_speech_segment_duration DOUBLE PRECISION;
 ALTER TABLE checkins ADD COLUMN IF NOT EXISTS feature_scores JSONB;
 ALTER TABLE checkins ADD COLUMN IF NOT EXISTS waveform_evidence JSONB;
+ALTER TABLE checkins ADD COLUMN IF NOT EXISTS phrase_evidence JSONB;
 SELECT create_hypertable('checkins', 'time', if_not_exists => TRUE);
 CREATE INDEX IF NOT EXISTS checkins_profile_time_idx ON checkins (profile_id, time DESC);
 
@@ -53,5 +56,14 @@ CREATE TABLE IF NOT EXISTS conversation_turns (
     UNIQUE (session_id, ordinal),
     UNIQUE (session_id, submission_id)
 );
+ALTER TABLE conversation_turns ADD COLUMN IF NOT EXISTS closed_at TIMESTAMPTZ;
 CREATE UNIQUE INDEX IF NOT EXISTS conversation_one_pending_turn
     ON conversation_turns (session_id) WHERE answered_at IS NULL;
+
+CREATE TABLE IF NOT EXISTS patient_reports (
+    report_id UUID PRIMARY KEY,
+    profile_id TEXT NOT NULL REFERENCES profiles(profile_id),
+    report_text TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS patient_reports_profile_time_idx ON patient_reports(profile_id,created_at DESC);
