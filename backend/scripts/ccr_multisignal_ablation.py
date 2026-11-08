@@ -50,11 +50,33 @@ def validate_metadata(frame):
         raise ValueError('Duplicate recording paths could disguise participant overlap.')
 
 
+
+def preflight_audio(frame, manifest_path):
+    """Fail on the execution node before fitting/extracting inaccessible inputs."""
+    import soundfile as sf
+    bad = []
+    for raw in frame['path']:
+        path = Path(str(raw))
+        if not path.is_absolute():
+            path = manifest_path.parent / path
+        try:
+            info = sf.info(path)
+            if info.frames <= 0:
+                raise ValueError('empty recording')
+        except (OSError, ValueError, sf.LibsndfileError) as exc:
+            bad.append(f'{path}: {exc}')
+    if bad:
+        raise ValueError(f'Audio preflight failed for {len(bad)}/{len(frame)} recordings on this node. '
+                         'Stage inputs on shared storage or the correct local scratch. First failures: '
+                         + '; '.join(bad[:3]))
+
+
 def extract(manifest_path, output, syllable_count=None, perturbations=False):
     from app.pipeline import build_take_from_audio
     from app.audio.prosody_features import extract_prosody_features
     frame = pd.read_csv(manifest_path)
     validate_metadata(frame)
+    preflight_audio(frame, manifest_path)
     records, failures, robustness = [], [], []
     rng = np.random.default_rng(0)
     for row in frame.to_dict('records'):
@@ -172,6 +194,8 @@ def evaluate(features, permutations=0, seed=0):
     datasets = sorted(frame['dataset'].unique())
     if len(datasets) < 2:
         raise ValueError('Provide at least two datasets for a frozen cross-dataset holdout.')
+    if frame[TIMING + PROSODY].isna().all(axis=1).any():
+        raise ValueError('Participants without any acoustic measurements cannot be evaluated; inspect extraction failures.')
     usable_timing = [key for key in TIMING if not frame[key].isna().all()]
     usable_prosody = [key for key in PROSODY if not frame[key].isna().all()]
     report = {'excluded_all_missing_features':[key for key in TIMING + PROSODY if frame[key].isna().all()],

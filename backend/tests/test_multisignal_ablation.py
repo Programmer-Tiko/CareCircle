@@ -69,6 +69,8 @@ def test_extract_does_not_guess_unknown_passage_count(tmp_path, monkeypatch):
     from app.audio import prosody_features
     manifest=tmp_path/'manifest.csv'
     pd.DataFrame([{'path':'record.wav','subject_id':'s1','label':1,'dataset':'study'}]).to_csv(manifest,index=False)
+    import soundfile as sf
+    sf.write(tmp_path/'record.wav', np.zeros(1600), 16000)
     def timing(path, count):
         assert count==1  # discarded inverse-duration placeholder, never 41
         return {'pause_fraction':.2,'longest_internal_gap':.4,'speaking_rate':999.,'mean_speech_segment_duration':2.}
@@ -82,3 +84,16 @@ def test_extract_does_not_guess_unknown_passage_count(tmp_path, monkeypatch):
     assert result.loc[0,'pause_fraction']==.2
     assert pd.isna(result.loc[0,'f0_spread_semitones'])
     assert 'UnavailablePassageCount' in output.with_suffix('.failures.json').read_text()
+
+
+def test_preflight_rejects_inaccessible_audio_before_extraction(tmp_path):
+    data = frame().iloc[:1]
+    with pytest.raises(ValueError, match='Audio preflight failed for 1/1'):
+        module.preflight_audio(data, tmp_path/'manifest.csv')
+
+
+def test_evaluation_rejects_total_extraction_failure():
+    data = frame()
+    data[module.TIMING + module.PROSODY] = np.nan
+    with pytest.raises(ValueError, match='without any acoustic measurements'):
+        module.evaluate(data)
