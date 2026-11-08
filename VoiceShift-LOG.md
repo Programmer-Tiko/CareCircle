@@ -42,6 +42,15 @@ that all timing features generalize should be read with the qualifications
 above. It also describes a different contributor's workspace and old build
 plans; those are not current local setup instructions.
 
+## Follow-up — November 8, 2026 (Claude), responding to the audit above
+
+Two of the audit's open items are now resolved, not just acknowledged:
+
+- **The scaling/bootstrap methodology issue is fixed, not just flagged.** Verified the audit's claim directly against the code (it was correct), then fixed feature scaling to happen inside a per-fold `Pipeline` in all four affected scripts, and replaced `bootstrap_classifier_ci.py` entirely with `permutation_test_combined_classifier.py` (same label-permutation method already used correctly for the embeddings result). Reran every affected analysis against the real re-downloaded datasets. Differences were negligible everywhere (0.630→0.624, 0.679→0.680, 0.75→0.747, 0.89→0.887) — same conclusions, now correctly computed. The invalid bootstrap CI is gone; its replacement gives a clean result (observed AUC 0.747 beats 299/300 label-shuffles, p=0.0033). Details and full diff context in the brief's research table.
+- **A real end-to-end live test of the API passed**, using the real credentials now in `backend/.env` (Tiger Cloud + ElevenLabs, not mocks): enroll (4 reference takes) → check-in (elevated but not yet persistent, correctly didn't trigger on one reading) → second check-in (persistent, correctly triggered the COPD question) → answer (correctly classified the breath-related cue, returned the right follow-up) → confirm → `/speak` (real MP3 returned, 58KB). The stateless tracker-rebuild-from-DB-history design actually works across separate requests, confirmed live, not just in tests. One test profile (`live-test-1`) now exists in the real Tiger Cloud database — harmless, but worth knowing it's there if it shows up in a demo.
+- The CCR cross-lingual rerun got cancelled mid-run once already (disconnected session); the script now checkpoints each dataset's embeddings to disk, so a second cancellation won't force redoing already-finished work. Rerun still pending as of this entry.
+- Still open and unchanged from the audit: UI wiring status to the real API, the day 1–5 fixture audio, and the movement/balance/medication content question.
+
 ## Earlier session record (retained)
 
 **Read this first if you're picking this project up cold** (new session, context ran out, etc.). This is a running log, not the pitch doc — for that, read `VoiceShift-Project-Brief.md`, which stays current and is what judges would see. This file exists so an AI or person resuming mid-hackathon doesn't have to re-derive everything from git history.
