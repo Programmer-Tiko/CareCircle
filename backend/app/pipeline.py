@@ -8,7 +8,12 @@ from app.audio.timing_features import compute_timing_features
 from app.audio.vad import detect_speech_segments
 from app.dialogue.note import Note, build_note
 from app.dialogue.question_cards import classify_answer, get_follow_up_question, get_initial_question
-from app.models.personal_baseline import BaselineStats, PersistentDeviationTracker, deviation_score
+from app.models.personal_baseline import (
+    BaselineStats,
+    PersistentDeviationTracker,
+    deviation_score,
+    per_feature_deviation,
+)
 
 
 @dataclass
@@ -16,6 +21,10 @@ class CheckinResult:
     triggered: bool
     deviation_score: float
     question_text: str | None
+    # Additive -- existing consumers (API, tests) that only read the three
+    # fields above are unaffected. Signed z-score per feature, so a note or
+    # selector can say *which* feature moved instead of assuming pauses.
+    feature_scores: dict[str, float]
 
 
 def build_take_from_audio(wav_path: str, passage_syllable_count: int) -> dict:
@@ -40,6 +49,7 @@ def evaluate_checkin(
     passage_syllable_count: int,
 ) -> CheckinResult:
     take = build_take_from_audio(wav_path, passage_syllable_count)
+    feature_scores = per_feature_deviation(baseline, take)
     score = deviation_score(baseline, take)
     persistent = tracker.observe(score)
 
@@ -47,19 +57,39 @@ def evaluate_checkin(
     if persistent:
         question_text = get_initial_question(condition).question_text
 
-    return CheckinResult(triggered=persistent, deviation_score=score, question_text=question_text)
+    return CheckinResult(
+        triggered=persistent,
+        deviation_score=score,
+        question_text=question_text,
+        feature_scores=feature_scores,
+    )
 
 
-def process_answer(condition: str, deviation_score_value: float, answer_text: str) -> tuple[Note, str | None]:
+def process_answer(
+    condition: str,
+    deviation_score_value: float,
+    answer_text: str,
+    feature_scores: dict[str, float] | None = None,
+) -> tuple[Note, str | None]:
     """Returns the assembled note, plus a follow-up question if the
     patient's answer matched a known cue -- or None if there's nothing
     more to ask and the note is ready as-is.
+
+    `feature_scores` is optional and backward compatible -- existing
+    callers that only have the aggregate deviation_score (the checkins
+    table doesn't persist per-feature scores yet) keep working exactly as
+    before; passing it in lets the note name which feature actually moved.
     """
     cue = classify_answer(condition, answer_text)
     follow_up = get_follow_up_question(condition, cue) if cue else None
+    # cue is None whenever the answer wasn't recognized at all -- in this
+    # card set there is no "recognized, no follow-up needed" case, so
+    # cue_resolved=True must not be read as "we understood this."
     note = build_note(
         deviation_score=deviation_score_value,
         patient_said=answer_text,
         cue_resolved=follow_up is None,
+        feature_scores=feature_scores,
+        classification_succeeded=cue is not None,
     )
     return note, (follow_up.question_text if follow_up else None)

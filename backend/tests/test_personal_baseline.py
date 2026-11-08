@@ -6,9 +6,11 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.models.personal_baseline import (
+    FEATURE_ORDER,
     PersistentDeviationTracker,
     deviation_score,
     fit_baseline,
+    per_feature_deviation,
 )
 
 CLEAN_TAKES = [
@@ -34,6 +36,27 @@ def test_acted_deviation_scores_high():
     stats = fit_baseline(CLEAN_TAKES)
     acted = {"pause_fraction": 0.45, "longest_internal_gap": 0.90, "speaking_rate": 1.8}
     assert deviation_score(stats, acted) > 3.0
+
+
+def test_per_feature_deviation_identifies_which_feature_moved():
+    stats = fit_baseline(CLEAN_TAKES)
+    # speaking_rate way off, the other two untouched -- a real note should
+    # be able to say "speaking rate", not default to "longer pauses".
+    rate_only = {"pause_fraction": 0.20, "longest_internal_gap": 0.30, "speaking_rate": 1.0}
+    z = per_feature_deviation(stats, rate_only)
+    assert set(z.keys()) == set(FEATURE_ORDER)
+    assert abs(z["speaking_rate"]) > abs(z["pause_fraction"])
+    assert abs(z["speaking_rate"]) > abs(z["longest_internal_gap"])
+
+
+def test_per_feature_deviation_combines_into_deviation_score():
+    import math
+
+    stats = fit_baseline(CLEAN_TAKES)
+    take = {"pause_fraction": 0.45, "longest_internal_gap": 0.90, "speaking_rate": 1.8}
+    z = per_feature_deviation(stats, take)
+    expected = math.sqrt(sum(v * v for v in z.values()))
+    assert deviation_score(stats, take) == pytest.approx(expected)
 
 
 def test_persistent_tracker_needs_consecutive_hits():

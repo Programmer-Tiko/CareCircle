@@ -71,10 +71,16 @@ def test_full_pipeline_triggers_and_resolves_via_answer(tmp_path):
     assert note.patient_said == "I stopped to catch my breath"
     assert note.unresolved != []
 
-    # Answering the follow-up with no further matching cue fully resolves it.
+    # No further card exists for this cue either way, but an answer that
+    # doesn't match any known keyword is honestly unclassified, not
+    # resolved -- this deterministic matcher has no real understanding of
+    # "mainly on stairs" as an answer; claiming otherwise would be the
+    # exact bug (conflating "nothing left to ask" with "we understood
+    # this") that this fix exists to catch. The upcoming RAG-based
+    # selector is what actually closes this gap with real comprehension.
     final_note, final_follow_up = process_answer("copd", second.deviation_score, "most days now, mainly on stairs")
     assert final_follow_up is None
-    assert final_note.unresolved == []
+    assert final_note.unresolved != []
 
 
 def test_pipeline_does_not_trigger_on_typical_take(tmp_path):

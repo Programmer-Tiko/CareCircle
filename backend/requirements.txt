@@ -16,3 +16,4 @@ python-multipart
 psycopg[binary]
 httpx
 python-dotenv
+google-genai

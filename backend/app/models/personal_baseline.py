@@ -42,14 +42,21 @@ def fit_baseline(reference_takes: list[dict]) -> BaselineStats:
     return BaselineStats(median=median, mad=mad)
 
 
+def per_feature_deviation(stats: BaselineStats, take: dict) -> dict[str, float]:
+    """Signed robust z-score per feature, not collapsed into one number --
+    this is what lets the note/selector say *which* feature actually moved
+    (e.g. speaking_rate, not pause_fraction) instead of a fixed guess."""
+    return {
+        feature: (take[feature] - stats.median[feature]) / stats.mad[feature]
+        for feature in FEATURE_ORDER
+    }
+
+
 def deviation_score(stats: BaselineStats, take: dict) -> float:
     """Combined robust z-score across all features (Euclidean norm in
     z-score space). Larger = further from this person's own normal."""
-    squared_sum = 0.0
-    for feature in FEATURE_ORDER:
-        z = (take[feature] - stats.median[feature]) / stats.mad[feature]
-        squared_sum += z * z
-    return math.sqrt(squared_sum)
+    z_scores = per_feature_deviation(stats, take)
+    return math.sqrt(sum(z * z for z in z_scores.values()))
 
 
 class PersistentDeviationTracker:

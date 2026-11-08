@@ -1,0 +1,122 @@
+{
+  "version": "2026-11-08",
+  "units": [
+    {
+      "id": "pd_initial",
+      "condition": "parkinsons",
+      "information_sought": "open_description",
+      "preconditions": ["persistent_deviation_triggered"],
+      "exclusions": [],
+      "question_template": "What happened there?",
+      "source_type": "design_policy",
+      "source_url": null,
+      "source_excerpt": null,
+      "source_version": null,
+      "review_status": "prototype"
+    },
+    {
+      "id": "everyday_communication_impact",
+      "condition": "parkinsons",
+      "information_sought": "everyday_communication_impact",
+      "preconditions": ["initial_answer_mentions_speech_difficulty"],
+      "exclusions": ["answer_indicates_situational_distraction"],
+      "question_template": "Where have you noticed that, and has being understood in everyday conversations changed?",
+      "source_type": "patient_education",
+      "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+      "source_excerpt": "Approximately 90% of persons with Parkinson's disease (PD) experience changes in their ability to communicate ... Perhaps you have grown tired of being asked to repeat yourself in social situations and are gradually becoming more withdrawn and socially isolated.",
+      "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.2",
+      "review_status": "prototype"
+    },
+    {
+      "id": "repetition_frequency",
+      "condition": "parkinsons",
+      "information_sought": "repetition_frequency",
+      "preconditions": ["initial_answer_mentions_speech_difficulty"],
+      "exclusions": ["answer_indicates_situational_distraction"],
+      "question_template": "How often do people ask you to repeat what you said -- has that changed recently?",
+      "source_type": "patient_education",
+      "source_url": "https://www.parkinson.org/library/fact-sheets/speech-swallowing",
+      "source_excerpt": "Do others have trouble hearing or understanding me?",
+      "source_version": "Parkinson's Foundation, Speech & Swallowing in Parkinson's, June 2025",
+      "review_status": "prototype"
+    },
+    {
+      "id": "breath_support_phrasing",
+      "condition": "parkinsons",
+      "information_sought": "breath_support_during_speech",
+      "preconditions": ["measured_pause_fraction_elevated"],
+      "exclusions": ["answer_indicates_situational_distraction"],
+      "question_template": "Do you notice yourself running out of breath partway through a sentence, or needing to break sentences into shorter pieces?",
+      "source_type": "patient_education",
+      "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+      "source_excerpt": "Speak in shorter phrases. When you speak in longer sentences you may notice that you start to run out of air towards the end of the sentence. This will make your voice quieter.",
+      "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.9",
+      "review_status": "prototype"
+    },
+    {
+      "id": "volume_awareness",
+      "condition": "parkinsons",
+      "information_sought": "voice_volume_change",
+      "preconditions": [],
+      "exclusions": ["answer_indicates_situational_distraction"],
+      "question_template": "Have people been asking you to speak up, or mentioning your voice sounds softer than usual?",
+      "source_type": "patient_education",
+      "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+      "source_excerpt": "If you have been diagnosed with PD, you may notice that your voice is softer and breathy or hoarse, or that your speech is unclear or comes out too slowly or too fast.",
+      "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.2",
+      "review_status": "prototype"
+    },
+    {
+      "id": "rate_change_direction",
+      "condition": "parkinsons",
+      "information_sought": "speech_rate_direction",
+      "preconditions": [],
+      "exclusions": ["answer_indicates_situational_distraction"],
+      "question_template": "Does it feel like your speech has been coming out faster or slower than usual lately?",
+      "source_type": "patient_education",
+      "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+      "source_excerpt": "Persons with PD may find themselves talking either faster or slower than usual and may notice that it can be difficult to control the speed of their speech.",
+      "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.11",
+      "review_status": "prototype"
+    },
+    {
+      "id": "off_period_timing",
+      "condition": "parkinsons",
+      "information_sought": "medication_timing_correlation",
+      "preconditions": ["patient_known_to_take_pd_medication"],
+      "exclusions": ["medication_status_unknown"],
+      "question_template": "Does this tend to happen more at certain times of day, especially before your next dose of medication?",
+      "source_type": "patient_education",
+      "source_url": "https://www.parkinson.org/library/fact-sheets/speech-swallowing",
+      "source_excerpt": "Adjusting PD medications may also help, especially if symptoms happen during 'off' times.",
+      "source_version": "Parkinson's Foundation, Speech & Swallowing in Parkinson's, June 2025",
+      "review_status": "prototype"
+    },
+    {
+      "id": "swallow_check",
+      "condition": "parkinsons",
+      "information_sought": "swallowing_signs",
+      "preconditions": ["speech_motor_cue_present"],
+      "exclusions": [],
+      "question_template": "Have you noticed yourself clearing your throat more while eating or drinking, or taking longer to eat than you used to?",
+      "source_type": "patient_education",
+      "source_url": "https://www.parkinson.org/library/fact-sheets/speech-swallowing",
+      "source_excerpt": "Do I clear my throat often when eating or drinking? Does it take longer to eat than others?",
+      "source_version": "Parkinson's Foundation, Speech & Swallowing in Parkinson's, June 2025",
+      "review_status": "prototype"
+    },
+    {
+      "id": "distraction_check",
+      "condition": "parkinsons",
+      "information_sought": "situational_vs_symptom",
+      "preconditions": ["persistent_deviation_triggered"],
+      "exclusions": [],
+      "question_template": "Was anything going on around you during that pause -- noise, a distraction, or someone interrupting?",
+      "source_type": "design_policy",
+      "source_url": null,
+      "source_excerpt": null,
+      "source_version": null,
+      "review_status": "prototype"
+    }
+  ]
+}
