@@ -18,6 +18,20 @@ class CheckinResult:
     question_text: str | None
 
 
+def build_take_from_audio(wav_path: str, passage_syllable_count: int) -> dict:
+    """Shared by enrollment (building reference takes) and check-in
+    (scoring a new take against them) -- both need the same three numbers
+    from the same VAD + timing-feature pipeline, just used differently.
+    """
+    segments = detect_speech_segments(wav_path)
+    timing = compute_timing_features(segments, passage_syllable_count)
+    return {
+        "pause_fraction": timing.pause_fraction,
+        "longest_internal_gap": timing.longest_internal_gap,
+        "speaking_rate": timing.speaking_rate,
+    }
+
+
 def evaluate_checkin(
     wav_path: str,
     baseline: BaselineStats,
@@ -25,13 +39,7 @@ def evaluate_checkin(
     condition: str,
     passage_syllable_count: int,
 ) -> CheckinResult:
-    segments = detect_speech_segments(wav_path)
-    timing = compute_timing_features(segments, passage_syllable_count)
-    take = {
-        "pause_fraction": timing.pause_fraction,
-        "longest_internal_gap": timing.longest_internal_gap,
-        "speaking_rate": timing.speaking_rate,
-    }
+    take = build_take_from_audio(wav_path, passage_syllable_count)
     score = deviation_score(baseline, take)
     persistent = tracker.observe(score)
 

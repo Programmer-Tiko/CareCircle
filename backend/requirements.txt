@@ -10,3 +10,6 @@ openpyxl
 torch
 torchaudio
 silero-vad
+fastapi
+uvicorn[standard]
+python-multipart
