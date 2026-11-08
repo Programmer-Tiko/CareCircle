@@ -33,6 +33,12 @@
     for (const id of ['apiBase', 'profileId', 'connectBtn', 'newProfileBtn']) $(id).disabled = locked || hasPending;
     $('captureKind').disabled = locked || hasPending;
     $('recordBtn').disabled = locked || !configured || !compatible || hasPending || ($('captureKind').value === 'reference' && references.length >= 5);
+    // A pending (unconfirmed) conversation from an earlier check-in is the
+    // only thing that blocks recordBtn above -- give an explicit, visible
+    // way out of that instead of leaving the patient staring at a disabled
+    // button with no clear next step.
+    $('resetCheckinBtn').hidden = !hasPending; $('resetCheckinHelp').hidden = !hasPending;
+    $('resetCheckinBtn').disabled = locked;
     $('stopBtn').disabled = !recording || recording.kind === 'answer' || busy;
     $('stopAnswerBtn').disabled = !recording || recording.kind !== 'answer' || busy;
     $('enrollBtn').hidden = enrolled;
@@ -421,6 +427,16 @@
   $('finishConversationBtn').onclick = () => task(async () => {
     const result = await request(connected, sessionPath() + '/finish', { method: 'POST', body: { revision: session.revision } });
     renderSession(result); message('Conversation saved for now. Review the note; unanswered details remain unclear.'); await refreshHistory();
+  });
+  $('resetCheckinBtn').onclick = () => task(async () => {
+    // Save the open conversation through the same finish/confirm steps a
+    // patient could do by hand (nothing is discarded), then clear it from
+    // the screen so a new check-in can start. Not a delete -- a shortcut.
+    if (session.state === 'active') session = await request(connected, sessionPath() + '/finish', { method: 'POST', body: { revision: session.revision } });
+    if (['complete', 'abstained'].includes(session.state)) session = await request(connected, sessionPath() + '/confirm', { method: 'POST', body: { revision: session.revision } });
+    session = null; saveConnection();
+    $('conversationPanel').hidden = true; $('notePanel').hidden = true;
+    message('Your previous check-in was saved. Ready to record a new one.'); await refreshHistory();
   });
   $('correctionBtn').onclick = () => task(async () => {
     const text = $('correctionText').value.trim(); if (!text) throw new Error('Enter the correction you want to add.');
