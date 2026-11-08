@@ -1,4 +1,48 @@
-# VoiceShift / CareCircle — project log
+# Cadence / VoiceShift / CareCircle — project log
+
+## Repository audit — November 8, 2026
+
+The current project name is **Cadence**; the repository remains CareCircle and
+legacy paths remain intact. This audit used `origin/main` at `45f43f0`. Read the
+[README](README.md) for the actual architecture/setup and
+[the roadmap](docs/CADENCE-ARCHITECTURE-ROADMAP.md) for proposed features.
+
+- The hackathon MVP primarily focuses on Parkinson's. COPD has working
+  prototype cards/API condition handling, but no separate project-level COPD
+  monitoring validation; asthma is future scope.
+- The backend has four TimescaleDB-backed core routes and `/speak`. Previous
+  cloud/database and live ElevenLabs verification is recorded in the API notes.
+  This review reran the suite: 34 passed, including cloud integration tests.
+  Historical results below must not be mistaken for a fresh research run.
+- The HTML dashboard has sample records, local settings/playback and optional
+  Claude-hosted summaries. Code inspection found no browser recorder or calls
+  to the backend. Caregiver authorization, report sharing, notifications, phone
+  capture, and emergency assessment are not implemented.
+- Question retrieval is deterministic lookup/keyword matching; all four cards
+  are `prototype`. The planned Adaptive Clinical Question Engine and reviewed
+  Clinical Question Library do not exist as runtime services.
+- The API accepts one answer per check-in and returns follow-up text; it cannot
+  accept that follow-up's answer through a second `/answer`. `/confirm` is not a
+  sharing permission. These are current contract limits, not completed flows.
+- Existing cross-sectional research is exploratory, not clinical validation of
+  daily personal-baseline monitoring. The primary ItalianPVS B1 output analyzed
+  27 PD / 21 HC; segment-duration p≈0.053 is not significant at 0.05. Its JSON
+  still has an old word-list `note`. Existing bootstrap/preprocessing methods
+  need research review; outputs and scripts remain untouched.
+- The committed cross-dataset negative result mixes language/task differences.
+  A B1 rerun script exists, but its result is not committed in this snapshot;
+  protocol matching would not eliminate all other confounds.
+- The documented COPD search did not establish a qualifying dataset, with
+  access/provenance limits. Neither an API access claim in an older note nor
+  the list of rejected sources proves that no public dataset exists anywhere.
+
+The earlier session record below is preserved for contributions and research
+history. Its statements that the live monitoring mechanism is “validated” or
+that all timing features generalize should be read with the qualifications
+above. It also describes a different contributor's workspace and old build
+plans; those are not current local setup instructions.
+
+## Earlier session record (retained)
 
 **Read this first if you're picking this project up cold** (new session, context ran out, etc.). This is a running log, not the pitch doc — for that, read `VoiceShift-Project-Brief.md`, which stays current and is what judges would see. This file exists so an AI or person resuming mid-hackathon doesn't have to re-derive everything from git history.
 

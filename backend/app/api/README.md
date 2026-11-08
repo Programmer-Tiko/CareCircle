@@ -1,4 +1,16 @@
-# VoiceShift HTTP API
+# Cadence HTTP API (legacy VoiceShift module)
+
+The project is now named Cadence; `app.api.main`, environment names, database
+schema and HTTP paths remain unchanged. The current MVP primarily focuses on
+Parkinson's, while the accepted `copd` label selects prototype dialogue cards.
+See [current repository status](../../../README.md) and
+[planned architecture](../../../docs/CADENCE-ARCHITECTURE-ROADMAP.md).
+
+This is the backend API, not a completed browser/caregiver workflow. The
+standalone HTML dashboard has no calls to these routes or microphone capture.
+Authentication, consent/sharing enforcement, history access and multi-turn
+follow-up persistence remain future work. None of the existing cards is marked
+clinically approved, and no trained disease model is called by these endpoints.
 
 From `backend/`:
 

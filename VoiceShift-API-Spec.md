@@ -1,4 +1,23 @@
-# VoiceShift API — build spec
+# Cadence API — existing build contract (formerly VoiceShift)
+
+Status review, November 8, 2026: the five routes below are implemented in
+`backend/app/api/main.py`. This document retains their existing paths, request
+fields, response examples, and storage contract. It is not an assertion that the
+standalone HTML dashboard calls them. See [current setup/status](README.md) and
+[the future architecture](docs/CADENCE-ARCHITECTURE-ROADMAP.md).
+
+The current hackathon emphasis is Parkinson's. Both `parkinsons` and `copd`
+remain accepted condition labels, with prototype question cards; this is not
+clinical validation of either condition's monitoring use case. Browser capture,
+transcription, caregiver authorization, report sharing, a history route, and an
+adaptive clinical engine are not implemented by this contract. A returned
+follow-up is text only: the one-answer rule below prevents a second answer to
+that check-in. Confirmation changes status, not sharing permission.
+
+The original instructions below describe the completed API build and are kept
+for integration context. For current verification use
+[backend/app/api/README.md](backend/app/api/README.md): 34 tests with a configured
+TimescaleDB test database, including the original 21 pipeline tests.
 
 Wraps the already-built, already-tested pipeline in `backend/app/pipeline.py` as a minimal HTTP API, so the UI (`Daily Hello Family.html`, or whatever it becomes) can call something real instead of only the mock JSON in `VoiceShift-Demo-Brief.md`.
 

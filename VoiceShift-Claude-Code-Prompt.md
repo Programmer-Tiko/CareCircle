@@ -1,4 +1,15 @@
-# Paste into Claude Code
+# Historical VoiceShift build prompt — Cadence context
+
+This original prompt is retained as design history, not the current build
+status or authorization to expand scope. Read [README.md](README.md),
+[the existing API contract](VoiceShift-API-Spec.md), and
+[the Cadence roadmap](docs/CADENCE-ARCHITECTURE-ROADMAP.md) first. The current
+hackathon MVP emphasizes Parkinson's. Phone/caregiver authorization, generative
+medical questioning and many capture/consent flows requested below remain
+planned; do not assume they exist. Coordinate implementation changes through
+feature branches and pull requests, preserving teammate work.
+
+## Original prompt
 
 Act as lead engineer for VoiceShift, a three-person, 24-hour UB Hacking project for Radial Atoms. Build the working prototype in the current repository. Read CLAUDE.md, AGENTS.md, and VoiceShift-Project-Brief.md if present. Preserve existing work and reuse working infrastructure. If the repo is empty, choose a small browser UI and Python API. Start by inspecting the repo, identifying the audio and phone dependencies, and proving both capture paths. Work incrementally and verify actual audio inference before expanding scope.
 
