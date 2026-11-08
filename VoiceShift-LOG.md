@@ -143,3 +143,46 @@ A between-visit check-in for people already diagnosed with COPD or Parkinson's. 
 ## Keeping this file current
 
 Claude: update this file after any major finding, pivot, or correction — not after every small edit. Push it to CareCircle the same way as everything else. If resuming cold, read this file fully before re-reading the brief or touching code.
+
+## Codex handoff pickup — November 8, 2026
+
+Read `VoiceShift-HANDOFF-TO-CODEX.md` and reconciled against a fresh clone of
+`https://github.com/Programmer-Tiko/CareCircle` at `fd9fc9d` in
+`/private/tmp/cadence-handoff-reconcile`. That commit already contains the CCR
+outputs, so no further CCR command or transfer is needed. Copied both artifacts
+into this workspace: 311 chunks, ten distinct source URLs, finite 311x768 matrix;
+JSON embeddings and NumPy rows agree. No generated chunks were promoted into
+patient-facing corpus units automatically. Manual source/chunk review remains.
+
+Completed the pending fourth-feature integration: nullable additive checkins
+columns `mean_speech_segment_duration` and `feature_scores`, four-value INSERT,
+raw features and signed scores in `/checkin` responses, persisted evidence copied
+into conversation snapshots, and score-aware legacy note assembly. Added neutral
+speech-burst-duration note wording. Older profiles with only three baseline
+features return a clear 409 for new check-ins; historical rows remain readable
+without fabricating missing evidence. A new profile is required for new captures.
+
+Corrected the fragmentation verification: preserve the same a+b speech content,
+split each chunk into three pieces, insert 0.6s gaps, and require exactly six VAD
+segments before interpreting results. Baseline median burst duration 3.275s,
+fragmented mean 1.1667s, signed z=-5.9876; the first elevated reading does not
+trigger, the second does. Reference MAD is 0.3521s, not the numerical floor.
+This is constructed-audio software verification, not clinical validation.
+Reproducer: `backend/scripts/verify_fragmentation.py`; metrics:
+`docs/FOUR-FEATURE-VERIFICATION.json`. No real participant audio is committed.
+
+Regression run with isolated local PostgreSQL schemas: 70 passed, three
+TimescaleDB-specific tests skipped. The new real-audio HTTP contract test covers
+enroll/checkin/conversation, four-feature score norm, persisted score reuse,
+fresh-app recovery, and legacy-profile handling. Schema creation exercises the
+additive ALTER statements against the original checkins shape. No cloud schema
+or live provider call was made in this pickup.
+
+Research wording correction: the MDVR-KCL severity correlation motivates the
+fourth feature; the ItalianPVS B1 segment-duration difference has matching
+direction but p=0.053 and is not a significant replication. Kept existing
+research artifacts intact.
+
+Demo-fixture status: user's final correction is **not yet created** (supersedes
+an initial "ready elsewhere" reply). Consenting human clean/variation/acted
+recordings remain outstanding. UI remains deprioritized and untouched.

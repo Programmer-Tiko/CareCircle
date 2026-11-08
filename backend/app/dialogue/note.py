@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 _FEATURE_DESCRIPTIONS = {
     "pause_fraction": "Longer pauses than your usual pattern, repeated across this check-in.",
     "longest_internal_gap": "One notably longer pause than your usual pattern.",
+    "mean_speech_segment_duration": "A different average speech-burst duration than your usual pattern.",
     "speaking_rate": "A different speaking pace than your usual pattern.",
 }
 

@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS checkins (
     patient_said TEXT,
     note_status TEXT
 );
+ALTER TABLE checkins ADD COLUMN IF NOT EXISTS mean_speech_segment_duration DOUBLE PRECISION;
+ALTER TABLE checkins ADD COLUMN IF NOT EXISTS feature_scores JSONB;
 SELECT create_hypertable('checkins', 'time', if_not_exists => TRUE);
 CREATE INDEX IF NOT EXISTS checkins_profile_time_idx ON checkins (profile_id, time DESC);
 

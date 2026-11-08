@@ -25,7 +25,7 @@ probability; a typical recording does not rule out a health concern.
 | Component | Actual implementation and verification |
 | --- | --- |
 | Audio input | FastAPI accepts uploaded WAV/WAVEX recordings. `soundfile`, PyTorch, and `torchaudio` prepare mono 16 kHz audio for pretrained Silero VAD. Invalid or speech-free recordings are rejected. Browser recording is not connected. |
-| Timing measurements | Pause fraction, longest internal gap, and a passage-syllable-count / speech-duration rate estimate. Edge silence is excluded. The count is currently a **40-syllable placeholder**, not verified transcript content. |
+| Timing measurements | Pause fraction, longest internal gap, a passage-syllable-count / speech-duration rate estimate, and mean speech-segment duration. Edge silence is excluded. The fixed first two Rainbow Passage sentences use **41 syllables**, audited in `backend/app/passage.py`; transcript content is not verified. Use a fresh profile rather than mixing the old 40-count baseline with the new protocol. |
 | Personal baseline | Enrollment fits medians and scaled median absolute deviations from 3–5 reference takes. The Euclidean norm of robust feature z-scores is compared with prototype threshold 2.0; two consecutive elevated check-ins trigger a question. |
 | Question selection | Four hard-coded prototype cards: initial and follow-up cards for `parkinsons` and `copd`. Selection is deterministic condition/cue lookup with substring matching, not an LLM, vector search, or a clinically reviewed adaptive engine. |
 | Note and confirmation | `/answer` returns measured / patient-said / unresolved fields. `/confirm` changes the latest answered row's status; it does not authorize caregiver sharing. Only one answer is accepted per check-in. |

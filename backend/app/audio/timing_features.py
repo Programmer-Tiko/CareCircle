@@ -11,6 +11,12 @@ class TimingFeatures:
     pause_fraction: float
     longest_internal_gap: float
     speaking_rate: float
+    # The strongest single correlate of real clinical severity found in
+    # MDVR-KCL severity analysis (Spearman r=-0.80 vs Hoehn-Yahr
+    # stage, pause_fraction r=0.73). ItalianPVS B1 had the same direction
+    # but borderline p=0.053, not a significant replication. Shorter speech
+    # bursts between pauses, not just more pausing overall.
+    mean_speech_segment_duration: float
 
 
 def compute_timing_features(
@@ -41,9 +47,12 @@ def compute_timing_features(
 
     pause_fraction = internal_gap_total / total_span
     speaking_rate = passage_syllable_count / total_speech_duration
+    segment_durations = [end - start for start, end in speech_segments]
+    mean_speech_segment_duration = sum(segment_durations) / len(segment_durations)
 
     return TimingFeatures(
         pause_fraction=pause_fraction,
         longest_internal_gap=longest_internal_gap,
         speaking_rate=speaking_rate,
+        mean_speech_segment_duration=mean_speech_segment_duration,
     )

@@ -3,6 +3,7 @@
 No model-generated note or question is trusted here: the selector adapter must
 return a validated Selection. The default abstains and preserves uncertainty.
 """
+import math
 from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
@@ -11,6 +12,8 @@ from fastapi import Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, Field, StringConstraints, model_validator
+
+from app.models.personal_baseline import BaselineStats, FEATURE_ORDER, per_feature_deviation
 
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=5000)]
 
@@ -81,7 +84,7 @@ def install_routes(app, get_db, locked_profile):
 
     @app.post('/profiles/{profile_id}/conversations')
     def start(profile_id: str, body: StartRequest, db: Database):
-        locked_profile(db, profile_id)
+        profile = locked_profile(db, profile_id)
         existing = db.execute('SELECT session_id FROM conversations WHERE profile_id = %s AND checkin_time = %s',
                               (profile_id, body.checkin_time)).fetchone()
         if existing:
@@ -92,7 +95,20 @@ def install_routes(app, get_db, locked_profile):
             raise HTTPException(409, 'Start requires an unanswered triggered check-in.')
         session_id = uuid4()
         measured = {'deviation_score': row['deviation_score'],
-                    'features': {key: row[key] for key in ('pause_fraction', 'longest_internal_gap', 'speaking_rate')}}
+                    'features': {key: row[key] for key in FEATURE_ORDER if row.get(key) is not None}}
+        # Prefer the evidence recorded when scoring, not a later baseline.
+        scores = row.get('feature_scores')
+        if scores is None:
+            if all(key in measured['features'] and key in (profile['baseline_median'] or {})
+                   and key in (profile['baseline_mad'] or {}) for key in FEATURE_ORDER):
+                scores = per_feature_deviation(
+                    BaselineStats(median=profile['baseline_median'], mad=profile['baseline_mad']),
+                    measured['features'])
+            else:
+                scores = {}  # Legacy rows cannot invent a missing fourth measurement.
+        measured['feature_scores'] = scores
+        if not all(math.isfinite(value) for value in measured['feature_scores'].values()):
+            raise HTTPException(409, 'Check-in produced nonfinite feature scores.')
         db.execute('INSERT INTO conversations (session_id, profile_id, checkin_time, measured) VALUES (%s,%s,%s,%s)',
                    (session_id, profile_id, body.checkin_time, Jsonb(measured)))
         question = Question(id='legacy-initial', version='1', text=row['question_text'],

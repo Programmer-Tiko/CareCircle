@@ -1,0 +1,51 @@
+{
+  "corpus_sha256": "0bca970493193c22b7b6a90d3502b109c386df2826e8760b10201d8a583f1b00",
+  "transport": "real HTTP over localhost",
+  "storage": "local PostgreSQL, isolated schema",
+  "model": "deterministic selection stub; no provider call",
+  "checkins": "seeded measurements; audio pipeline not exercised",
+  "corpus_version": "2026-11-08-v2",
+  "corpus_units": 14,
+  "scenarios": [
+    {
+      "name": "interleaved same-profile sessions",
+      "turns": [
+        12,
+        12
+      ],
+      "states": [
+        "complete",
+        "complete"
+      ],
+      "isolated_histories": true,
+      "cross_session_turn_rejected": true,
+      "independent_confirmation": true,
+      "idempotent_retries_every_turn": true
+    },
+    {
+      "name": "eligibility exhausted mid-exchange",
+      "turns": 2,
+      "state": "complete",
+      "unasked_corpus_units": 13
+    },
+    {
+      "name": "earlier_unresolved",
+      "turns": 12,
+      "state_before_confirmation": "abstained",
+      "complete_blocked": true,
+      "confirmation_preserves_uncertainty": true
+    },
+    {
+      "name": "current_unresolved",
+      "turns": 12,
+      "state_before_confirmation": "abstained",
+      "complete_blocked": true,
+      "confirmation_preserves_uncertainty": true
+    }
+  ],
+  "persisted_sessions": 5,
+  "persisted_answers": 50,
+  "max_selector_history": 12,
+  "result": "PASS",
+  "test_schema_removed": true
+}

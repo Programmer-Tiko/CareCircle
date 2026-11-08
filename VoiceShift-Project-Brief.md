@@ -6,7 +6,7 @@ VoiceShift / CareCircle; this filename is retained for existing links.
 ## Current focus and status
 
 Cadence is an AI-assisted, voice-guided health check-in prototype. The current
-hackathon MVP primarily focuses on Parkinson's disease and uses the loop
+hackathon MVP focuses on Parkinson's disease and uses the loop
 **Sense -> Understand -> Act**: accept a standardized reading, compare measurable
 speech timing with that individual's reference takes, then ask a relevant
 question and distinguish what was measured from what the patient reported.
@@ -24,7 +24,7 @@ separates proposed features from working components.
 
 | Status | Scope |
 | --- | --- |
-| Implemented and software-tested | WAV upload, Silero VAD, three timing features, personal median/MAD reference, two-check-in trigger, prototype question lookup, note/confirmation, TimescaleDB history, and ElevenLabs text-to-MP3. |
+| Implemented and software-tested | WAV upload, Silero VAD, four timing features, personal median/MAD reference, two-check-in trigger, prototype question lookup, note/confirmation, TimescaleDB history, and ElevenLabs text-to-MP3. |
 | Separate UI prototype | `Daily Hello Family.html`: sample caregiver records, charts, local settings/audio playback, optional host Claude summaries. No microphone capture or backend API calls are present. |
 | Planned MVP integration | Browser recording/WAV encoding, current API wiring, MP3 playback, frozen passage/count, human clean/acted demo fixtures, follow-up completion, note corrections and history access. |
 | Future product/research | Reviewed adaptive questioning, medical-history and wearable context, authorized caregiver reports/updates, phone capture, separate disease validation and prospective monitoring evaluation. |
@@ -38,8 +38,13 @@ future work. The only current condition values are `copd` and `parkinsons`.
 - WAV audio is loaded using `soundfile`, converted to mono 16 kHz, and passed to
   pretrained Silero VAD. Timing ignores silence before the first and after the
   last detected speech segment.
-- Features are pause fraction, longest internal gap, and syllable count divided
-  by speech duration. The API uses placeholder count **40**; it neither verifies
+- Features are pause fraction, longest internal gap, syllable count divided
+  by speech duration, and **mean speech-segment duration** (total detected
+  speech duration divided by segment count). All four enter the personal baseline
+  and combined robust z-score. The fourth feature is motivated by the MDVR-KCL
+  severity association below; the same-direction ItalianPVS B1 comparison is
+  borderline (p=0.053), not a significant replication. The API uses the pinned first-two-sentence Rainbow Passage count **41**
+  (`backend/app/passage.py`, word-by-word audit); it neither verifies
   the spoken passage nor estimates its syllables from a transcript.
 - Enrollment uses 3-5 clean reference takes. The baseline stores per-feature
   median and scaled MAD; a zero MAD is floored at 1e-6. A multifeature robust
@@ -49,10 +54,12 @@ future work. The only current condition values are `copd` and `parkinsons`.
   one row for every check-in. Recent scores are replayed per request, so no
   in-memory per-profile tracker must survive a restart. Profile row locks
   serialize updates.
-- Four condition/cue cards in `app/dialogue/question_cards.py` are labeled
-  `prototype`. Selection and answer classification are deterministic lookup and
-  keyword matching. There is no backend LLM, semantic search, clinician review
-  record, or evidence retrieval service.
+- Legacy single-answer routes retain four prototype lookup cards. The opt-in
+  conversation routes use `conversation_adapter.py`: metadata/lexical retrieval,
+  Groq structured ID selection, and server-side provenance/quote validation.
+  Patient-facing text comes from stored prototype templates. Conversation turns,
+  question/source snapshots, answers and note revisions persist in PostgreSQL.
+  This is not a clinically reviewed question engine.
 - `/answer` returns a three-bucket note and optional follow-up. It stores the
   patient's words/status, and rejects a second answer for that check-in. The
   full returned note is not separately persisted. `/confirm` changes status;
@@ -61,9 +68,12 @@ future work. The only current condition values are `copd` and `parkinsons`.
   by a future UI for the question, follow-up, or report read-back; it does not
   implement speech recognition, a voice agent, or an outbound call.
 
-The trigger's multifeature score can rise because of rate or another feature,
-so the current generic note wording about longer pauses needs refinement before
-claiming a feature-specific explanation. Current references are keyed only by
+Check-ins persist all four raw features and signed feature z-scores; these
+are returned in the response and copied into conversation evidence. Legacy
+notes now receive this breakdown. The score is still an acoustic distance,
+not a disease probability. Older three-feature profiles require a new profile
+for new check-ins, and historical rows remain readable without fabricated
+fourth-feature values. Current references are keyed only by
 profile, not channel, phrase or device. There is no enrollment-update flow or
 adaptive check-in scheduling.
 
@@ -197,3 +207,16 @@ advice, or automated dispatch is supplied by the current API.
 19. [ItalianPVS: Italian Parkinson's Voice and Speech (Hugging Face mirror)](https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech)
 20. [A Longitudinal Multivariate Assessment of Acoustic and Motor Biomarkers in COPD Telehealth](https://zenodo.org/records/23600864)
 21. [Association of daily lung condition in COPD patients with wearable speech and physiological data](https://pmc.ncbi.nlm.nih.gov/articles/PMC12480672/)
+
+## Four-feature integration verification — November 8, 2026
+
+A constructed fragmentation check on existing real-speech chunks used 0.6s
+inserted gaps and verified six detected segments before interpreting features.
+Mean burst duration fell from baseline median 3.275s to 1.167s (signed z=-5.99);
+the first elevated reading did not trigger, the second did. This is software
+verification on constructed audio, not longitudinal patient validation. See
+`docs/FOUR-FEATURE-VERIFICATION.json` and `backend/scripts/verify_fragmentation.py`.
+
+The CCR knowledge outputs are now local: 311 chunks from ten sources and a
+finite 311×768 embedding matrix, retrieved from upstream commit `fd9fc9d`.
+They are review material; they are not automatically added to the live corpus.

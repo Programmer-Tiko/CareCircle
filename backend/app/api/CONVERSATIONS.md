@@ -11,7 +11,11 @@ legacy flows remain intact. The check-in response now also returns
    `{"checkin_time":"<exact timestamp returned by checkin>"}` creates a session
    for an unanswered triggered check-in. Repeating the start returns the same
    session. It snapshots the existing prototype initial question and raw measured
-   features/aggregate score. It does not manufacture per-feature z-scores.
+   features/aggregate score plus signed robust z-scores in `measured.feature_scores`,
+   copied from the check-in when available. New check-ins persist four raw
+   features (including `mean_speech_segment_duration`) and signed robust
+   z-scores. Historical rows without a complete four-feature baseline retain
+   unavailable scores rather than inventing missing measurements.
 2. `GET /profiles/{profile}/conversations/{session_id}` restores session, note,
    revision and ordered turns after reload/restart.
 3. `POST /profiles/{profile}/conversations/{session_id}/turns/{turn_id}/answer`
@@ -78,8 +82,9 @@ The default adapter always abstains; no Gemini integration is claimed.
 The persisted note currently contains structured measured evidence, verbatim
 answers, and a conservative unresolved marker. It does not call the legacy note
 builder or imply feature-specific explanations. The dialogue owner's new note
-builder and per-feature z-score field still need explicit wiring after their
-contracts land. Source versions on the initial question identify the existing
+builder still needs explicit wiring. The adapter now consumes the persisted
+`measured.feature_scores`; older snapshots without that key retain unavailable
+feature evidence, so score-gated question units stay ineligible. Source versions on the initial question identify the existing
 prototype dialogue policy, not clinical review.
 
 ## Verification

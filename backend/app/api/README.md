@@ -27,8 +27,11 @@ form, with 3–5 `files`. Check-in accepts one `file`. Both accept WAV audio up
 to 20 MiB per recording. An existing profile returns 409 on re-enrollment;
 its baseline and history are preserved.
 
-The API calls the existing pipeline unchanged. The passage syllable placeholder
-is `PASSAGE_SYLLABLE_COUNT = 40` in main.py. Every check-in is stored, including
+The API uses the fixed first two Rainbow Passage sentences in `app/passage.py`:
+41 syllables (21 + 20), with a word-by-word pronunciation audit. Both enrollment
+and check-in import this constant. Use a fresh profile for this protocol;
+existing baselines used the old 40-count placeholder. No transcript verification
+is performed. Every check-in is stored, including
 untriggered ones. Prior scores are replayed in chronological order for every
 request. A database row lock serializes operations for each profile. Answer and
 confirm update only the latest check-in by `(profile_id, time)`. Confirmation
@@ -96,3 +99,13 @@ Live ElevenLabs synthesis was also verified: `/speak` returned HTTP 200,
 and the cloud connection string remain in ignored backend/.env only. The prior
 local URL is preserved there as `LOCAL_TIGER_DATA_URL` for manual fallback; the
 API itself always uses `TIGER_DATA_URL` and never silently switches databases.
+
+## Four-feature schema update
+
+Startup idempotently adds nullable `mean_speech_segment_duration` and
+`feature_scores` columns to existing checkins. New uploads persist four raw
+features plus signed z-scores; `/checkin` returns both under `measured`.
+Conversations snapshot that recorded evidence. Legacy `/answer` passes recorded
+scores into note assembly. Existing three-feature profiles return 409 on new
+check-ins: enroll a new profile with the fixed passage rather than inventing a
+fourth baseline value. Historical check-ins and conversations stay readable.

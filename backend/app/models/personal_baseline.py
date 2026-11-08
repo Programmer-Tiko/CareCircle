@@ -1,6 +1,6 @@
 """Per-profile multivariate deviation check, replacing a single-feature
 threshold with a joint robust z-score across pause fraction, longest
-internal gap, and speaking rate. Fit on that person's own clean reference
+internal gap, speaking rate, and mean speech-segment duration. Fit on that person's own clean reference
 takes only -- never on population data, and never on acted/flagged takes.
 
 This is the tier that decides whether to trigger a follow-up question.
@@ -10,7 +10,7 @@ clearly-labeled research signal (see models/pd_severity_infer.py).
 import math
 from dataclasses import dataclass
 
-FEATURE_ORDER = ("pause_fraction", "longest_internal_gap", "speaking_rate")
+FEATURE_ORDER = ("pause_fraction", "longest_internal_gap", "speaking_rate", "mean_speech_segment_duration")
 
 
 @dataclass(frozen=True)

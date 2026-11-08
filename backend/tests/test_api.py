@@ -78,10 +78,13 @@ def test_cors_preflight(bare_client):
 
 def test_failed_commit_does_not_return_success(bare_client):
     class FakeDatabase:
-        def execute(self, *args):
+        def execute(self, query, *args):
+            self.query = query
             return self
 
         def fetchone(self):
+            if 'FROM conversations' in self.query:
+                return None
             return {'time': 'irrelevant', 'note_status': 'awaiting_confirmation'}
 
     def failing_transaction():

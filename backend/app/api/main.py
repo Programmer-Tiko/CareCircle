@@ -20,13 +20,11 @@ from pydantic import BaseModel, StringConstraints
 import soundfile as sf
 
 from app.dialogue.conversation_adapter import selector_adapter
-from app.models.personal_baseline import BaselineStats, PersistentDeviationTracker, fit_baseline
+from app.passage import PASSAGE_SYLLABLE_COUNT
+from app.models.personal_baseline import BaselineStats, PersistentDeviationTracker, fit_baseline, FEATURE_ORDER, per_feature_deviation
 from app.pipeline import build_take_from_audio, evaluate_checkin, process_answer
 
 load_dotenv(Path(__file__).resolve().parents[2] / '.env')
-
-# Placeholder until the standard passage's actual syllable count is pinned down.
-PASSAGE_SYLLABLE_COUNT = 40
 DEVIATION_THRESHOLD = 2.0
 REQUIRED_CONSECUTIVE = 2
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
@@ -129,6 +127,9 @@ def enroll(profile_id: str, db: Database,
 @router.post('/profiles/{profile_id}/checkin')
 def checkin(profile_id: str, db: Database, file: Annotated[UploadFile, File()]):
     profile = locked_profile(db, profile_id)
+    if any(feature not in (profile['baseline_median'] or {}) or
+           feature not in (profile['baseline_mad'] or {}) for feature in FEATURE_ORDER):
+        raise HTTPException(409, 'Profile uses an older feature baseline; enroll a new profile with four reference features.')
     baseline = BaselineStats(median=profile['baseline_median'], mad=profile['baseline_mad'])
     history = db.execute('SELECT deviation_score FROM checkins WHERE profile_id = %s '
                          'ORDER BY time DESC LIMIT %s', (profile_id, REQUIRED_CONSECUTIVE)).fetchall()
@@ -138,18 +139,21 @@ def checkin(profile_id: str, db: Database, file: Annotated[UploadFile, File()]):
     with audio_path(file) as path:
         result = evaluate_checkin(path, baseline, tracker, profile['condition'], PASSAGE_SYLLABLE_COUNT)
         take = build_take_from_audio(path, PASSAGE_SYLLABLE_COUNT)
-    if not all(math.isfinite(v) for v in [*take.values(), result.deviation_score]):
+    feature_scores = per_feature_deviation(baseline, take)
+    if not all(math.isfinite(v) for v in [*take.values(), *feature_scores.values(), result.deviation_score]):
         raise HTTPException(400, 'Recording produced invalid measurements.')
     # Timestamp also identifies the row for answer/confirm. The profile lock and
     # monotonic timestamp prevent ties even when transactions start out of order.
     inserted = db.execute('INSERT INTO checkins (time, profile_id, pause_fraction, longest_internal_gap, '
-               'speaking_rate, deviation_score, triggered, question_text) '
+               'speaking_rate, mean_speech_segment_duration, feature_scores, deviation_score, triggered, question_text) '
                "VALUES (GREATEST(clock_timestamp(), (SELECT max(time) + interval '1 microsecond' "
-               'FROM checkins WHERE profile_id = %s)), %s, %s, %s, %s, %s, %s, %s) RETURNING time',
+               'FROM checkins WHERE profile_id = %s)), %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING time',
                (profile_id, profile_id, take['pause_fraction'], take['longest_internal_gap'],
-                take['speaking_rate'], result.deviation_score, result.triggered, result.question_text)).fetchone()
+                take['speaking_rate'], take['mean_speech_segment_duration'], Jsonb(feature_scores),
+                result.deviation_score, result.triggered, result.question_text)).fetchone()
     return {'profile_id': profile_id, 'checkin_time': inserted['time'],
-            'measured': {'deviation_score': result.deviation_score,
+            'measured': {'features': take, 'feature_scores': feature_scores,
+                         'deviation_score': result.deviation_score,
                          'deviation_from_baseline': 'persistent' if result.triggered else
                          ('elevated' if result.deviation_score >= DEVIATION_THRESHOLD else 'usual')},
             'triggered_question': result.question_text,
@@ -173,7 +177,8 @@ def answer(profile_id: str, body: AnswerRequest, db: Database):
     if row is None or not row['triggered'] or row['note_status'] is not None:
         raise HTTPException(404, 'No pending question to answer.')
     reject_conversation_owned(db, profile_id, row['time'])
-    note, follow_up = process_answer(profile['condition'], row['deviation_score'], body.answer_text)
+    note, follow_up = process_answer(profile['condition'], row['deviation_score'], body.answer_text,
+                                     feature_scores=row.get('feature_scores'))
     db.execute('UPDATE checkins SET patient_said = %s, note_status = %s '
                'WHERE profile_id = %s AND time = %s',
                (note.patient_said, note.status, profile_id, row['time']))
