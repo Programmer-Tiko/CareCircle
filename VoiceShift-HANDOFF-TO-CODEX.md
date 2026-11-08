@@ -249,6 +249,88 @@ in `conversation_adapter.py` is the single function your conversation-state code
 "question": {...}}`. This contract is already working end-to-end with Groq live — if you change
 its shape, update both sides together and re-run `test_conversation_adapter.py`.
 
+## Working with CCR (UB's HPC cluster)
+
+CCR is used for anything compute-heavy that the research/corpus pipeline needs — currently just
+the knowledge-indexing job (`ccr_build_knowledge_index.py`: fetch sourced documents, chunk them,
+embed with `sentence-transformers` BAAI/bge-base-en-v1.5). Earlier severity-model/embedding
+research scripts in `backend/app/models/` were also run there. Confirmed-working details from
+this session, observed directly in terminal output the user pasted back (not guessed):
+
+- **Remote**: `https://github.com/Programmer-Tiko/CareCircle.git`, cloned on CCR at
+  `~/CareCircle`. The backend package lives at `~/CareCircle/backend`.
+- **Environment**: a venv named `voiceshift-env` (not conda), Python 3.10
+  (`/user/abadguja/voiceshift-env/lib/python3.10/site-packages`). Activate it before running
+  anything — the prompt shows `(voiceshift-env)` when active.
+- **Observed hostname**: `cpn-c02-04.core.ccr.buffalo.edu` — a compute node, not the login node.
+  Outbound GitHub access (both `git pull` and `git push` over HTTPS) works fine from this node.
+  Outbound `scp`/direct network access from a compute node is NOT confirmed either way — don't
+  assume it works. **Now verified from Slurm output:** the session is an Open
+  OnDemand VS Code allocation (`ood-vscode`, job 26746273), on `cpn-c02-04`.
+  Account `filippom`, cluster `ub-hpc`, partition/QoS `general-compute`,
+  eight CPUs and 16000M memory. Separate sbatch jobs queue independently.
+
+**The established round-trip workflow** (confirmed working, used successfully twice this
+session):
+```bash
+ssh <ccr host>                      # ask the user for the actual host/alias
+source ~/voiceshift-env/bin/activate   # or wherever it actually activates from
+cd ~/CareCircle/backend
+git pull                            # always pull first -- Codex and I have both pushed mid-session
+pip install <anything missing>      # e.g. beautifulsoup4 was missing, installed ad hoc
+python app/dialogue/ccr_build_knowledge_index.py --out data/out
+# review the printed output -- fetch succeeded per-URL, chunk counts, final total
+```
+
+**Getting output back** — this is the part that isn't obvious and tripped us up (trafilatura's
+`lxml[html_clean]` dependency was broken on CCR, fixed by switching `fetch_html_text()` to
+BeautifulSoup; verified locally first before trusting it on CCR). For *data* output files (like
+`knowledge_chunks.json`, `knowledge_embeddings.npy`), since direct `scp` from the compute node is
+unconfirmed, the pattern that's actually worked is: commit the output files to git from CCR and
+push, then pull on whatever machine needs to read them. Already done once:
+```bash
+cd ~/CareCircle/backend
+git add data/out/knowledge_chunks.json data/out/knowledge_embeddings.npy
+git commit -m "Add CCR knowledge-index run output: 311 chunks, 10 sources"
+git push
+```
+This worked (commit `fd9fc9d`, pushed to `main`). Codex checked its actual
+numstat: `knowledge_embeddings.npy` was already binary (`- -`); the 240,716
+added text lines belong to `knowledge_chunks.json`, which duplicates vectors
+as JSON arrays. Explicit `*.npy binary` attributes are still useful, but do
+not fix the JSON size. Preserve existing artifacts; avoid redundant inline
+vectors in future formats unless a consumer needs them.
+
+**Verified execution/storage rules from subsequent runs:**
+- `/scratch/voiceshift_data` was readable on interactive node cpn-c02-04 but
+  unreadable on batch node cpn-c02-06: all 86 audio files failed. Do not assume
+  this scratch path is shared. Stage audio under `~/cadence-audio` and write
+  absolute shared-home paths into the manifest. The rerun successfully read them.
+- Working sbatch options: `-M ub-hpc --account=filippom
+  --partition=general-compute --qos=general-compute --ntasks=1
+  --cpus-per-task=8 --mem=16G --time=01:00:00 --export=ALL`.
+- Job 26746762 completed extraction/evaluation in 4m39s. The 86 extraction
+  issues were deliberate unknown passage counts; other timing features
+  extracted for every recording, prosody missing for one. Original
+  within-dataset folds failed; fix `3e4b755` stratifies participants directly.
+  User has generated `data/out/multisignal-v2/ablation-fixed.json`; awaiting
+  its summary/raw artifacts. Do not repeat audio extraction for this fix.
+- Active code branch is `codex/multisignal-experiments`, not necessarily main.
+  Use `git pull --ff-only` and explicit paths when committing artifacts.
+- Codex's own `ssh ccr` access fails publickey authentication; commands are
+  currently executed in the user's authenticated CCR terminal.
+
+Some other generated outputs may be intentionally local. Before including
+additional untracked artifacts, inspect `git status --short`; stage only named
+feature/results/provenance files. Do not bulk-add the output directory or raw
+audio. Ask about unrelated artifacts when they are actually needed.
+
+**The one rule that matters more than the mechanics**: don't run a CCR job just to demonstrate
+compute usage. The user has pushed back twice this session when a CCR run produced output that
+never actually got used by the live product. Before kicking off a job, know what it becomes —
+a reviewed `question_corpus.json` unit, a verified research number for the brief, or a feature
+actually read by the live pipeline. If you can't name which of those it is, don't run it yet.
+
 ## How the user works / expectations (read this, it'll save you friction)
 
 - Wants rigor over impressiveness, but ALSO wants to win — these aren't actually in tension if
