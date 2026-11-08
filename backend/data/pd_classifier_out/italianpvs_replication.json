@@ -1,0 +1,325 @@
+{
+  "n_pd": 28,
+  "n_hc": 22,
+  "summary": {
+    "pause_fraction": {
+      "pd_mean": 0.34651642884714856,
+      "hc_mean": 0.17812510100652695,
+      "p_value": 9.197085892329709e-05,
+      "cohens_d": 1.212475307640377
+    },
+    "mean_segment_duration": {
+      "pd_mean": 1.3681764338774722,
+      "hc_mean": 1.8461251592833385,
+      "p_value": 0.21429865732816517,
+      "cohens_d": -0.35644194039203475
+    }
+  },
+  "raw": {
+    "PD": [
+      {
+        "pause_fraction": 0.12326811443809231,
+        "mean_segment_duration": 1.936152777777778,
+        "n_segments": 18,
+        "file": "pd_00.wav"
+      },
+      {
+        "pause_fraction": 0.2980132450331122,
+        "mean_segment_duration": 0.9860465116279075,
+        "n_segments": 43,
+        "file": "pd_01.wav"
+      },
+      {
+        "pause_fraction": 0.1384928716904279,
+        "mean_segment_duration": 1.41,
+        "n_segments": 30,
+        "file": "pd_02.wav"
+      },
+      {
+        "pause_fraction": 0.15867158671586726,
+        "mean_segment_duration": 1.6285714285714283,
+        "n_segments": 28,
+        "file": "pd_03.wav"
+      },
+      {
+        "pause_fraction": 0.29359430604982195,
+        "mean_segment_duration": 1.804545454545455,
+        "n_segments": 22,
+        "file": "pd_04.wav"
+      },
+      {
+        "pause_fraction": 0.36660617059891115,
+        "mean_segment_duration": 0.8309523809523808,
+        "n_segments": 42,
+        "file": "pd_05.wav"
+      },
+      {
+        "pause_fraction": 0.14168937329700276,
+        "mean_segment_duration": 1.9687499999999998,
+        "n_segments": 16,
+        "file": "pd_06.wav"
+      },
+      {
+        "pause_fraction": 0.3156966490299822,
+        "mean_segment_duration": 0.994871794871795,
+        "n_segments": 39,
+        "file": "pd_07.wav"
+      },
+      {
+        "pause_fraction": 0.3295454545454544,
+        "mean_segment_duration": 0.7695652173913045,
+        "n_segments": 46,
+        "file": "pd_08.wav"
+      },
+      {
+        "pause_fraction": 0.2107438016528926,
+        "mean_segment_duration": 1.317241379310345,
+        "n_segments": 29,
+        "file": "pd_09.wav"
+      },
+      {
+        "pause_fraction": 0.47272727272727294,
+        "mean_segment_duration": 0.6959999999999998,
+        "n_segments": 50,
+        "file": "pd_10.wav"
+      },
+      {
+        "pause_fraction": 0.5722855428914219,
+        "mean_segment_duration": 1.131746031746031,
+        "n_segments": 63,
+        "file": "pd_11.wav"
+      },
+      {
+        "pause_fraction": 0.5019920318725101,
+        "mean_segment_duration": 0.9259259259259257,
+        "n_segments": 54,
+        "file": "pd_12.wav"
+      },
+      {
+        "pause_fraction": 0.28517110266159684,
+        "mean_segment_duration": 0.8355555555555557,
+        "n_segments": 45,
+        "file": "pd_13.wav"
+      },
+      {
+        "pause_fraction": 0.17573221757322158,
+        "mean_segment_duration": 1.5153846153846158,
+        "n_segments": 26,
+        "file": "pd_14.wav"
+      },
+      {
+        "pause_fraction": 0.3867791842475383,
+        "mean_segment_duration": 0.8720000000000004,
+        "n_segments": 50,
+        "file": "pd_15.wav"
+      },
+      {
+        "pause_fraction": 0.2162661737523104,
+        "mean_segment_duration": 1.1157894736842109,
+        "n_segments": 38,
+        "file": "pd_16.wav"
+      },
+      {
+        "pause_fraction": 0.5394820694050174,
+        "mean_segment_duration": 1.0350260416666661,
+        "n_segments": 48,
+        "file": "pd_17.wav"
+      },
+      {
+        "pause_fraction": 0.46206896551724147,
+        "mean_segment_duration": 0.7672131147540981,
+        "n_segments": 61,
+        "file": "pd_18.wav"
+      },
+      {
+        "pause_fraction": 0.7531603459747174,
+        "mean_segment_duration": 0.5707692307692306,
+        "n_segments": 65,
+        "file": "pd_19.wav"
+      },
+      {
+        "pause_fraction": 0.8311744386873922,
+        "mean_segment_duration": 0.5507042253521122,
+        "n_segments": 71,
+        "file": "pd_20.wav"
+      },
+      {
+        "pause_fraction": 0.31804733727810625,
+        "mean_segment_duration": 0.9220000000000003,
+        "n_segments": 50,
+        "file": "pd_21.wav"
+      },
+      {
+        "pause_fraction": 0.357142857142857,
+        "mean_segment_duration": 0.811764705882353,
+        "n_segments": 51,
+        "file": "pd_22.wav"
+      },
+      {
+        "pause_fraction": 0.05500000000000007,
+        "mean_segment_duration": 9.45,
+        "n_segments": 4,
+        "file": "pd_23.wav"
+      },
+      {
+        "pause_fraction": 0.4281567489114659,
+        "mean_segment_duration": 0.9162790697674418,
+        "n_segments": 43,
+        "file": "pd_24.wav"
+      },
+      {
+        "pause_fraction": 0.3430531732418528,
+        "mean_segment_duration": 1.0078947368421047,
+        "n_segments": 38,
+        "file": "pd_25.wav"
+      },
+      {
+        "pause_fraction": 0.34406438631790687,
+        "mean_segment_duration": 0.7761904761904769,
+        "n_segments": 42,
+        "file": "pd_26.wav"
+      },
+      {
+        "pause_fraction": 0.28383458646616505,
+        "mean_segment_duration": 0.7620000000000001,
+        "n_segments": 50,
+        "file": "pd_27.wav"
+      }
+    ],
+    "HC": [
+      {
+        "pause_fraction": 0.263076923076923,
+        "mean_segment_duration": 1.228205128205128,
+        "n_segments": 39,
+        "file": "hc_00.wav"
+      },
+      {
+        "pause_fraction": 0.2528957528957533,
+        "mean_segment_duration": 0.8999999999999994,
+        "n_segments": 43,
+        "file": "hc_01.wav"
+      },
+      {
+        "pause_fraction": 0.12751677852349,
+        "mean_segment_duration": 1.8571428571428572,
+        "n_segments": 21,
+        "file": "hc_02.wav"
+      },
+      {
+        "pause_fraction": 0.15753424657534257,
+        "mean_segment_duration": 3.0749999999999993,
+        "n_segments": 12,
+        "file": "hc_03.wav"
+      },
+      {
+        "pause_fraction": 0.22058823529411756,
+        "mean_segment_duration": 1.1357142857142857,
+        "n_segments": 42,
+        "file": "hc_04.wav"
+      },
+      {
+        "pause_fraction": 0.12017167381974242,
+        "mean_segment_duration": 1.8636363636363635,
+        "n_segments": 22,
+        "file": "hc_05.wav"
+      },
+      {
+        "pause_fraction": 0.19194312796208524,
+        "mean_segment_duration": 0.9216216216216219,
+        "n_segments": 37,
+        "file": "hc_06.wav"
+      },
+      {
+        "pause_fraction": 0.34946517138869876,
+        "mean_segment_duration": 1.3146953125,
+        "n_segments": 32,
+        "file": "hc_07.wav"
+      },
+      {
+        "pause_fraction": 0.06735751295336805,
+        "mean_segment_duration": 5.1428571428571415,
+        "n_segments": 7,
+        "file": "hc_08.wav"
+      },
+      {
+        "pause_fraction": 0.34615384615384565,
+        "mean_segment_duration": 0.8840000000000007,
+        "n_segments": 50,
+        "file": "hc_09.wav"
+      },
+      {
+        "pause_fraction": 0.10933940774487481,
+        "mean_segment_duration": 1.9549999999999996,
+        "n_segments": 20,
+        "file": "hc_10.wav"
+      },
+      {
+        "pause_fraction": 0.07310704960835517,
+        "mean_segment_duration": 2.730769230769231,
+        "n_segments": 13,
+        "file": "hc_11.wav"
+      },
+      {
+        "pause_fraction": 0.14401622718052692,
+        "mean_segment_duration": 1.3612903225806459,
+        "n_segments": 31,
+        "file": "hc_12.wav"
+      },
+      {
+        "pause_fraction": 0.24204946996466442,
+        "mean_segment_duration": 0.9326086956521737,
+        "n_segments": 46,
+        "file": "hc_13.wav"
+      },
+      {
+        "pause_fraction": 0.10983981693363867,
+        "mean_segment_duration": 1.389285714285714,
+        "n_segments": 28,
+        "file": "hc_14.wav"
+      },
+      {
+        "pause_fraction": 0.11002444987775063,
+        "mean_segment_duration": 2.022222222222222,
+        "n_segments": 18,
+        "file": "hc_15.wav"
+      },
+      {
+        "pause_fraction": 0.11799410029498525,
+        "mean_segment_duration": 2.9899999999999993,
+        "n_segments": 10,
+        "file": "hc_16.wav"
+      },
+      {
+        "pause_fraction": 0.0658682634730538,
+        "mean_segment_duration": 3.12,
+        "n_segments": 10,
+        "file": "hc_17.wav"
+      },
+      {
+        "pause_fraction": 0.2605504587155962,
+        "mean_segment_duration": 0.9829268292682928,
+        "n_segments": 41,
+        "file": "hc_18.wav"
+      },
+      {
+        "pause_fraction": 0.26749611197511647,
+        "mean_segment_duration": 1.046666666666667,
+        "n_segments": 45,
+        "file": "hc_19.wav"
+      },
+      {
+        "pause_fraction": 0.16152019002375298,
+        "mean_segment_duration": 1.961111111111111,
+        "n_segments": 18,
+        "file": "hc_20.wav"
+      },
+      {
+        "pause_fraction": 0.16024340770791082,
+        "mean_segment_duration": 1.7999999999999996,
+        "n_segments": 23,
+        "file": "hc_21.wav"
+      }
+    ]
+  },
+  "note": "Independent replication dataset: different language, research group, protocol, and task type (word-list, not continuous passage) from MDVR-KCL. pause_fraction replicating despite all those differences is strong evidence; mean_segment_duration not replicating is expected (word-by-word tasks lack the breath-driven continuous-speech rhythm that feature measures) and is reported honestly rather than omitted."
+}

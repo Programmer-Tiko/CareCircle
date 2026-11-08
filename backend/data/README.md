@@ -40,7 +40,22 @@ Not committed to the repo. Download these yourself:
    Reproduce with:
    `python app/models/analyze_pause_timing_pd_vs_hc.py --dataset-dir <path to ReadText folder> --out data/pd_classifier_out`
 
-4. **COPD dataset** — not yet confirmed accessible without a request process.
+4. **ItalianPVS** (public, no login needed, mirrored on Hugging Face from IEEE Dataport DOI 10.21227/aw6b-tg17):
+   https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech
+   Real raw audio from 28 diagnosed PD patients and 22 elderly healthy controls,
+   "PR1" task (reading a phonetically-balanced word list). An independent
+   replication dataset -- different language, research group, protocol, and
+   task type from MDVR-KCL. Download the PR1 wav for each participant via
+   `https://huggingface.co/datasets/.../resolve/main/<path from the HF file list>`.
+   Already downloaded, run, and validated locally — see
+   `backend/data/pd_classifier_out/italianpvs_replication.json`: pause
+   fraction replicates strongly (PD 0.347 vs HC 0.178, p=0.0001, d=1.21,
+   even stronger than MDVR-KCL); mean speech-segment duration does not
+   replicate here (p=0.21), expected since a word-list task lacks the
+   breath-driven continuous-speech rhythm that feature measures. Reproduce
+   with: `python app/models/analyze_italianpvs_replication.py --pd-dir <PD wavs> --hc-dir <HC wavs> --out data/pd_classifier_out`
+
+5. **COPD dataset** — not yet confirmed accessible without a request process.
    If you find a public one with raw audio or extracted jitter/shimmer/HNR-style
    features in the next ~20 minutes, drop it here and flag it; otherwise the
    COPD side stays rule-based (personal baseline + ALA/GOLD-sourced question
