@@ -2,12 +2,22 @@
 (() => {
   const $ = id => document.getElementById(id);
   let busy = false, connected = null, enrolled = false, compatible = true, capabilities = {};
-  let session = null, latestMeasured = null, latestCheckin = null;
-  let recording = null, checkinTake = null, speechUrl = null;
-  // Which turn/note has already been spoken aloud this page session -- so a
-  // re-render (reload recovery, confirm(), unrelated updates) doesn't replay
-  // audio for a question the patient already heard.
-  let spokenTurnId = null, spokenNoteSessionId = null;
+  let session = null, latestMeasured = null, latestCheckin = null, baselineMedian = {};
+  let recording = null, checkinTake = null, answerTake = null, pendingAnswer = null;
+  const voice = new window.CadenceVoice($('speechPlayer'), (state, label) => {
+    $('voiceStatus').textContent = label;
+    $('voiceStatus').dataset.state = state;
+    $('pauseSpeechBtn').textContent = state === 'paused' ? 'Resume speaking' : 'Pause speaking';
+    updateControls();
+  });
+  try { $('voiceEnabled').checked = localStorage.getItem('cadence.voice.enabled') !== 'false'; } catch { /* Preferences are optional. */ }
+  function clearAnswer(clearText = true) {
+    if (answerTake) URL.revokeObjectURL(answerTake.url);
+    answerTake = null; $('answerPreview').pause(); $('answerPreview').removeAttribute('src'); $('answerPreview').load(); $('answerPreview').hidden = true;
+    if (clearText) $('answerText').value = '';
+    $('transcriptLabel').textContent = 'Your answer — speak or type';
+    $('answerStatus').textContent = 'Tap to answer when Cadence finishes speaking.';
+  }
   const references = [], retryAnswers = new Map();
   const featureLabels = {
     pause_fraction: ['Time in internal pauses', value => `${(value * 100).toFixed(1)}%`],
@@ -30,9 +40,9 @@
     const locked = busy || Boolean(recording);
     const hasPending = Boolean(pending());
     const configured = connected && $('profileId').value.trim() === connected.profile && $('apiBase').value.trim().replace(/\/$/, '') === connected.base;
-    for (const id of ['apiBase', 'profileId', 'connectBtn', 'newProfileBtn']) $(id).disabled = locked || hasPending;
+    for (const id of ['apiBase', 'profileId', 'connectBtn', 'newProfileBtn', 'freshProfileBtn']) $(id).disabled = locked || hasPending;
     $('captureKind').disabled = locked || hasPending;
-    $('recordBtn').disabled = locked || !configured || !compatible || hasPending || ($('captureKind').value === 'reference' && references.length >= 5);
+    $('recordBtn').disabled = locked || voice.active || !configured || !compatible || hasPending || Boolean(latestCheckin && !session) || ($('captureKind').value === 'reference' && references.length >= 5);
     // A pending (unconfirmed) conversation from an earlier check-in is the
     // only thing that blocks recordBtn above -- give an explicit, visible
     // way out of that instead of leaving the patient staring at a disabled
@@ -48,13 +58,21 @@
     $('experimentalToggle').disabled = locked || hasPending;
     $('verifyPassageToggle').disabled = locked || hasPending;
     const turn = session?.turns?.find(item => !item.answered_at && !item.closed_at);
-    $('answerBtn').disabled = locked || session?.state !== 'active' || !turn;
+    $('answerBtn').disabled = locked || voice.active || session?.state !== 'active' || !turn || !$('answerText').value.trim();
     $('finishConversationBtn').disabled = locked || session?.state !== 'active';
     $('answerText').disabled = locked || session?.state !== 'active';
-    $('recordAnswerBtn').disabled = locked || session?.state !== 'active' || !turn;
-    $('recordAnswerBtn').hidden = !capabilities.asr_enabled;
+    $('recordAnswerBtn').disabled = locked || voice.active || !capabilities.asr_enabled || session?.state !== 'active' || !turn;
+    $('recordAnswerBtn').hidden = false;
+    $('recordAnswerBtn').textContent = recording?.kind === 'answer' ? 'Listening to you…' : answerTake ? 'Record again' : 'Tap to answer';
+    $('recordAnswerBtn').setAttribute('aria-pressed', String(recording?.kind === 'answer'));
+    $('typeAnswerBtn').textContent = answerTake ? 'Edit transcript' : 'Switch to typing';
+    $('cancelAnswerBtn').hidden = !(recording?.kind === 'answer' || pendingAnswer);
+    $('skipQuestionBtn').disabled = locked || voice.active || session?.state !== 'active' || !turn;
+    $('typeAnswerBtn').disabled = locked;
+    $('pauseSpeechBtn').disabled = !['speaking', 'paused'].includes(voice.state);
+    $('stopSpeechBtn').disabled = !voice.active;
     $('asrHelp').hidden = false;
-    $('asrHelp').textContent = capabilities.asr_enabled ? 'A recorded answer is transcribed for you to review. It is sent only when you choose Send answer.' : 'Optional answer transcription is unavailable on this service. You can type your answer above.';
+    $('asrHelp').textContent = capabilities.asr_enabled ? 'Local speech recognition can make mistakes. Review or edit every transcript, then choose Confirm and send. A quiet room helps.' : 'Local answer transcription is unavailable on this service. Switch to typing to continue; no transcript will be fabricated.';
     $('stopAnswerBtn').hidden = !recording || recording.kind !== 'answer';
     $('confirmBtn').disabled = locked || !session || !['complete', 'abstained'].includes(session.state);
     $('confirmBtn').hidden = session?.state === 'confirmed';
@@ -63,16 +81,31 @@
     $('saveRoutineNoteBtn').disabled = locked || !configured || !enrolled;
     $('routineNoteText').disabled = locked;
     $('refreshHistoryBtn').disabled = locked || !connected;
-    $('speakQuestionBtn').disabled = locked;
+    $('speakQuestionBtn').disabled = locked || !turn;
     $('speakNoteBtn').disabled = locked;
-    $('speakQuestionBtn').hidden = !capabilities.tts_enabled;
-    $('speakNoteBtn').hidden = !capabilities.tts_enabled;
+    $('speakQuestionBtn').hidden = false;
+    $('speakNoteBtn').hidden = false;
+    $('continueConversationBtn').hidden = !latestCheckin || Boolean(session);
+    $('continueConversationBtn').disabled = locked || !configured || !latestCheckin || Boolean(session);
     document.querySelectorAll('[data-remove], [data-open-session]').forEach(button => { button.disabled = locked; });
+    renderProgress();
+  }
+  function renderProgress() {
+    const count = references.filter(take => take.accepted).length;
+    $('referenceMeter').value = enrolled ? 3 : Math.min(count, 3);
+    $('referenceProgress').textContent = enrolled ? 'Baseline ready' : count >= 3 ? `${count} references accepted. Save my reference to create your baseline.` : `Reference ${count + 1} of 3`;
+    $('referenceStorage').textContent = enrolled ? 'Your personal acoustic baseline is saved in the database. Record today\u2019s reading below.' : `${count} accepted of 3 required${references.some(take => !take.accepted) ? '; older server recordings await validation on Save' : ''}. Recordings are held in this tab; Save my reference rechecks them and persists the baseline. Closing or reconnecting before saving loses these takes.`;
+    $('welcomeHeading').textContent = !enrolled ? 'Welcome to Cadence' : session?.state === 'confirmed' ? 'Your check-in is saved' : 'Your personal reference is ready';
+    $('welcomeHelp').textContent = !enrolled ? 'No personal voice reference exists yet. Three comfortable readings help Cadence compare your future readings with your own usual speech. Read the full passage each time.' : latestMeasured ? 'Review the actual measurements, then put them in context through a conversation. You decide when your report is confirmed.' : 'Next, read the same passage once for today\u2019s check-in. Cadence compares it with your saved personal reference.';
+    const stage = !enrolled ? 'reference' : session ? (session.state === 'active' ? 'conversation' : 'report') : latestCheckin ? 'measurement' : 'checkin';
+    document.querySelectorAll('#journeyProgress [data-stage]').forEach(item => {
+      if (item.dataset.stage === stage) item.setAttribute('aria-current', 'step'); else item.removeAttribute('aria-current');
+    });
   }
   async function task(operation) {
     if (busy || recording) return;
     busy = true; error(''); updateControls();
-    try { await operation(); } catch (problem) { error(problem.message || 'The request could not be completed.'); }
+    try { await operation(); } catch (problem) { if (problem.name !== 'AbortError') error(problem.message || 'The request could not be completed.'); }
     finally { busy = false; updateControls(); }
   }
   function target() {
@@ -84,9 +117,12 @@
   }
   function profilePath(binding, suffix = '') { return '/profiles/' + encodeURIComponent(binding.profile) + suffix; }
   function sessionPath(binding = connected, active = session) { return profilePath(binding, '/conversations/' + encodeURIComponent(active.session_id)); }
-  async function request(binding, path, { method = 'GET', body, audio = false, allow404 = false } = {}) {
+  async function request(binding, path, { method = 'GET', body, audio = false, allow404 = false, signal = null, timeoutMs = 180000 } = {}) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 180000);
+    const abort = () => controller.abort();
+    signal?.addEventListener('abort', abort, { once: true });
+    if (signal?.aborted) controller.abort();
+    const timeout = setTimeout(abort, timeoutMs);
     try {
       const options = { method, signal: controller.signal };
       if (body instanceof FormData) options.body = body;
@@ -106,10 +142,10 @@
       }
       return data;
     } catch (problem) {
-      if (problem.name === 'AbortError') throw new Error('The service took too long to respond. Your typed answer is still here; retry when ready.');
+      if (problem.name === 'AbortError') { if (signal?.aborted) throw problem; throw new Error('The service took too long to respond. Your typed answer is still here; retry when ready.'); }
       if (problem instanceof TypeError) throw new Error('Cannot reach the API. Check the address and that the backend is running.');
       throw problem;
-    } finally { clearTimeout(timeout); }
+    } finally { clearTimeout(timeout); signal?.removeEventListener('abort', abort); }
   }
   function clearTakes() {
     for (const take of references) URL.revokeObjectURL(take.url);
@@ -121,26 +157,31 @@
     const binding = target();
     message('Checking the service and your profile…');
     const caps = await request(binding, '/capabilities');
+    $('connectionMode').textContent = caps.question_selection === 'offline-demo'
+      ? 'Offline question demo: guidance, safety and storage are real; model selection is simulated. Answers are not sent to Groq.'
+      : caps.question_selection === 'unavailable'
+      ? 'Live question selection is not configured. Measurements and notes work, but a supported question may be unavailable.'
+      : 'Live question selection uses Groq with the existing evidence guidance. Only confirmed answer text is sent.';
     const profile = await request(binding, profilePath(binding), { allow404: true });
-    clearTakes();
+    voice.clear(); clearAnswer(); clearTakes();
     connected = Object.freeze(binding); capabilities = caps;
     $('verifyPassageLabel').hidden = !caps.asr_enabled; enrolled = Boolean(profile); compatible = profile?.baseline_compatible !== false && (!profile || profile.condition === 'parkinsons');
-    session = null; latestMeasured = null; latestCheckin = null;
+    session = null; latestMeasured = null; latestCheckin = null; baselineMedian = profile?.baseline_median || {};
     $('measurementPanel').hidden = true; $('conversationPanel').hidden = true; $('notePanel').hidden = true;
     $('routineNotePanel').hidden = !enrolled;
     $('passageText').textContent = caps.passage?.text || 'Passage unavailable; reconnect before recording.';
     $('passageMeta').textContent = caps.passage ? `${caps.passage.syllable_count} fixed syllables · use this exact passage for reference and check-in` : '';
-    $('profileStatus').textContent = enrolled ? (compatible ? 'Reference ready · ' + binding.profile : 'Older reference · new profile needed') : 'New profile · ' + binding.profile;
+    $('profileStatus').textContent = enrolled ? (compatible ? 'Reference ready' : 'Older reference · new profile needed') : 'New profile · no reference yet';
     $('captureHeading').textContent = enrolled ? 'Your daily reading' : 'Get to know your usual';
     $('captureHelp').textContent = enrolled ? 'Read at your comfortable pace. We compare with your own reference.' : 'Record 3–5 comfortable readings to make your personal reference.';
     $('captureKind').value = enrolled ? 'checkin' : 'reference';
     if (profile && !compatible) error('This profile uses a legacy condition or reference protocol. Choose a new profile ID for the Parkinson’s self-check. Existing history is preserved.');
     if (stored.base === binding.base && stored.profile === binding.profile && stored.session) {
       const restored = await request(binding, profilePath(binding, '/conversations/' + encodeURIComponent(stored.session)), { allow404: true });
-      if (restored) renderSession(restored);
+      if (restored) renderSession(restored, { autoplay: false });
     }
     saveConnection();
-    $('connectionSettings').open = !enrolled || !compatible;
+    $('connectionSettings').open = !compatible;
     message(enrolled ? 'Connected. Your reference is ready.' : 'Connected. Record at least three reference readings to begin.');
     if (session?.state === 'active') message('Your unfinished conversation is restored. Continue with the question below.');
     await refreshHistory();
@@ -165,15 +206,8 @@
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) throw new Error('Microphone recording needs a supported browser on localhost or HTTPS.');
     const binding = connected;
     if (!binding) throw new Error('Connect a profile first.');
-    if (kind === 'checkin' && capabilities.tts_enabled) {
-      // The AI should ask you to read, out loud, before the mic opens --
-      // not just show text with a Record button. Speaking and recording
-      // can't happen at once here: the prompt would bleed into the very
-      // passage recording the trigger math depends on, so this fully
-      // finishes (including playback) before the microphone is requested.
-      message('Listen for the prompt…');
-      try { await speak('Please read today’s passage at your comfortable pace.'); } catch { /* speak() already reported a fallback */ }
-    }
+    if (voice.active) throw new Error('Stop Cadence speaking before recording.');
+    document.querySelectorAll('audio').forEach(player => player.pause());
     let stream, context;
     try {
       context = new (window.AudioContext || window.webkitAudioContext)(); await context.resume();
@@ -189,19 +223,14 @@
         // submit it the moment it's ready. Reference/enrollment takes still
         // need an explicit Save after collecting 3-5 of them, so this only
         // applies to a single check-in recording.
-        if (capture.kind === 'checkin' && !capture.failed && checkinTake) task(submitCheckin);
-        // Same reasoning for a spoken answer -- once it's transcribed,
-        // send it immediately instead of waiting for a separate Send
-        // press. finishRecording already refused to populate answerText
-        // at all if transcription came back empty, so there's nothing to
-        // accidentally auto-send blank.
-        if (capture.kind === 'answer' && !capture.failed && $('answerText').value.trim()) {
-          task(() => submitAnswer($('answerText').value.trim()));
-        }
+        if (capture.kind === 'checkin' && !capture.failed && !capture.cancelled && checkinTake) task(submitCheckin);
+        // Conversational transcripts always wait for explicit patient review and submission.
       });
-      recording = capture; recorder.start(500);
+      recording = capture;
+      if (kind === 'answer') { pendingAnswer = capture; $('answerStatus').textContent = 'Listening to you…'; }
+      recorder.start(500);
       capture.limit = setTimeout(() => stopRecording(), 60000);
-      capture.timer = setInterval(() => { $('recordingTimer').textContent = `${Math.floor((Date.now() - capture.started) / 1000)}s · recording`; }, 1000);
+      capture.timer = setInterval(() => { $(kind === 'answer' ? 'answerRecordingTimer' : 'recordingTimer').textContent = `${Math.floor((Date.now() - capture.started) / 1000)}s · recording`; }, 1000);
       watchForSilence(capture);
       message(kind === 'answer' ? 'Recording your answer. It will stop automatically once you finish speaking, or choose Finish answer recording.' : 'Recording. Read the passage; it will stop automatically once you finish, or choose Finish recording.');
     } catch (problem) {
@@ -232,11 +261,9 @@
       let sumSquares = 0; for (const sample of samples) sumSquares += sample * sample;
       const rms = Math.sqrt(sumSquares / samples.length);
       const now = Date.now();
-      // Visible readout so a silent mic (stale cached JS, blocked
-      // permission, wrong input device) is immediately distinguishable
-      // from "the thresholds just don't suit this room" -- both look the
-      // same from the outside (nothing auto-stops) without this.
-      const report = (label) => { $('silenceDebug').textContent = `vol ${rms.toFixed(3)} · ${label}`; };
+      // Show input activity in patient language; keep numeric RMS thresholds
+      // out of the presentation flow. This indicator never accepts a take.
+      const report = (label) => { $('silenceDebug').textContent = label.startsWith('quiet') ? 'Pause detected' : label === 'waiting for speech' ? 'Listening for your voice' : 'Voice detected'; };
       if (rms >= SPEECH_RMS) { speechStartedAt ??= now; silenceStartedAt = null; report('speaking'); return; }
       if (!speechStartedAt || now - speechStartedAt < MIN_SPEECH_MS) { report('waiting for speech'); return; }
       if (rms >= SILENCE_RMS) { silenceStartedAt = null; report('speaking (quiet)'); return; }
@@ -250,34 +277,49 @@
     clearTimeout(capture.limit); clearInterval(capture.timer); clearInterval(capture.silenceWatch);
     $('silenceDebug').textContent = '';
     capture.stream.getTracks().forEach(track => track.stop());
-    recording = null; busy = true; updateControls(); $('recordingTimer').textContent = '';
+    recording = null; busy = true; updateControls(); $('recordingTimer').textContent = ''; $('answerRecordingTimer').textContent = '';
     try {
-      if (capture.failed) return;
+      if (capture.failed || capture.cancelled) return;
       message('Preparing your WAV recording…');
       const buffer = await capture.context.decodeAudioData(await new Blob(capture.chunks, { type: capture.recorder.mimeType }).arrayBuffer());
       const blob = encodeWav(buffer);
       if (capture.kind === 'answer') {
         if (session?.session_id !== capture.activeSession?.session_id) throw new Error('The conversation changed; record the answer again.');
-        message('Transcribing your answer for review…');
+        $('answerStatus').textContent = 'Transcribing locally…'; message('Transcribing your answer for review…');
+        capture.controller = new AbortController();
         const form = new FormData(); form.append('file', blob, 'answer.wav');
-        const result = await request(capture.binding, '/transcribe', { method: 'POST', body: form });
+        const result = await request(capture.binding, '/transcribe', { method: 'POST', body: form, signal: capture.controller.signal });
+        if (capture.cancelled || session?.session_id !== capture.activeSession?.session_id) return;
         if (!result.text?.trim()) throw new Error('No words were transcribed. You can type your answer or record again.');
+        clearAnswer(); answerTake = { blob, url: URL.createObjectURL(blob) };
+        $('answerPreview').src = answerTake.url; $('answerPreview').hidden = false;
+        $('transcriptLabel').textContent = 'Here’s what I heard:';
+        $('answerStatus').textContent = 'Review and edit these words. Nothing has been sent to the conversation yet.';
         $('answerText').value = result.text.trim();
-        message('Transcript ready. Review or edit it, then choose Send answer.'); $('answerText').focus();
+        message('Transcript ready. Review or edit it, then choose Confirm and send.'); $('answerText').focus();
       } else {
-        const take = { blob, seconds: buffer.duration, url: URL.createObjectURL(blob) };
+        let accepted = false;
+        if (capture.kind === 'reference' && capabilities.reference_validation) {
+          message(`Checking reference ${references.length + 1} through the acoustic pipeline\u2026`);
+          const form = new FormData(); form.append('file', blob, 'reference.wav');
+          const suffix = capabilities.asr_enabled && $('verifyPassageToggle').checked ? '?verify_passage=true' : '';
+          const result = await request(capture.binding, '/reference/validate' + suffix, { method: 'POST', body: form });
+          if (result.status !== 'accepted') throw new Error('Reference was not accepted. Please retry this reading.');
+          accepted = true;
+        }
+        const take = { blob, seconds: buffer.duration, url: URL.createObjectURL(blob), accepted };
         if (capture.kind === 'reference') references.push(take);
         else { if (checkinTake) URL.revokeObjectURL(checkinTake.url); checkinTake = take; }
-        renderTakes(); message(capture.kind === 'reference' ? `${references.length} reference reading${references.length === 1 ? '' : 's'} ready. Save after 3–5 takes.` : 'Your check-in recording is ready to compare.');
+        renderTakes(); message(capture.kind === 'reference' ? accepted ? `Reference ${references.length} completed and accepted. ${references.length >= 3 ? 'Choose Save my reference.' : 'Record the next full reading.'}` : 'Reference recorded. This older service will validate all takes when you save.' : 'Your check-in recording is ready to compare.');
       }
-    } catch (problem) { error(problem.message || 'Could not decode this recording. Try another supported browser.'); }
-    finally { await capture.context.close(); busy = false; updateControls(); }
+    } catch (problem) { capture.failed = true; if (!capture.cancelled) { error(problem.message || 'Could not decode this recording. Try another supported browser.'); if (capture.kind === 'answer') $('answerStatus').textContent = 'Transcription did not finish. Record again, or type your answer.'; } }
+    finally { if (pendingAnswer === capture) pendingAnswer = null; await capture.context.close(); busy = false; updateControls(); }
   }
   function renderTakes() {
     $('takeList').replaceChildren();
     [...references.map((take, i) => [take, `Reference ${i + 1}`]), ...(checkinTake ? [[checkinTake, 'Today’s reading']] : [])].forEach(([take, title]) => {
       const row = document.createElement('div'); row.className = 'take-row';
-      const label = document.createElement('p'); label.textContent = `${title} · ${take.seconds.toFixed(1)} seconds`;
+      const label = document.createElement('p'); label.textContent = `${title} · ${take.seconds.toFixed(1)} seconds${references.includes(take) ? take.accepted ? ' · Completed and accepted' : ' · Recorded; awaiting validation on Save' : ''}`;
       const remove = document.createElement('button'); remove.className = 'text-button'; remove.textContent = 'Remove'; remove.dataset.remove = '';
       remove.setAttribute('aria-label', 'Remove ' + title); remove.onclick = () => { if (busy || recording) return; URL.revokeObjectURL(take.url); if (take === checkinTake) checkinTake = null; else references.splice(references.indexOf(take), 1); renderTakes(); updateControls(); };
       const audio = document.createElement('audio'); audio.controls = true; audio.src = take.url; audio.setAttribute('aria-label', 'Preview ' + title);
@@ -297,9 +339,15 @@
     latestMeasured = measured; $('measurementPanel').hidden = false; $('measurementGrid').replaceChildren();
     for (const [key, [label, format]] of Object.entries(featureLabels)) {
       const value = measured.features?.[key]; metric($('measurementGrid'), label, Number.isFinite(value) ? format(value) : 'Unavailable', measured.feature_scores?.[key]);
+      const reference = (measured.reference_median || baselineMedian)[key];
+      const card = $('measurementGrid').lastElementChild;
+      if (Number.isFinite(reference) && Number.isFinite(value)) {
+        paragraph(card, 'Personal reference: ' + format(reference), 'small muted');
+        paragraph(card, 'Difference: ' + (value - reference >= 0 ? '+' : '\u2212') + format(Math.abs(value - reference)), 'small muted');
+      } else paragraph(card, 'Personal reference unavailable for this historical reading.', 'small muted');
     }
     const status = measured.deviation_from_baseline;
-    $('outcomeText').textContent = status === 'persistent' ? 'The timing persistence threshold was met. A question can help put this reading in context.' : status === 'elevated' ? 'This reading differs from your reference; the repeated-change threshold was not met.' : 'The repeated-change threshold was not met. This describes the recording, not your health.';
+    $('outcomeText').textContent = status === 'persistent' ? 'The timing persistence threshold was met. A question can help put this reading in context.' : status === 'elevated' ? 'This reading differs from your reference; the repeated-change threshold was not met.' : status === 'usual' ? 'The repeated-change threshold was not met. This describes the recording, not your health.' : 'The recording classification is unavailable. No conclusion about your health can be drawn.';
     const phrase = measured.phrase_evidence;
     const placed = phrase?.pause_events?.filter(event => event.provenance === 'measured') || [];
     $('phraseStatus').textContent = phrase?.status === 'available'
@@ -339,13 +387,13 @@
     const measured = note.measured?.features ? Object.entries(featureLabels).filter(([key]) => Number.isFinite(note.measured.features[key])).map(([key, [label, format]]) => `${label}: ${format(note.measured.features[key])}`).join('. ') : typeof note.measured === 'string' ? note.measured : 'Measurement details are recorded separately.';
     return `Measured. ${measured}. You said. ${(Array.isArray(note.patient_said) ? note.patient_said : [note.patient_said]).filter(Boolean).join('. ')}. Still unclear. ${(note.unresolved || []).join('. ') || 'No additional uncertainty was recorded.'}${note.patient_correction ? '. Your correction. ' + note.patient_correction : ''}`;
   }
-  function renderSession(value) {
+  function renderSession(value, { autoplay = true } = {}) {
     session = value; saveConnection(); $('conversationPanel').hidden = false;
-    renderMeasured({ ...value.measured, deviation_from_baseline: 'persistent' }); $('turnHistory').replaceChildren();
+    renderMeasured(value.measured); $('turnHistory').replaceChildren();
     for (const turn of value.turns || []) {
-      if (!turn.answered_at) continue;
+      if (!turn.answered_at && !turn.closed_at) continue;
       const block = document.createElement('div'); block.className = 'turn';
-      paragraph(block, turn.question.text); paragraph(block, turn.answer || '', 'answer');
+      paragraph(block, turn.question.text); paragraph(block, turn.skipped || !turn.answered_at ? 'You skipped or left this question unanswered.' : turn.answer || '', 'answer');
       appendSources(block, turn.question.sources || []);
       $('turnHistory').append(block);
     }
@@ -353,25 +401,8 @@
     $('questionPanel').hidden = value.state !== 'active' || !turn;
     $('questionText').textContent = turn?.question.text || '';
     $('questionSources').replaceChildren(); if (turn) appendSources($('questionSources'), turn.question.sources || []);
-    $('answerText').value = '';
-    // Speak the question the moment it's new, instead of making the patient
-    // press a separate button to hear it -- this is what actually makes the
-    // check-in feel like a conversation rather than a form to fill out.
-    if (turn && turn.turn_id !== spokenTurnId) {
-      spokenTurnId = turn.turn_id;
-      speak(turn.question.text)
-        .catch(() => message('Could not play the question aloud automatically. It is shown above; use the speaker button to try again.'))
-        .then(() => {
-          // Once the AI finishes asking, start listening for the answer
-          // automatically instead of waiting for a separate "Record an
-          // answer" press -- same reasoning as the question itself: this is
-          // what makes it feel like a conversation. Falls back to the
-          // existing manual button (still visible) if a mic can't be
-          // opened right now, or if local transcription isn't available at
-          // all, in which case typing remains the only path either way.
-          if (capabilities.asr_enabled && !recording && !busy) task(() => startRecording('answer'));
-        });
-    }
+    clearAnswer();
+    voice.announce(turn?.question.text || '', value.session_id + ':' + (turn?.turn_id || 'closed'), Boolean(turn && autoplay && $('voiceEnabled').checked), ttsRequest());
     $('conversationState').textContent = value.state === 'abstained' ? 'No further supported question was selected. Uncertainty remains in your note.' : value.state === 'complete' ? 'The question sequence has ended. Please review your note.' : value.state === 'confirmed' ? 'Your note is confirmed and saved.' : '';
     $('notePanel').hidden = !value.note;
     if (value.note) {
@@ -390,13 +421,7 @@
       $('correctionPanel').hidden = !['complete', 'abstained'].includes(value.state);
       $('correctionText').value = '';
       $('noteStatus').textContent = `Revision ${value.revision} · ${value.state === 'confirmed' ? 'Confirmed' : 'Not yet confirmed'}`;
-      // Read the wrap-up note aloud too, once, when the sequence has ended --
-      // but never while a question is still active, so the two don't talk
-      // over each other.
-      if (!turn && value.session_id !== spokenNoteSessionId) {
-        spokenNoteSessionId = value.session_id;
-        speak(noteText(note)).catch(() => message('Could not read the note aloud automatically. It is shown above; use the speaker button to try again.'));
-      }
+
     }
     updateControls();
   }
@@ -409,17 +434,24 @@
       const row = document.createElement('div'); row.className = 'history-row';
       const text = document.createElement('div');
       paragraph(text, new Date(item.time).toLocaleString());
-      paragraph(text, item.triggered ? 'A repeated timing change was noticed' : 'Reading saved · within your usual range', 'muted');
+      const details = document.createElement('details'), summary = document.createElement('summary');
+      summary.textContent = 'View saved measurements'; details.append(summary);
+      for (const [key, [label, format]] of Object.entries(featureLabels)) {
+        const value = item.measured?.features?.[key], reference = item.measured?.reference_median?.[key];
+        if (Number.isFinite(value)) paragraph(details, `${label}: ${format(value)}${Number.isFinite(reference) ? ' | Personal reference: ' + format(reference) : ''}`, 'small muted');
+      }
+      text.append(details);
+      paragraph(text, item.measured?.deviation_from_baseline === 'persistent' ? 'A repeated timing change was noticed' : item.measured?.deviation_from_baseline === 'elevated' ? 'Reading differs from your reference; repetition threshold not met' : item.measured?.deviation_from_baseline === 'usual' ? 'Reading saved · within your usual range' : 'Reading saved · classification unavailable', 'muted');
       if (item.conversation) {
         paragraph(text, item.conversation.state === 'confirmed' ? 'Note confirmed' : 'Conversation: ' + item.conversation.state, 'small muted');
         const open = document.createElement('button'); open.className = 'secondary'; open.textContent = item.conversation.state === 'active' ? 'Continue conversation' : 'View note'; open.dataset.openSession = '';
-        open.onclick = () => task(async () => { const restored = await request(binding, profilePath(binding, '/conversations/' + item.conversation.session_id)); renderSession(restored); switchView('checkin'); $('conversationPanel').scrollIntoView({ block: 'start', behavior: 'smooth' }); });
+        open.onclick = () => task(async () => { const restored = await request(binding, profilePath(binding, '/conversations/' + item.conversation.session_id)); renderSession(restored, { autoplay: false }); switchView('checkin'); $('conversationPanel').scrollIntoView({ block: 'start', behavior: 'smooth' }); });
         row.append(text, open);
-      } else if (item.triggered) {
+      } else {
         const open = document.createElement('button'); open.className = 'secondary'; open.textContent = 'Open question'; open.dataset.openSession = '';
         open.onclick = () => task(async () => { renderSession(await request(binding, profilePath(binding, '/conversations'), { method: 'POST', body: { checkin_time: item.time } })); switchView('checkin'); });
         row.append(text, open);
-      } else row.append(text);
+      }
       $('historyList').append(row);
     }
     for (const report of data.reports || []) {
@@ -433,20 +465,31 @@
     $('checkinView').hidden = view !== 'checkin'; $('historyView').hidden = view !== 'history';
     for (const [id, active] of [['checkinBtn', view === 'checkin'], ['historyBtn', view === 'history']]) { $(id).classList.toggle('selected', active); $(id).setAttribute('aria-pressed', String(active)); }
   }
-  async function speak(text) {
-    const blob = await request(connected, '/speak', { method: 'POST', body: { text: text.slice(0, 5000) }, audio: true });
-    if (speechUrl) URL.revokeObjectURL(speechUrl); speechUrl = URL.createObjectURL(blob);
-    const player = $('speechPlayer'); player.src = speechUrl; player.hidden = false;
-    try {
-      await player.play();
-      // Resolve once playback actually finishes, not once it merely starts
-      // (that's all Audio.play()'s own promise means) -- callers that want
-      // to do something right after the AI stops talking (e.g. start
-      // listening for the answer) need the real end, not the start.
-      await new Promise(resolve => { player.onended = resolve; });
-    } catch { message('Spoken audio is ready. Press Play below to listen.'); }
+  function ttsRequest() {
+    const binding = connected;
+    return capabilities.tts_enabled ? (text, signal) => request(binding, '/speak', { method: 'POST', body: { text: text.slice(0, 5000) }, audio: true, signal, timeoutMs: 35000 }) : null;
   }
+  async function speak(text) { return voice.speak(text, ttsRequest()); }
+  $('voiceEnabled').onchange = () => { voice.stop(); try { localStorage.setItem('cadence.voice.enabled', String($('voiceEnabled').checked)); } catch { /* Preference only. */ } };
+  $('pauseSpeechBtn').onclick = () => voice.pause();
+  $('stopSpeechBtn').onclick = () => voice.stop();
+  $('typeAnswerBtn').onclick = () => { voice.stop(); $('answerText').focus(); };
+  $('answerText').oninput = updateControls;
+  $('answerPreview').onplay = () => voice.stop();
+  $('cancelAnswerBtn').onclick = () => {
+    const capture = recording?.kind === 'answer' ? recording : pendingAnswer;
+    if (!capture) return;
+    capture.cancelled = true; capture.controller?.abort();
+    if (capture.recorder.state !== 'inactive') stopRecording();
+    capture.stream.getTracks().forEach(track => track.stop());
+    clearAnswer(false); $('answerStatus').textContent = 'Recording canceled. Your typed answer is unchanged.';
+    message('Recording canceled. No transcript was submitted.'); updateControls();
+  };
   $('connectBtn').onclick = () => task(connect);
+  $('freshProfileBtn').onclick = () => task(async () => {
+    $('profileId').value = 'judge-' + crypto.randomUUID();
+    await connect(); switchView('checkin'); $('captureHeading').scrollIntoView({ block: 'center', behavior: 'smooth' });
+  });
   $('newProfileBtn').onclick = () => { if (busy || recording || pending()) return; $('profileId').value = 'demo-' + crypto.randomUUID().slice(0, 8); $('connectionSettings').open = true; $('profileId').focus(); updateControls(); message('New ID prepared. Choose Connect to start a new reference; existing history is preserved.'); };
   $('captureKind').onchange = updateControls;
   $('apiBase').oninput = updateControls; $('profileId').oninput = updateControls;
@@ -461,9 +504,10 @@
     if ($('experimentalToggle').checked) params.set('experimental', 'true');
     if (capabilities.asr_enabled && $('verifyPassageToggle').checked) params.set('verify_passage', 'true');
     await request(binding, profilePath(binding, '/enroll' + (params.size ? '?' + params : '')), { method: 'POST', body: form });
+    baselineMedian = {}; // The scored check-in supplies the actual fitted reference values.
     enrolled = true; compatible = true; clearTakes(); $('captureKind').value = 'checkin';
     $('captureHeading').textContent = 'Your daily reading'; $('captureHelp').textContent = 'Read at your comfortable pace. We compare with your own reference.';
-    $('profileStatus').textContent = 'Reference ready · ' + binding.profile; $('routineNotePanel').hidden = false;
+    $('profileStatus').textContent = 'Reference ready'; $('routineNotePanel').hidden = false;
     $('connectionSettings').open = false;
     message('Your reference is saved. Record your first check-in when ready.'); await refreshHistory();
   });
@@ -477,17 +521,21 @@
     const result = await request(binding, profilePath(binding, suffix), { method: 'POST', body: form });
     latestCheckin = result; renderMeasured(result.measured);
     URL.revokeObjectURL(checkinTake.url); checkinTake = null; renderTakes();
-    // Every check-in opens a conversation now, triggered or not -- a
-    // typical reading still gets a real (RAG-selected, not fixed) opening
-    // question, same as a flagged one; renderSession/auto-speak handle
-    // whatever comes back either way.
-    renderSession(await request(binding, profilePath(binding, '/conversations'), { method: 'POST', body: { checkin_time: result.checkin_time } }));
+    session = null; saveConnection(); voice.stop();
+    $('conversationPanel').hidden = true; $('notePanel').hidden = true;
+    message('Reading saved. Review your measurements, then choose Continue to AI Conversation.');
+    $('measurementPanel').scrollIntoView({ block: 'start', behavior: 'smooth' });
     await refreshHistory();
   }
   // Manual fallback/retry -- e.g. a check-in whose auto-submit failed, or a
   // take recorded with an older build. Normal use submits automatically the
   // moment a check-in recording finishes (see recorder.onstop above).
   $('uploadBtn').onclick = () => task(submitCheckin);
+  $('continueConversationBtn').onclick = () => task(async () => {
+    renderSession(await request(connected, profilePath(connected, '/conversations'), { method: 'POST', body: { checkin_time: latestCheckin.checkin_time } }));
+    message(session.state === 'active' ? 'A question is ready. Listen, then tap to answer.' : 'No supported question was selected. Review the saved note and its uncertainties.');
+    $('conversationPanel').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
   async function submitAnswer(text) {
     const binding = connected, active = session, turn = active.turns.find(item => !item.answered_at && !item.closed_at);
     if (!text) throw new Error('Type an answer, or record one and review its transcript first.');
@@ -497,16 +545,20 @@
     const result = await request(binding, sessionPath(binding, active) + '/turns/' + turn.turn_id + '/answer', { method: 'POST', body: { submission_id: submission, answer_text: text } });
     renderSession(result); message(result.state === 'active' ? 'Answer saved. A follow-up question is ready.' : 'Answers saved. Review the note below.'); await refreshHistory();
   }
-  // Manual fallback -- e.g. a typed answer, or a transcribed one the
-  // patient edited before it auto-sent. Normal use sends automatically the
-  // moment transcription finishes (see recorder.onstop above).
+  // Every answer, including an ASR transcript, needs explicit patient confirmation.
   $('answerBtn').onclick = () => task(() => submitAnswer($('answerText').value.trim()));
+  $('skipQuestionBtn').onclick = () => task(async () => {
+    voice.stop(); const turn = session.turns.find(item => !item.answered_at && !item.closed_at);
+    const key = turn.turn_id + ':skip'; const submission = retryAnswers.get(key) || crypto.randomUUID(); retryAnswers.set(key, submission);
+    renderSession(await request(connected, sessionPath() + '/turns/' + turn.turn_id + '/answer', { method: 'POST', body: { submission_id: submission, skipped: true } }));
+    message('Question skipped. It will remain unanswered in your note.'); await refreshHistory();
+  });
   $('confirmBtn').onclick = () => task(async () => {
     const result = await request(connected, sessionPath() + '/confirm', { method: 'POST', body: { revision: session.revision } });
     renderSession(result); message('Your reviewed note is confirmed and saved.'); await refreshHistory();
   });
   $('finishConversationBtn').onclick = () => task(async () => {
-    const result = await request(connected, sessionPath() + '/finish', { method: 'POST', body: { revision: session.revision } });
+    voice.stop(); const result = await request(connected, sessionPath() + '/finish', { method: 'POST', body: { revision: session.revision } });
     renderSession(result); message('Conversation saved for now. Review the note; unanswered details remain unclear.'); await refreshHistory();
   });
   $('resetCheckinBtn').onclick = () => task(async () => {
@@ -532,6 +584,11 @@
   $('checkinBtn').onclick = () => switchView('checkin');
   $('historyBtn').onclick = () => { switchView('history'); if (!busy && !recording) task(refreshHistory); };
   $('refreshHistoryBtn').onclick = () => task(refreshHistory);
-  window.addEventListener('pagehide', () => { if (recording) recording.stream.getTracks().forEach(track => track.stop()); });
+  window.addEventListener('pagehide', () => {
+    voice.clear();
+    if (pendingAnswer) { pendingAnswer.cancelled = true; pendingAnswer.controller?.abort(); }
+    if (recording) { recording.cancelled = true; recording.stream.getTracks().forEach(track => track.stop()); }
+    clearAnswer(); clearTakes();
+  });
   $('connectionSettings').open = true; updateControls(); task(connect);
 })();

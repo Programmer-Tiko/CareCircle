@@ -19,9 +19,7 @@ from app.passage import PASSAGE_TEXT
 
 
 def wav():
-    buffer = BytesIO()
-    sf.write(buffer, np.zeros(1600), 16000, format='WAV')
-    return buffer.getvalue()
+    return (Path(__file__).parent / 'fixtures/speech_chunk.wav').read_bytes()
 
 
 @pytest.fixture

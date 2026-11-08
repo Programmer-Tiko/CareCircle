@@ -52,7 +52,14 @@ class StartRequest(BaseModel):
 
 class TurnAnswer(BaseModel):
     submission_id: UUID
-    answer_text: Text
+    answer_text: Text | None = None
+    skipped: bool = False
+
+    @model_validator(mode='after')
+    def explicit_answer_or_skip(self):
+        if self.skipped == (self.answer_text is not None):
+            raise ValueError('Provide either reviewed answer_text or skipped=true.')
+        return self
 
 
 class Confirmation(BaseModel):
@@ -68,7 +75,7 @@ def get_selector():
     return select_next
 
 
-def install_routes(app, get_db, locked_profile):
+def install_routes(app, get_db, locked_profile, classify_measurement):
     Database = Annotated[object, Depends(get_db, scope='function')]
     Selector = Annotated[object, Depends(get_selector)]
 
@@ -84,6 +91,12 @@ def install_routes(app, get_db, locked_profile):
         session = db.execute('SELECT * FROM conversations WHERE session_id = %s', (session_id,)).fetchone()
         turns = db.execute('SELECT * FROM conversation_turns WHERE session_id = %s ORDER BY ordinal',
                            (session_id,)).fetchall()
+        # Enrich legacy snapshots on read; do not rewrite historic measurements.
+        measured = dict(session['measured'])
+        measured['deviation_from_baseline'] = classify_measurement(measured.get('deviation_score'), measured.get('triggered'))
+        session = {**session, 'measured': measured}
+        for turn in turns:
+            turn['skipped'] = bool(turn.get('closed_at') and turn.get('answered_at') and turn.get('answer') is None)
         return jsonable_encoder({**session, 'turns': turns})
 
     @app.post('/profiles/{profile_id}/conversations')
@@ -106,6 +119,8 @@ def install_routes(app, get_db, locked_profile):
             raise HTTPException(409, 'Start requires an unanswered check-in.')
         session_id = uuid4()
         measured = {'deviation_score': row['deviation_score'], 'triggered': bool(row['triggered']),
+                    'reference_median': profile['baseline_median'],
+                    'deviation_from_baseline': classify_measurement(row['deviation_score'], row['triggered']),
                     'features': {key: row[key] for key in FEATURE_ORDER if row.get(key) is not None}}
         # Prefer the evidence recorded when scoring, not a later baseline.
         scores = row.get('feature_scores')
@@ -165,8 +180,9 @@ def install_routes(app, get_db, locked_profile):
                           (session_id, turn_id)).fetchone()
         if turn is None:
             raise HTTPException(404, 'Turn not found.')
-        if turn['answered_at'] is not None:
-            if turn['submission_id'] == body.submission_id and turn['answer'] == body.answer_text:
+        if turn['answered_at'] is not None or turn.get('closed_at') is not None:
+            if (turn['submission_id'] == body.submission_id and turn['answer'] == body.answer_text
+                    and bool(turn.get('closed_at')) == body.skipped):
                 return snapshot(db, session_id)
             raise HTTPException(409, 'Turn already answered.')
         if session['state'] != 'active':
@@ -182,7 +198,7 @@ def install_routes(app, get_db, locked_profile):
         except ValueError:
             max_questions=4
         budget_reached=len(history)>=max_questions
-        safety = emergency_selection(body.answer_text)
+        safety = emergency_selection(body.answer_text or '')
         if safety is not None:
             # The question budget and an injected/provider selector must never
             # suppress the fixed safety notice. This remains a narrow tripwire.
@@ -193,28 +209,35 @@ def install_routes(app, get_db, locked_profile):
         else:
             try:
                 selection = Selection.model_validate(selector({'condition': profile['condition'],
-                    'measured': session['measured'], 'turns': history, 'answer_text': body.answer_text}))
+                    'measured': session['measured'], 'turns': history, 'answer_text': body.answer_text or ''}))
                 if selection.question and any(t['question']['id'] == selection.question.id for t in history):
                     selection = Selection(decision='abstain')
-                if selection.decision == 'complete' and (not selection.resolved or any(
+                if selection.decision == 'complete' and (body.skipped or not selection.resolved or any(
                         t['answered_at'] and not t['resolved'] for t in history)):
                     selection = Selection(decision='abstain')
             except Exception:
                 # Provider/schema/validation failure never loses the patient's answer.
                 selection = Selection(decision='abstain')
         db.execute('UPDATE conversation_turns SET answer=%s, answered_at=clock_timestamp(), resolved=%s, '
+                   'closed_at=CASE WHEN %s THEN clock_timestamp() ELSE NULL END, '
                    'submission_id=%s, selection=%s WHERE turn_id=%s',
-                   (body.answer_text, selection.resolved, body.submission_id, Jsonb(selection.model_dump()), turn_id))
+                   (body.answer_text, selection.resolved and not body.skipped, body.skipped,
+                    body.submission_id, Jsonb(selection.model_dump()), turn_id))
         if selection.question:
             db.execute('INSERT INTO conversation_turns (turn_id,session_id,ordinal,question) VALUES (%s,%s,%s,%s)',
                        (uuid4(), session_id, turn['ordinal'] + 1, Jsonb(selection.question.model_dump())))
         state = {'ask': 'active', 'complete': 'complete', 'abstain': 'abstained'}[selection.decision]
-        answers = [t['answer'] for t in history if t['answered_at']] + [body.answer_text]
+        answers = [t['answer'] for t in history if t['answered_at'] and t['answer'] is not None]
+        if not body.skipped:
+            answers.append(body.answer_text)
+        skipped = body.skipped or any(t.get('skipped') for t in history)
         note = {'measured': session['measured'], 'patient_said': answers,
                 'unresolved': [] if state == 'complete' else [
                     'This check-in reached its question limit; some details remain unclear.' if budget_reached
                     else 'The conversation contains unresolved information.'],
                 'status': 'awaiting_confirmation'}
+        if skipped:
+            note['unresolved'].append('A question was skipped; its answer is unknown.')
         db.execute('UPDATE conversations SET revision=revision+1, state=%s, note=%s WHERE session_id=%s',
                    (state, Jsonb(note), session_id))
         return snapshot(db, session_id)

@@ -44,6 +44,15 @@ Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max
 router = APIRouter()
 
 
+def measurement_classification(score, triggered):
+    """Presentation of the existing acoustic decision; never changes its thresholds."""
+    if triggered:
+        return 'persistent'
+    if score is None or not math.isfinite(score):
+        return 'unknown'
+    return 'elevated' if score >= DEVIATION_THRESHOLD else 'usual'
+
+
 def open_connection():
     url = os.getenv('TIGER_DATA_URL')
     if not url:
@@ -118,9 +127,26 @@ def require_matching_phrase(path, reference_take=None):
         heard = f' The recognizer heard: “{recognized}”.' if recognized else ' The recognizer returned no reliable words.'
         reason = evidence.get('phrase_match_reason') or 'The transcript did not match closely enough.'
         raise HTTPException(422, prefix + 'Passage verification did not pass. ' + reason + heard +
-                            ' Your takes are still in this page. Preview the recording and replace this take if needed. '
+                            ' Your saved baseline and check-ins have not changed. Retry the full passage; other accepted takes remain in this page. '
                             'If you intentionally want an unverified reference, uncheck optional passage verification and retry.')
     return evidence
+
+
+@router.post('/reference/validate')
+def validate_reference(file: Annotated[UploadFile, File()],
+                       verify_passage: Annotated[bool, Query()] = False):
+    """Preview the enrollment pipeline without creating a profile or retaining audio.
+
+    Enrollment reprocesses the original WAVs and fits the unchanged baseline.
+    This result is feedback for one take, never permission to bypass enrollment.
+    """
+    with audio_path(file) as path:
+        phrase = require_matching_phrase(path) if verify_passage else None
+        features = build_take_from_audio(path, PASSAGE_SYLLABLE_COUNT)
+        if not all(math.isfinite(value) for value in features.values()):
+            raise HTTPException(400, 'Recording produced invalid measurements. Please record again.')
+    return {'status': 'accepted', 'features': features, 'phrase_evidence': phrase,
+            'persisted': False}
 
 
 @router.post('/profiles/{profile_id}/enroll')
@@ -203,10 +229,10 @@ def checkin(profile_id: str, db: Database, file: Annotated[UploadFile, File()],
                 Jsonb(phrase) if phrase is not None else None, result.deviation_score, result.triggered, result.question_text)).fetchone()
     return {'profile_id': profile_id, 'checkin_time': inserted['time'],
             'measured': {'features': take, 'feature_scores': feature_scores,
+                         'reference_median': baseline.median,
                          'waveform_evidence': waveform_evidence, 'phrase_evidence': phrase,
                          'deviation_score': result.deviation_score,
-                         'deviation_from_baseline': 'persistent' if result.triggered else
-                         ('elevated' if result.deviation_score >= DEVIATION_THRESHOLD else 'usual')},
+                         'deviation_from_baseline': measurement_classification(result.deviation_score, result.triggered)},
             'triggered_question': result.question_text,
             # Preserve the acoustic check-in contract for existing clients.
             # The UI can start a conversation for either status; start()
@@ -262,7 +288,7 @@ def speak(body: SpeakRequest):
     key = os.getenv('ELEVENLABS_API_KEY')
     if not key:
         raise HTTPException(503, 'Set ELEVENLABS_API_KEY to enable speech synthesis.')
-    voice = os.getenv('ELEVENLABS_VOICE_ID', 'JBFqnCBsd6RMkjVDRZzb')
+    voice = os.getenv('CADENCE_VOICE_ID') or os.getenv('ELEVENLABS_VOICE_ID', '21m00Tcm4TlvDq8ikWAM')
     if not re.fullmatch(r'[A-Za-z0-9_-]+', voice):
         raise HTTPException(503, 'ELEVENLABS_VOICE_ID is invalid.')
     try:
@@ -270,16 +296,25 @@ def speak(body: SpeakRequest):
                               params={'output_format': 'mp3_44100_128'},
                               headers={'xi-api-key': key, 'Accept': 'audio/mpeg'},
                               json={'text': body.text,
-                                    'model_id': os.getenv('ELEVENLABS_MODEL_ID', 'eleven_multilingual_v2')},
+                                    'model_id': os.getenv('ELEVENLABS_MODEL_ID', 'eleven_multilingual_v2'),
+                                    'voice_settings': {'stability': 0.65, 'similarity_boost': 0.75,
+                                                       'style': 0.1, 'speed': 0.92, 'use_speaker_boost': True}},
                               timeout=30.0)
         response.raise_for_status()
     except httpx.TimeoutException:
         raise HTTPException(504, 'Speech synthesis timed out.') from None
+    except httpx.HTTPStatusError as exc:
+        reason = {400: 'invalid voice or synthesis settings', 401: 'not authorized',
+                  402: 'subscription or credit limit reached', 403: 'not permitted for this voice or account',
+                  404: 'configured voice unavailable', 429: 'quota or request limit reached'}.get(
+                      exc.response.status_code, 'request rejected')
+        raise HTTPException(502, f'Speech synthesis provider {reason} (HTTP {exc.response.status_code}). Browser voice or text remains available.') from None
     except httpx.HTTPError:
         raise HTTPException(502, 'Speech synthesis provider request failed.') from None
     if not response.content or not response.headers.get('content-type', '').startswith('audio/'):
         raise HTTPException(502, 'Speech synthesis provider returned no audio.')
-    return Response(content=response.content, media_type='audio/mpeg')
+    return Response(content=response.content, media_type='audio/mpeg',
+                    headers={'Cache-Control': 'no-store', 'X-Cadence-TTS-Provider': 'ElevenLabs'})
 
 
 @asynccontextmanager
@@ -295,12 +330,12 @@ async def lifespan(app):
 def create_app():
     from app.api.workspace import install_routes as install_workspace
     from app.api.speech import install_routes as install_speech
-    application = FastAPI(title='VoiceShift API', lifespan=lifespan)
+    application = FastAPI(title='Cadence API', lifespan=lifespan)
     application.add_middleware(CORSMiddleware, allow_origins=['*'],
                                allow_methods=['*'], allow_headers=['*'])
     application.include_router(router)
-    install_routes(application, get_db, locked_profile)
-    install_workspace(application, get_db, locked_profile)
+    install_routes(application, get_db, locked_profile, measurement_classification)
+    install_workspace(application, get_db, locked_profile, measurement_classification)
     install_speech(application)
     # The default selector always abstains (conversations.py's own safe
     # default); this wires in the validated RAG adapter so conversations

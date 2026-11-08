@@ -44,6 +44,8 @@ class TestCachedWhisperTranscriberUnit:
 
     def test_loads_model_once_and_reuses_across_calls(self, monkeypatch):
         # Prove model is loaded once at init, and transcribe called per invoke
+        import torch
+        monkeypatch.setattr('app.audio.vad.load_mono_16k', lambda path: torch.zeros(16000))
         mock_whisper = MagicMock()
         mock_model = MagicMock()
         mock_whisper.load_model.return_value = mock_model
@@ -70,6 +72,8 @@ class TestCachedWhisperTranscriberUnit:
             # Call first time
             res1 = transcriber("audio1.wav")
             assert mock_model.transcribe.call_count == 1
+            assert mock_model.transcribe.call_args.args[0].shape == (16000,)
+            assert mock_model.transcribe.call_args.kwargs['fp16'] is False
             assert len(res1.words) == 2
             assert res1.words[0].word == "hello"
 

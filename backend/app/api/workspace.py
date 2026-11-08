@@ -34,9 +34,16 @@ class Correction(BaseModel):
     correction_text: Text
 
 
-def install_routes(app,get_db,locked_profile):
+def install_routes(app,get_db,locked_profile,classify_measurement):
     Database=Annotated[object,Depends(get_db,scope='function')]
     repo=Path(__file__).resolve().parents[3]
+
+    def session_response(session, turns):
+        measured = dict(session['measured'])
+        measured['deviation_from_baseline'] = classify_measurement(measured.get('deviation_score'), measured.get('triggered'))
+        return {**session, 'measured': measured, 'turns': [
+            {**turn, 'skipped': bool(turn.get('closed_at') and turn.get('answered_at') and turn.get('answer') is None)}
+            for turn in turns]}
     app.mount('/frontend',StaticFiles(directory=repo/'frontend',check_dir=False),name='frontend')
 
     @app.get('/',include_in_schema=False)
@@ -50,14 +57,20 @@ def install_routes(app,get_db,locked_profile):
 
     @app.get('/capabilities')
     def capabilities():
-        configured=os.getenv('CADENCE_ASR_ENABLED','').lower() in ('1','true','yes')
+        configured=os.getenv('CADENCE_ASR_ENABLED','').strip().lower() in ('1','true','yes','on')
         model=os.getenv('CADENCE_WHISPER_MODEL','base')
         # No model load or network call during capability discovery.
-        ready=configured and importlib.util.find_spec('whisper') is not None and (Path.home()/'.cache/whisper'/f'{model}.pt').is_file()
+        cache=Path(os.getenv('CADENCE_WHISPER_CACHE',str(Path.home()/'.cache/whisper')))
+        ready=configured and importlib.util.find_spec('whisper') is not None and (cache/f'{model}.pt').is_file()
         return {'asr_enabled':bool(ready),
                 'asr_reason':None if ready else 'Local speech recognition is not enabled or its optional runtime/checkpoint is unavailable. Typed answers work.',
                 'tts_enabled':bool(os.getenv('ELEVENLABS_API_KEY')),
+                'tts_provider':'ElevenLabs' if os.getenv('ELEVENLABS_API_KEY') else 'browser-fallback',
+                'asr_provider':'local-whisper' if ready else None,
+                'question_selection':getattr(app.state,'question_selection_mode',
+                    'groq' if os.getenv('GROQ_API_KEY') else 'unavailable'),
                 'passage':{'id':PASSAGE_ID,'text':PASSAGE_TEXT,'syllable_count':PASSAGE_SYLLABLE_COUNT},
+                'reference_validation':True,
                 'experimental_observations':True}
 
     @app.get('/profiles/{profile_id}')
@@ -65,18 +78,21 @@ def install_routes(app,get_db,locked_profile):
         row=locked_profile(db,profile_id)
         keys=list((row['baseline_median'] or {}).keys())
         return {'profile_id':profile_id,'condition':row['condition'],'created_at':row['created_at'],
-                'baseline_features':keys,'baseline_compatible':all(key in keys for key in FEATURE_ORDER)}
+                'baseline_features':keys,'baseline_median':row['baseline_median'],
+                'baseline_compatible':all(key in keys for key in FEATURE_ORDER)}
 
     @app.get('/profiles/{profile_id}/history')
     def history(profile_id:str,db:Database,limit:Annotated[int,Query(ge=1,le=100)]=30):
-        locked_profile(db,profile_id)
+        profile=locked_profile(db,profile_id)
         rows=db.execute('SELECT ch.*, c.session_id, c.state AS conversation_state, c.revision, c.note '
             'FROM checkins ch LEFT JOIN conversations c ON c.profile_id=ch.profile_id AND c.checkin_time=ch.time '
             'WHERE ch.profile_id=%s ORDER BY ch.time DESC LIMIT %s',(profile_id,limit)).fetchall()
         checkins=[]
         for row in rows:
             measured={'deviation_score':row['deviation_score'],
+                'deviation_from_baseline':classify_measurement(row['deviation_score'],row['triggered']),
                 'features':{key:row[key] for key in FEATURE_ORDER if row.get(key) is not None},
+                'reference_median':profile['baseline_median'],
                 'feature_scores':row.get('feature_scores') or {},
                 'waveform_evidence':row.get('waveform_evidence'),'phrase_evidence':row.get('phrase_evidence')}
             checkins.append({'time':row['time'],'measured':measured,'triggered':row['triggered'],
@@ -108,7 +124,7 @@ def install_routes(app,get_db,locked_profile):
             turns=db.execute('SELECT * FROM conversation_turns WHERE session_id=%s ORDER BY ordinal',
                              (session_id,)).fetchall()
             note={**(row['note'] or {}),'measured':row['measured'],
-                  'patient_said':[turn['answer'] for turn in turns if turn['answered_at']],
+                  'patient_said':[turn['answer'] for turn in turns if turn['answered_at'] and turn['answer'] is not None],
                   'unresolved':list(dict.fromkeys((row['note'] or {}).get('unresolved',[])+
                       ['The conversation was ended before all questions were answered.'])),
                   'status':'awaiting_confirmation','session_ended_by_user':True}
@@ -118,7 +134,7 @@ def install_routes(app,get_db,locked_profile):
                        (Jsonb(note),session_id))
         current=db.execute('SELECT * FROM conversations WHERE session_id=%s',(session_id,)).fetchone()
         turns=db.execute('SELECT * FROM conversation_turns WHERE session_id=%s ORDER BY ordinal',(session_id,)).fetchall()
-        return {**current,'turns':turns}
+        return session_response(current,turns)
 
     @app.post('/profiles/{profile_id}/conversations/{session_id}/correction')
     def correction(profile_id:str,session_id:UUID,body:Correction,db:Database):
@@ -135,4 +151,4 @@ def install_routes(app,get_db,locked_profile):
         # answers and measurements instead of rewriting them as patient edits.
         session=db.execute('SELECT * FROM conversations WHERE session_id=%s',(session_id,)).fetchone()
         turns=db.execute('SELECT * FROM conversation_turns WHERE session_id=%s ORDER BY ordinal',(session_id,)).fetchall()
-        return {**session,'turns':turns}
+        return session_response(session,turns)
