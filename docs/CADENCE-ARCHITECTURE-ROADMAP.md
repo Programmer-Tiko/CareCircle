@@ -98,9 +98,16 @@ probabilities. Validate provenance and output, and fall back to the exact
 reviewed card when generation is unsupported or fails. Such a layer is not
 implemented by the backend's current deterministic retrieval.
 
-Any future urgent-symptom pathway needs separately reviewed, fixed guidance,
-testing and an explicit scope; neither the API's acoustic trigger nor the HTML
-demo's “alert” label is an implemented emergency assessment or dispatch service.
+A narrow version of this now exists: `conversation_adapter.py` checks the
+latest answer against a literal, documented-as-prototype keyword list
+(injury/emergency phrasing) before any model call, and on a match returns a
+fixed, non-generated notice pointing to a doctor or emergency services,
+never calling the LLM. This is a keyword tripwire with a canned message, not
+clinical triage, and it does not assess severity or dispatch anyone. The
+broader statement still holds: neither the API's acoustic trigger nor the
+HTML demo's "alert" label is an implemented emergency assessment or dispatch
+service, and a production urgent-symptom pathway still needs separately
+reviewed, clinician-approved guidance and explicit scope beyond this.
 
 ## Clinical Question Library — proposed
 
