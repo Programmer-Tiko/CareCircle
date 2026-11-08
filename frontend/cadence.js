@@ -236,7 +236,7 @@
     const phrase = measured.phrase_evidence;
     const placed = phrase?.pause_events?.filter(event => event.provenance === 'measured') || [];
     $('phraseStatus').textContent = phrase?.status === 'available'
-      ? `Passage transcript: ${phrase.phrase_match}.${phrase.alignment_available ? ' Estimated word-level pauses: ' + placed.filter(event => event.category === 'within_clause').length + ' within clauses; ' + placed.filter(event => event.category === 'punctuation_adjacent').length + ' at punctuation.' : ' Word-level timing is unavailable.'} This does not verify every recording condition.`
+      ? `Passage transcript: ${phrase.phrase_match}.${phrase.alignment_available ? ' Estimated word-level pauses: ' + placed.filter(event => event.category === 'within_clause').length + ' within clauses; ' + placed.filter(event => event.category === 'punctuation_adjacent').length + ' at punctuation; ' + placed.filter(event => event.category !== 'within_clause' && event.category !== 'punctuation_adjacent').length + ' unclassified.' : ' Word-level timing is unavailable.'} This does not verify every recording condition.`
       : 'Passage was not automatically verified for this recording.';
     const evidence = measured.waveform_evidence;
     $('experimentalPanel').hidden = !evidence;
