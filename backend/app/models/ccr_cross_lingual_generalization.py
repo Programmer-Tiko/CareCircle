@@ -158,17 +158,38 @@ def main():
     read_text_dir = prepare_mdvr_kcl(args.workdir)
     it_pd_dir, it_hc_dir = prepare_italianpvs(args.workdir)
 
-    print("loading WAV2VEC2_XLSR53 (multilingual, ~300M params)...")
-    model = BUNDLE.get_model()
-    model.eval()
+    # Checkpointed: if the job gets cancelled/disconnected partway through
+    # (walltime limit, dropped SSH session, etc.), a rerun skips any
+    # embedding pass that already finished and wrote its CSV, instead of
+    # re-embedding ~37-50 files through a 300M-param model from scratch.
+    mdvr_csv = args.out / "mdvr_kcl_xlsr_embeddings.csv"
+    italian_csv = args.out / "italianpvs_b1_xlsr_embeddings.csv"
 
-    print("embedding MDVR-KCL (English, connected speech)...")
-    mdvr_df = build_embeddings(model, read_text_dir / "PD", read_text_dir / "HC", source="mdvr_kcl")
-    print("embedding ItalianPVS (Italian, word-list speech)...")
-    italian_df = build_embeddings(model, it_pd_dir, it_hc_dir, source="italianpvs")
+    model = None
 
-    mdvr_df.to_csv(args.out / "mdvr_kcl_xlsr_embeddings.csv", index=False)
-    italian_df.to_csv(args.out / "italianpvs_b1_xlsr_embeddings.csv", index=False)
+    def get_model():
+        nonlocal model
+        if model is None:
+            print("loading WAV2VEC2_XLSR53 (multilingual, ~300M params)...")
+            model = BUNDLE.get_model()
+            model.eval()
+        return model
+
+    if mdvr_csv.exists():
+        print(f"found {mdvr_csv}, skipping MDVR-KCL embedding (delete the file to force a redo)")
+        mdvr_df = pd.read_csv(mdvr_csv)
+    else:
+        print("embedding MDVR-KCL (English, connected speech)...")
+        mdvr_df = build_embeddings(get_model(), read_text_dir / "PD", read_text_dir / "HC", source="mdvr_kcl")
+        mdvr_df.to_csv(mdvr_csv, index=False)
+
+    if italian_csv.exists():
+        print(f"found {italian_csv}, skipping ItalianPVS embedding (delete the file to force a redo)")
+        italian_df = pd.read_csv(italian_csv)
+    else:
+        print("embedding ItalianPVS (Italian, connected speech, task B1)...")
+        italian_df = build_embeddings(get_model(), it_pd_dir, it_hc_dir, source="italianpvs_b1")
+        italian_df.to_csv(italian_csv, index=False)
 
     results = {}
     auc_en_to_it = cross_dataset_auc(mdvr_df, italian_df)
