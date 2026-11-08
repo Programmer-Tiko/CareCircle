@@ -1,6 +1,71 @@
 {
-  "version": "2026-11-08",
+  "version": "2026-11-08-v2",
   "units": [
+    {
+      "id": "fatigue_level_check",
+      "condition": "parkinsons",
+      "information_sought": "fatigue_level",
+      "preconditions": [],
+      "exclusions": ["answer_indicates_situational_distraction"],
+      "question_template": "How's your energy right now compared to a typical day -- more tired than usual?",
+      "source_type": "patient_education",
+      "source_url": "https://www.parkinson.org/library/fact-sheets/fatigue",
+      "source_excerpt": "People who are fatigued struggle to get through normal daily activities. Everyday tasks such as getting dressed can take a lot of effort, as it takes more concentration to perform tasks that are no longer automatic.",
+      "source_version": "Parkinson's Foundation, Fatigue fact sheet",
+      "review_status": "prototype"
+    },
+    {
+      "id": "medication_wearing_off_check",
+      "condition": "parkinsons",
+      "information_sought": "fatigue_medication_timing",
+      "preconditions": ["patient_known_to_take_pd_medication"],
+      "exclusions": ["medication_status_unknown"],
+      "question_template": "Is it closer to your next dose than usual right now -- does this happen more as a dose wears off?",
+      "source_type": "patient_education",
+      "source_url": "https://www.parkinson.org/library/fact-sheets/fatigue",
+      "source_excerpt": "You are better able to move after your medications take effect, and you might find it more difficult to move as the medication wears off, before your next dose.",
+      "source_version": "Parkinson's Foundation, Fatigue fact sheet",
+      "review_status": "prototype"
+    },
+    {
+      "id": "anxiety_check",
+      "condition": "parkinsons",
+      "information_sought": "anxiety_presence",
+      "preconditions": [],
+      "exclusions": ["answer_indicates_situational_distraction"],
+      "question_template": "Have you been feeling anxious, worried, or on edge today?",
+      "source_type": "patient_education",
+      "source_url": "https://www.parkinson.org/library/fact-sheets/anxiety",
+      "source_excerpt": "Anxiety can show up in different ways, such as constant worry, fear of social situations or sudden panic attacks.",
+      "source_version": "Parkinson's Foundation, Anxiety fact sheet",
+      "review_status": "prototype"
+    },
+    {
+      "id": "sleep_quality_check",
+      "condition": "parkinsons",
+      "information_sought": "sleep_quality",
+      "preconditions": [],
+      "exclusions": ["answer_indicates_situational_distraction"],
+      "question_template": "How did you sleep last night -- any more trouble than usual falling or staying asleep?",
+      "source_type": "patient_education",
+      "source_url": "https://www.parkinson.org/library/fact-sheets/sleep",
+      "source_excerpt": "Sleep challenges affect more than 75% of people with PD. One difficult night can affect the next day.",
+      "source_version": "Parkinson's Foundation, Sleep fact sheet",
+      "review_status": "prototype"
+    },
+    {
+      "id": "balance_concern_check",
+      "condition": "parkinsons",
+      "information_sought": "balance_unsteadiness",
+      "preconditions": [],
+      "exclusions": ["answer_indicates_situational_distraction"],
+      "question_template": "Have you noticed any new unsteadiness, trouble with balance, or near-falls recently?",
+      "source_type": "patient_education",
+      "source_url": "https://www.parkinson.org/library/fact-sheets/fall-prevention",
+      "source_excerpt": "Balance issues -- PD can disrupt natural movements, posture and reflexes that help you stay steady and upright. Do you feel unsteady when walking?",
+      "source_version": "Parkinson's Foundation, Fall Prevention in Parkinson's fact sheet",
+      "review_status": "prototype"
+    },
     {
       "id": "everyday_communication_impact",
       "condition": "parkinsons",

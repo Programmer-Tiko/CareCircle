@@ -92,17 +92,16 @@ def test_model_abstaining_raises_selection_rejected_not_swallowed_here():
 
 
 def test_empty_eligible_set_completes_instead_of_erroring():
-    # Every Parkinson's unit requires conditions not met by an unrecognized,
-    # non-distraction, non-medication answer except pd_initial/distraction_check
-    # (no preconditions) -- already-asking both exhausts the eligible set.
+    # Marks every corpus unit as already-asked, regardless of how many
+    # exist -- deliberately not hardcoding IDs, so this doesn't silently
+    # break (or silently stop testing the real exhaustion path) every
+    # time the corpus grows.
+    from app.dialogue.retrieval import load_corpus
+
     turns = [
-        {"question": {"id": "distraction_check"}, "answer": "no, nothing", "answered_at": "x"},
-        {"question": {"id": "everyday_communication_impact"}, "answer": "no change", "answered_at": "x"},
-        {"question": {"id": "repetition_frequency"}, "answer": "no", "answered_at": "x"},
-        {"question": {"id": "breath_support_phrasing"}, "answer": "no", "answered_at": "x"},
-        {"question": {"id": "volume_awareness"}, "answer": "no", "answered_at": "x"},
-        {"question": {"id": "rate_change_direction"}, "answer": "no", "answered_at": "x"},
-        {"question": {"id": "swallow_check"}, "answer": "no", "answered_at": "x"},
+        {"question": {"id": unit["id"]}, "answer": "no", "answered_at": "x"}
+        for unit in load_corpus()
+        if unit["condition"] == "parkinsons"
     ]
     context = {
         "condition": "parkinsons",
@@ -112,3 +111,17 @@ def test_empty_eligible_set_completes_instead_of_erroring():
     }
     result = selector_adapter(context, model_call=_stub("", ""))
     assert result == {"decision": "complete", "resolved": True}
+
+
+@pytest.mark.parametrize('scores,allowed', [({}, False), ({'pause_fraction': 2.0}, True),
+                                          ({'pause_fraction': -2.0}, False)])
+def test_measured_z_scores_gate_breath_support(scores, allowed):
+    context = {'condition':'parkinsons', 'measured':{'features':{'pause_fraction':.9},
+               'feature_scores':scores}, 'turns':[], 'answer_text':'It was difficult'}
+    call = _stub('breath_support_phrasing', 'difficult')
+    if allowed:
+        result = selector_adapter(context, model_call=call)
+        assert result['question']['id'] == 'breath_support_phrasing'
+    else:
+        with pytest.raises(SelectionRejected):
+            selector_adapter(context, model_call=call)
