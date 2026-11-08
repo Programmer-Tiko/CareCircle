@@ -1,5 +1,6 @@
 """HTTP contract tests; storage tests use a real, opt-in TimescaleDB database."""
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from io import BytesIO
 from pathlib import Path
 import sys
@@ -76,24 +77,35 @@ def test_cors_preflight(bare_client):
     assert response.headers['access-control-allow-origin'] == '*'
 
 
-def test_failed_commit_does_not_return_success(bare_client):
+def test_failed_commit_does_not_return_success(bare_client, monkeypatch):
+    statements = []
+    commit_attempted = []
+
     class FakeDatabase:
         def execute(self, query, *args):
-            self.query = query
+            statements.append(query)
             return self
 
         def fetchone(self):
-            if 'FROM conversations' in self.query:
+            # This legacy check-in has not opted into a conversation.
+            if 'FROM conversations' in statements[-1]:
                 return None
             return {'time': 'irrelevant', 'note_status': 'awaiting_confirmation'}
 
+    @contextmanager
     def failing_transaction():
         yield FakeDatabase()
+        commit_attempted.append(True)
         raise psycopg.OperationalError('private connection details')
 
-    bare_client.app.dependency_overrides[api.get_db] = failing_transaction
+    # Exercise get_db's real context-manager teardown and function-scoped
+    # dependency: the failed commit must replace the pending success response.
+    monkeypatch.setattr(api, 'open_connection', failing_transaction)
     response = bare_client.post('/profiles/demo/confirm')
+    assert any(query.startswith('UPDATE checkins') for query in statements)
+    assert commit_attempted == [True]
     assert response.status_code == 503
+    assert response.json() == {'detail': 'Database operation failed.'}
     assert 'private' not in response.text
 
 
