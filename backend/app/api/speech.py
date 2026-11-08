@@ -1,6 +1,6 @@
 """Optional local ASR transport; no provider upload or implicit model download.
 
-Use a Python 3.11 environment with requirements-asr.txt and cached Whisper
+Use Python 3.11 or 3.12 with requirements-asr.txt and cached Whisper
 weights. ASR is opt-in via CADENCE_ASR_ENABLED=true. Imports do not load weights.
 Phrase matching supplies evidence only; it cannot certify comparable capture.
 """
@@ -16,6 +16,7 @@ from typing import Annotated
 
 from fastapi import Depends, File, HTTPException, UploadFile
 import soundfile as sf
+import numpy as np
 
 from app.audio.alignment_validation import validate_word_timestamp
 from app.audio.phrase_alignment import verify_phrase
@@ -62,7 +63,7 @@ def get_transcriber():
         with _LOAD_LOCK:
             return _cached_transcriber(model)
     except Exception as exc:
-        raise HTTPException(503, 'Local ASR unavailable. Use Python 3.11 with requirements-asr.txt and pre-cached model weights.') from exc
+        raise HTTPException(503, 'Local ASR unavailable. Use Python 3.11 or 3.12 with requirements-asr.txt and pre-cached model weights.') from exc
 
 
 def _json_safe(value):
@@ -114,7 +115,11 @@ def _response(result):
         if not validity.timestamps_usable or not validity.confidence_usable:
             raise HTTPException(502, 'Local ASR returned invalid word evidence.')
         words.append(asdict(word))
-    return {'text': ' '.join(word['word'].strip() for word in words), 'words': words,
+    text = ' '.join(word['word'].strip() for word in words).strip()
+    if not text:
+        raise HTTPException(422, 'No speech was recognized. Record again in a quiet room, or type your answer.')
+    return {'text': text, 'words': words, 'needs_review': True,
+            'review_notice': 'Automatic transcription can be wrong. Review and edit before sending.',
             'overall_confidence': result.overall_confidence, 'model_id': result.model_id}
 
 
@@ -135,8 +140,15 @@ def install_routes(app):
                     info = sf.info(path)
                     if info.format not in ('WAV', 'WAVEX') or info.frames == 0:
                         raise ValueError('Expected nonempty WAV.')
+                    if not .25 <= info.duration <= 120 or info.channels not in (1, 2) or not 8000 <= info.samplerate <= 96000:
+                        raise ValueError('Unsupported recording dimensions.')
                 except (ValueError, sf.LibsndfileError):
-                    raise HTTPException(400, 'Upload a valid, nonempty WAV recording.') from None
+                    raise HTTPException(400, 'Upload a valid mono/stereo WAV recording, 0.25 to 120 seconds long.') from None
+                samples, _ = sf.read(path, dtype='float32', always_2d=True)
+                if not np.isfinite(samples).all() or float(np.max(np.abs(samples))) < .0001:
+                    raise HTTPException(422, 'The recording is silent or invalid. Check the microphone, record again, or type your answer.')
+                if float(np.mean(np.abs(samples) >= .99)) > .2:
+                    raise HTTPException(422, 'The recording is heavily distorted. Move away from the microphone and try again, or type your answer.')
                 try:
                     return _response(transcriber(str(path)))
                 except HTTPException:

@@ -1,5 +1,9 @@
 # Cadence
 
+Voice-first feature development: see [setup, real-microphone instructions, and provider limitations](docs/VOICE-FIRST-CONVERSATION.md). The separate development launcher preserves the hackathon demo and its existing databases.
+
+For a complete new-profile-to-history rehearsal, use the [live judge walkthrough](docs/LIVE-JUDGE-WALKTHROUGH.md), including Windows startup, the presentation script, and honest live-service verification status.
+
 **Sense → Understand → Act.** A Parkinson's voice self-check prototype for UB Hacking.
 
 Read the same passage, compare speech timing against your own reference takes,

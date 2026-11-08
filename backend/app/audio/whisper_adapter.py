@@ -42,7 +42,7 @@ from pathlib import Path
 from app.audio.phrase_alignment import TranscriptionResult, WordTimestamp
 
 # Standard whisper cache directory (matches openai-whisper's default).
-_DEFAULT_CACHE_DIR = Path.home() / ".cache" / "whisper"
+_DEFAULT_CACHE_DIR = Path(os.getenv('CADENCE_WHISPER_CACHE', str(Path.home() / '.cache' / 'whisper')))
 
 
 class CachedWhisperTranscriber:
@@ -138,10 +138,15 @@ class CachedWhisperTranscriber:
             Word-level timestamps with **uncalibrated** confidence values.
             See the class/module docstrings for confidence caveats.
         """
+        # Decode supported WAV locally through the existing audio loader. Passing
+        # samples avoids a system FFmpeg dependency and never downloads codecs.
+        from app.audio.vad import load_mono_16k
+        audio = load_mono_16k(wav_path).numpy()
         raw = self._model.transcribe(
-            wav_path,
+            audio,
             word_timestamps=True,
             language="en",
+            fp16=False,
         )
 
         words: list[WordTimestamp] = []
