@@ -1,0 +1,98 @@
+{
+  "scope": "constructed fragmentation of existing real-speech chunks; software verification only",
+  "gap_seconds": 0.6,
+  "expected_segments": 6,
+  "detected_segments": [
+    [
+      0.1,
+      1.3
+    ],
+    [
+      1.8,
+      3.2
+    ],
+    [
+      3.7,
+      5.0
+    ],
+    [
+      5.6,
+      6.6
+    ],
+    [
+      7.1,
+      8.2
+    ],
+    [
+      8.7,
+      9.7
+    ]
+  ],
+  "reference_features": [
+    {
+      "pause_fraction": 0.0704225352112676,
+      "longest_internal_gap": 0.5,
+      "speaking_rate": 6.212121212121213,
+      "mean_speech_segment_duration": 3.3
+    },
+    {
+      "pause_fraction": 0.09722222222222224,
+      "longest_internal_gap": 0.7000000000000002,
+      "speaking_rate": 6.3076923076923075,
+      "mean_speech_segment_duration": 3.25
+    },
+    {
+      "pause_fraction": 0.07453416149068329,
+      "longest_internal_gap": 0.6000000000000005,
+      "speaking_rate": 5.503355704697987,
+      "mean_speech_segment_duration": 3.7249999999999996
+    },
+    {
+      "pause_fraction": 0.11023622047244096,
+      "longest_internal_gap": 0.7000000000000002,
+      "speaking_rate": 7.256637168141593,
+      "mean_speech_segment_duration": 2.825
+    }
+  ],
+  "fragmented_features": {
+    "pause_fraction": 0.2708333333333333,
+    "longest_internal_gap": 0.5999999999999996,
+    "speaking_rate": 5.857142857142857,
+    "mean_speech_segment_duration": 1.1666666666666667
+  },
+  "baseline_median": {
+    "pause_fraction": 0.08587819185645276,
+    "longest_internal_gap": 0.6500000000000004,
+    "speaking_rate": 6.259906759906761,
+    "mean_speech_segment_duration": 3.275
+  },
+  "baseline_mad": {
+    "pause_fraction": 0.019866607981220676,
+    "longest_internal_gap": 0.07412999999999974,
+    "speaking_rate": 0.5962547237996904,
+    "mean_speech_segment_duration": 0.3521174999999997
+  },
+  "first": {
+    "triggered": false,
+    "deviation_score": 11.110162103449428,
+    "question_text": null,
+    "feature_scores": {
+      "pause_fraction": 9.309850058536075,
+      "longest_internal_gap": -0.6744907594766072,
+      "speaking_rate": -0.6754896635405289,
+      "mean_speech_segment_duration": -5.987584636757148
+    }
+  },
+  "second": {
+    "triggered": true,
+    "deviation_score": 11.110162103449428,
+    "question_text": "What happened there?",
+    "feature_scores": {
+      "pause_fraction": 9.309850058536075,
+      "longest_internal_gap": -0.6744907594766072,
+      "speaking_rate": -0.6754896635405289,
+      "mean_speech_segment_duration": -5.987584636757148
+    }
+  },
+  "result": "PASS"
+}

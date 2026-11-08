@@ -143,3 +143,218 @@ A between-visit check-in for people already diagnosed with COPD or Parkinson's. 
 ## Keeping this file current
 
 Claude: update this file after any major finding, pivot, or correction — not after every small edit. Push it to CareCircle the same way as everything else. If resuming cold, read this file fully before re-reading the brief or touching code.
+
+## Codex handoff pickup — November 8, 2026
+
+Read `VoiceShift-HANDOFF-TO-CODEX.md` and reconciled against a fresh clone of
+`https://github.com/Programmer-Tiko/CareCircle` at `fd9fc9d` in
+`/private/tmp/cadence-handoff-reconcile`. That commit already contains the CCR
+outputs, so no further CCR command or transfer is needed. Copied both artifacts
+into this workspace: 311 chunks, ten distinct source URLs, finite 311x768 matrix;
+JSON embeddings and NumPy rows agree. No generated chunks were promoted into
+patient-facing corpus units automatically. Manual source/chunk review remains.
+
+Completed the pending fourth-feature integration: nullable additive checkins
+columns `mean_speech_segment_duration` and `feature_scores`, four-value INSERT,
+raw features and signed scores in `/checkin` responses, persisted evidence copied
+into conversation snapshots, and score-aware legacy note assembly. Added neutral
+speech-burst-duration note wording. Older profiles with only three baseline
+features return a clear 409 for new check-ins; historical rows remain readable
+without fabricating missing evidence. A new profile is required for new captures.
+
+Corrected the fragmentation verification: preserve the same a+b speech content,
+split each chunk into three pieces, insert 0.6s gaps, and require exactly six VAD
+segments before interpreting results. Baseline median burst duration 3.275s,
+fragmented mean 1.1667s, signed z=-5.9876; the first elevated reading does not
+trigger, the second does. Reference MAD is 0.3521s, not the numerical floor.
+This is constructed-audio software verification, not clinical validation.
+Reproducer: `backend/scripts/verify_fragmentation.py`; metrics:
+`docs/FOUR-FEATURE-VERIFICATION.json`. No real participant audio is committed.
+
+Regression run with isolated local PostgreSQL schemas: 70 passed, three
+TimescaleDB-specific tests skipped. The new real-audio HTTP contract test covers
+enroll/checkin/conversation, four-feature score norm, persisted score reuse,
+fresh-app recovery, and legacy-profile handling. Schema creation exercises the
+additive ALTER statements against the original checkins shape. No cloud schema
+or live provider call was made in this pickup.
+
+Research wording correction: the MDVR-KCL severity correlation motivates the
+fourth feature; the ItalianPVS B1 segment-duration difference has matching
+direction but p=0.053 and is not a significant replication. Kept existing
+research artifacts intact.
+
+Demo-fixture status: user's final correction is **not yet created** (supersedes
+an initial "ready elsewhere" reply). Consenting human clean/variation/acted
+recordings remain outstanding. UI remains deprioritized and untouched.
+
+## Independent waveform channels — November 8, 2026
+
+User explicitly authorized parallel agents and a larger CCR/product exploration.
+Two coding agents built waveform prosody extraction and the CCR ablation runner;
+a third reviewed primary-source evidence. External Antigravity is in this same
+workspace but has no control connection here. Its concrete assignment is
+`ANTIGRAVITY-TASK.md`: fixed-passage verification and word-level pause placement,
+with a later path toward articulation, without editing others' API/extractor work.
+
+Added experimental waveform-derived F0 p90-p10 range in semitones and voiced
+frame RMS p90-p10 spread in dB, plus voicing coverage, octave-jump and clipping/
+cancellation diagnostics. Uses Praat raw autocorrelation on continuous audio,
+not Silero segment boundaries. Unreliable measurements are null. This does not
+revive the retired severity classifier or label ASR/acoustic values as disease.
+
+Live integration: opt-in `/profiles/{id}/checkin?experimental=true` persists
+`waveform_evidence` JSONB and returns it under measured; conversation snapshots
+retain it. It does not change the timing trigger. Candidate-feature promotion
+requires incremental value, capture robustness and scoring recalibration.
+
+Actual local runs: all 37 MDVR-KCL recordings extracted without errors/flags;
+74 paired perturbations tested half gain and 30dB noise. Half gain left spread
+metrics effectively unchanged; median absolute noise-induced deltas were
+0.01670 semitones and 0.09273dB. Unknown dataset passage counts made speaking rate
+explicitly unavailable in 37 rows; other timing and prosody fields were present.
+No disease-performance improvement is claimed. Evidence is in
+`docs/PROSODY-EXTRACTION-SMOKE.json` and `docs/PROSODY-ROBUSTNESS-SMOKE.json`.
+
+CCR runner compares timing/prosody/combined, aggregates participant medians,
+uses fold-local preprocessing and participant-disjoint evaluation, and evaluates
+frozen cross-dataset transfer in both directions. Perturbations never become
+training samples. Added a verified-layout manifest builder and an sbatch runner.
+See `docs/MULTISIGNAL-PLAN.md` for exact commands and promotion criteria.
+SSH access here failed with publickey; no CCR job was submitted. User's existing
+authenticated CCR session can run the prepared job. No GPU is required for this
+CPU extraction/ablation; alignment may later justify GPU work.
+
+Full regression with isolated local PostgreSQL: 83 passed, 3 TimescaleDB-specific
+tests skipped. Seven new extractor tests, five ablation tests, and an API/SQL
+persistence test cover the new work. UI untouched. Demo recordings remain a
+human task; no new clinical results are inferred from constructed fixtures.
+
+## CCR multisignal-v2 report — November 8, 2026
+
+User supplied terminal output for completed job 26746762 (4m39s): 86 recordings,
+86 participants. All timing fields except unknown-count speaking_rate extracted;
+one recording lacked prosody. The 86 logged issues are exclusively deliberate
+UnavailablePassageCount, not audio-read failures. Transfer timing AUC:
+Italian->MDVR 0.72619 (p=0.08911); reverse 0.70408 (p=0.17822). Prosody:
+0.46726 (p=0.49505) / 0.56973 (p=0.50495). Combined: 0.73512 (p=0.10891) /
+0.71088 (p=0.23762). These are user-reported outputs, not locally inspected raw
+artifacts. Combined gains <0.01 do not establish incremental value, and the
+permutation p-values test ranking against chance, not superiority over timing.
+Keep prosody experimental; no live trigger change justified by this run.
+
+Within-dataset evaluation reported a class-missing fold for all families. Fixed
+the runner to stratify participant IDs directly using StratifiedKFold, then map
+all participant recordings into each fold. This replaces heuristic SGKF class
+balancing without leaking participants. Regression checks 101 shuffled label
+assignments at the MDVR 16/21 imbalance; both classes remain in every fold and
+each participant appears exactly once in held-out predictions. Re-evaluation
+only needs the existing feature CSV; no audio re-extraction is necessary.
+
+## Local audit of returned CCR artifacts — November 8, 2026
+
+Fetched `96f0c1b`; verified feature SHA256 and fold participant isolation.
+Recomputed all twelve observed AUCs from features.csv: exact agreement within
+1e-12, with no new permutations. Full audit:
+`docs/CCR-MULTISIGNAL-ARTIFACT-AUDIT.md`. Prosody helps within-cohort ranking but
+has weak transfer, and paired incremental significance has not been tested.
+Keep it experimental. Notable quality findings: clipped Italian hc_06 is
+correctly suppressed; noisy hc_19 shifts pitch spread by -5.8166 semitones with
+no flag; Italian pd_19 contains a single 1.1s detected burst (old analysis
+excluded single-segment recordings). No participant was dropped to improve
+results. Review raw capture/phrase completeness and tracking reliability before
+promoting candidate features or claiming general noise robustness.
+
+## Full workflow verification — November 8, 2026
+
+User requested whole-flow testing after revised Antigravity candidates. Verified
+16/16 exact source spans but did not promote proposals: existing context flags
+still mishandle negation, voice fatigue, interruption, noisy daily conversation
+and symptom memory. The proposed interruption case must not claim the tracker
+never advanced: check-in scoring is persisted before the later answer.
+
+Independent alignment review found/fixed four further gaps: exact cached-path
+loading (no named-model downloader), normalized empty ASR token index drift,
+standalone expected punctuation index drift, and global timestamp ordering.
+Focused helper suite passed 97 with two optional ASR skips. Real cached Whisper
+was then executed in a separate temporary Python 3.11 environment, with model
+weight downloading explicitly blocked: synthetic full passage matched at bounded
+disagreement 0.0345, different-content attributed speech mismatched at 0.8966.
+One transcriber instance handled both. Core backend environment was unchanged.
+
+Actual localhost HTTP + isolated Tiger Cloud schema + live Groq + live ElevenLabs
+workflow passed: enrollment, two-check-in persistence, waveform evidence, five
+selected follow-ups, a sixth answer saved under graceful abstention with
+uncertainty, stale revision rejection, confirmation, duplicate requests, fresh
+app recovery, Timescale hypertable and 56,049-byte MP3. Near-identical short
+fixture references produce numerical-floor MAD/huge scores: this is mechanical
+verification, not score calibration. All test schemas were removed.
+
+Installed Chrome headless with a file-simulated microphone passed actual
+MediaRecorder capture, WAV conversion, three-take enrollment, recorded check-in,
+controlled long-gap trigger, legacy answer and confirmation against isolated
+Tiger Cloud. No browser JS errors. Not a human microphone test and not a
+multi-turn UI (that wiring does not exist yet). Corrected stale HTML count copy
+from placeholder 40 to the real 41; no visual redesign or dashboard edits.
+
+Final full regression from backend/ with cloud and local SQL integrations:
+186 passed, 2 optional ASR tests skipped, one PyTorch/Python deprecation warning.
+Separate real-ASR smoke passed as above. Reports and reproducible harnesses:
+`docs/END-TO-END-STATUS.md`, LIVE-WORKFLOW-VERIFICATION.json,
+BROWSER-WORKFLOW-VERIFICATION.json, REAL-ASR-VERIFICATION.json and verify_* scripts.
+
+Original-idea delivery: real self-check core is implementable now, but finish
+browser session/turn/TTS wiring, phrase-evidence integration, corrected context
+and explicit resolution, non-triggered symptom reporting and editable note
+review. History is stored but not exposed as an authorized history UI. Caregiver
+sharing requires identity and separate consent; phone path remains unbuilt.
+No diagnosis/progression/medication claim follows from current research.
+
+## Integrated teammate UI — November 8, 2026
+
+The user authorized replacing unsupported dashboard content and integrating the
+real system. Fetched GitHub before editing: main remained fd9fc9d; the existing
+feature branch was 7363896. Work is on codex/ui-integration, preserving main.
+The new UI retains the purple rounded-card design while removing fictional
+families, disease tabs, invented scores/charts, medication/oxygen panels,
+host-Claude summaries, and pretend calling/sharing. FastAPI serves the page and
+assets, with profile discovery, actual history, and exact-word personal reports.
+
+Added optional local cached Whisper through a separate prepared Python 3.11
+environment; core .venv is unchanged. Voice answers are transcribed for editing
+before Send. Optional phrase verification gates enrollment/check-ins before
+scoring; matching is not overall capture certification. Enrollment can fit
+separate experimental pitch/energy references from three usable takes, and the
+UI shows descriptive differences without changing the timing trigger.
+
+Added source links/excerpts, revision-safe note corrections, Finish for now,
+manual question/note playback, and reload recovery. Tested context rules now
+handle negation, voice fatigue/hoarseness, symptom memory, and recording versus
+everyday noise. Three independently reviewed communication questions entered
+corpus v3 with exact evidence spans; three other proposals remain excluded.
+
+Final Python 3.11 suite: 243 passed, no skips, including real cloud/local SQL and
+cached-model ASR checks. Chrome acceptance used a file-simulated microphone,
+actual MediaRecorder/WAV capture and SQL; provider stubs are explicitly labeled.
+It covered enrollment, personal reports without a trigger, multi-turn answers,
+review without auto-send, correction, stale revision rejection, confirmation,
+early finish, reload/history, keyboard/mobile layout, mic denial and service
+errors. Final run stored four check-ins and two confirmed sessions, with no
+browser JavaScript errors. Its isolated schema was removed.
+
+A separate browser run used actual Tiger Cloud, local Whisper, Groq and
+ElevenLabs: the recorded answer yielded 45 recognized words, and real question
+and note MP3s played. Nine selections succeeded; the tenth rapid call hit a
+rate limit. That answer and uncertainty were preserved through correction and
+confirmation. This was graceful degradation, not natural completion. Normal
+check-ins now have a configurable four-question budget and no automatic Groq
+retries; separate tests verify the last answer is saved without another call.
+
+Real ASR passage-gating HTTP verification accepted three synthetic passage
+references and a matching check-in, rejected different-content speech with 422,
+and retained only one stored check-in. Human/device acceptance remains pending.
+No new CCR work was run and no clinical monitoring claim follows. Reports and
+reproduction commands are in docs/UI-INTEGRATION-VERIFICATION.md.
+
+Launcher acceptance also passed from the actual working folder after sync:
+Tiger Cloud additive startup, root UI/assets HTTP200, ASR ready, TTS configured,
+41-syllable passage. The temporary port18080 server was stopped cleanly.

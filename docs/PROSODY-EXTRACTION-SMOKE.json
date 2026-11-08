@@ -1,0 +1,1116 @@
+{
+  "scope": "Exploratory waveform extraction only; no monitoring/diagnostic claim",
+  "elapsed_seconds": 14.326633208002022,
+  "recordings": [
+    {
+      "file": "ID02_pd_2_0_0.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 6.668011662755532,
+        "voiced_energy_spread_db": 14.066737498062675,
+        "voiced_fraction": 0.4298139800647578,
+        "pitch_octave_jump_fraction": 0.0009283614420547734
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 157.55666666666667,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 15751,
+        "voiced_frames": 6770
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID04_pd_2_0_1.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 5.789481242853654,
+        "voiced_energy_spread_db": 13.28018940080089,
+        "voiced_fraction": 0.4191440705651748,
+        "pitch_octave_jump_fraction": 0.0022816842978635138
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 122.48226757369615,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 12244,
+        "voiced_frames": 5132
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID06_pd_3_1_1.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 4.949653031265271,
+        "voiced_energy_spread_db": 11.219069330960977,
+        "voiced_fraction": 0.4388416815742397,
+        "pitch_octave_jump_fraction": 0.0037159920371599205
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 178.92011337868482,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 17888,
+        "voiced_frames": 7850
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID07_pd_2_0_0.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 5.890651581787495,
+        "voiced_energy_spread_db": 15.249005817128591,
+        "voiced_fraction": 0.45867768595041325,
+        "pitch_octave_jump_fraction": 0.0006175698625907056
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 147.66569160997733,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 14762,
+        "voiced_frames": 6771
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID13_pd_3_2_2.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 8.92859711035328,
+        "voiced_energy_spread_db": 9.237970695274946,
+        "voiced_fraction": 0.18034719245606515,
+        "pitch_octave_jump_fraction": 0.0046204620462046205
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 93.36138321995465,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 9332,
+        "voiced_frames": 1683
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID16_pd_2_0_0.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 7.216675298332362,
+        "voiced_energy_spread_db": 12.15580067726156,
+        "voiced_fraction": 0.4027030259538333,
+        "pitch_octave_jump_fraction": 0.0003118178983473651
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 167.2638321995465,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 16722,
+        "voiced_frames": 6734
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID17_pd_2_1_0.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 8.300866824424986,
+        "voiced_energy_spread_db": 16.450589002886737,
+        "voiced_fraction": 0.45195208923836516,
+        "pitch_octave_jump_fraction": 0.00337126000842815
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 109.41208616780045,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 10937,
+        "voiced_frames": 4943
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID18_pd_4_3_3.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 5.798376146360511,
+        "voiced_energy_spread_db": 15.754085479392423,
+        "voiced_fraction": 0.33605600933488916,
+        "pitch_octave_jump_fraction": 0.006148282097649186
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 85.74224489795918,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 8570,
+        "voiced_frames": 2880
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID20_pd_3_0_1.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 5.2076059700925015,
+        "voiced_energy_spread_db": 11.912130352343198,
+        "voiced_fraction": 0.36386840612592175,
+        "pitch_octave_jump_fraction": 0.0024549918166939444
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 141.08097505668934,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 14104,
+        "voiced_frames": 5132
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID24_pd_2_0_0.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 4.130624953488251,
+        "voiced_energy_spread_db": 10.602671750053617,
+        "voiced_fraction": 0.4554232151666784,
+        "pitch_octave_jump_fraction": 0.0047146805397496345
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 141.93798185941043,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 14189,
+        "voiced_frames": 6462
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID27_pd_4_1_1.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 6.878766086021443,
+        "voiced_energy_spread_db": 12.263306983004082,
+        "voiced_fraction": 0.3771646960468171,
+        "pitch_octave_jump_fraction": 0.0
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 83.77777777777777,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 8373,
+        "voiced_frames": 3158
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID29_pd_3_1_2.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 5.265230703724697,
+        "voiced_energy_spread_db": 12.132971264135332,
+        "voiced_fraction": 0.29343554725246407,
+        "pitch_octave_jump_fraction": 0.003923378721440111
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 155.27170068027212,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 15523,
+        "voiced_frames": 4555
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID30_pd_2_1_1.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 8.062329021792095,
+        "voiced_energy_spread_db": 11.058969361025845,
+        "voiced_fraction": 0.41683685046516905,
+        "pitch_octave_jump_fraction": 0.0040650406504065045
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 132.25421768707483,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 13221,
+        "voiced_frames": 5511
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID32_pd_3_1_1.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 6.788314429263195,
+        "voiced_energy_spread_db": 9.301675867230905,
+        "voiced_fraction": 0.3349773941635841,
+        "pitch_octave_jump_fraction": 0.011592958351223702
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 73.03902494331066,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 7299,
+        "voiced_frames": 2445
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID33_pd_3_2_2.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 6.4860559838382414,
+        "voiced_energy_spread_db": 16.63789406640607,
+        "voiced_fraction": 0.3195571331981068,
+        "pitch_octave_jump_fraction": 0.004920721705850191
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 118.36952380952381,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 11832,
+        "voiced_frames": 3781
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID34_pd_2_0_0.wav",
+      "group": "PD",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 14.086476452884568,
+        "voiced_energy_spread_db": 10.869837135774688,
+        "voiced_fraction": 0.41022833906787615,
+        "pitch_octave_jump_fraction": 0.00819840131174421
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 127.92086167800454,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 12788,
+        "voiced_frames": 5246
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID00_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 6.624352770925,
+        "voiced_energy_spread_db": 15.217825240253077,
+        "voiced_fraction": 0.471768054544251,
+        "pitch_octave_jump_fraction": 0.0019371181642080166
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 151.114716553288,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 15107,
+        "voiced_frames": 7127
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID01_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 5.395139650947016,
+        "voiced_energy_spread_db": 10.367209900270066,
+        "voiced_fraction": 0.35176155065220044,
+        "pitch_octave_jump_fraction": 0.0009271277582050807
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 164.1050566893424,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 16406,
+        "voiced_frames": 5771
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID03_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 7.415077981390397,
+        "voiced_energy_spread_db": 10.976952717060826,
+        "voiced_fraction": 0.3576804530141208,
+        "pitch_octave_jump_fraction": 0.0021496130696474634
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 139.55532879818594,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 13951,
+        "voiced_frames": 4990
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID05_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 5.372973629259505,
+        "voiced_energy_spread_db": 10.77934784982238,
+        "voiced_fraction": 0.4147727272727273,
+        "pitch_octave_jump_fraction": 0.004194826380797017
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 110.92691609977324,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 11088,
+        "voiced_frames": 4599
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID08_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 8.93499517493936,
+        "voiced_energy_spread_db": 11.865304171470612,
+        "voiced_fraction": 0.407846090647679,
+        "pitch_octave_jump_fraction": 0.0012529085376767495
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 146.10476190476192,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 14606,
+        "voiced_frames": 5957
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID09_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 7.032610076020049,
+        "voiced_energy_spread_db": 11.478505160509336,
+        "voiced_fraction": 0.3885832735390258,
+        "pitch_octave_jump_fraction": 0.0028421512898994315
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 125.47598639455782,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 12543,
+        "voiced_frames": 4874
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID10_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 7.196431656566517,
+        "voiced_energy_spread_db": 11.316863678966737,
+        "voiced_fraction": 0.38704015212462517,
+        "pitch_octave_jump_fraction": 0.004651162790697674
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 136.77233560090704,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 13673,
+        "voiced_frames": 5292
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID11_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 6.218577742453732,
+        "voiced_energy_spread_db": 8.079198566789096,
+        "voiced_fraction": 0.3311985978158285,
+        "pitch_octave_jump_fraction": 0.0008735531775496833
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 148.38630385487528,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 14834,
+        "voiced_frames": 4913
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID12_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 6.636952655839295,
+        "voiced_energy_spread_db": 12.322850404007351,
+        "voiced_fraction": 0.3480726492451529,
+        "pitch_octave_jump_fraction": 0.008520710059171597
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 130.53124716553287,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 13049,
+        "voiced_frames": 4542
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID14_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 16.95757778560386,
+        "voiced_energy_spread_db": 9.349088100552535,
+        "voiced_fraction": 0.3412128051315555,
+        "pitch_octave_jump_fraction": 0.018304071722076952
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 168.41766439909298,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 16837,
+        "voiced_frames": 5745
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID15_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 6.516338872007779,
+        "voiced_energy_spread_db": 10.853434045189314,
+        "voiced_fraction": 0.41819567383785683,
+        "pitch_octave_jump_fraction": 0.0011934954497985976
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 170.63448979591837,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 17059,
+        "voiced_frames": 7134
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID19_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 13.4883241226172,
+        "voiced_energy_spread_db": 11.558067489865095,
+        "voiced_fraction": 0.36470504921747754,
+        "pitch_octave_jump_fraction": 0.011032472939217318
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 141.25108843537416,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 14121,
+        "voiced_frames": 5150
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID21_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 6.292028656150336,
+        "voiced_energy_spread_db": 9.873501614860935,
+        "voiced_fraction": 0.35060576293385726,
+        "pitch_octave_jump_fraction": 0.0017557060446450965
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 122.20575963718821,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 12216,
+        "voiced_frames": 4283
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID22_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 5.264073545409346,
+        "voiced_energy_spread_db": 11.106277886002172,
+        "voiced_fraction": 0.3557347670250896,
+        "pitch_octave_jump_fraction": 0.003043867502238138
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 167.4401814058957,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 16740,
+        "voiced_frames": 5955
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID23_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 7.672880304865302,
+        "voiced_energy_spread_db": 10.522554834512782,
+        "voiced_fraction": 0.3991648243674773,
+        "pitch_octave_jump_fraction": 0.0007755946225439503
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 203.59596371882085,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 20355,
+        "voiced_frames": 8125
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID25_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 8.55352043525943,
+        "voiced_energy_spread_db": 8.245636662516606,
+        "voiced_fraction": 0.2580608146873207,
+        "pitch_octave_jump_fraction": 0.00024172105390379503
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 174.34809523809523,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 17430,
+        "voiced_frames": 4498
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID26_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 10.340484126367429,
+        "voiced_energy_spread_db": 10.012315243914564,
+        "voiced_fraction": 0.33545868575146387,
+        "pitch_octave_jump_fraction": 0.006072026800670017
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 153.74072562358276,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 15370,
+        "voiced_frames": 5156
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID28_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 6.647530166375873,
+        "voiced_energy_spread_db": 10.465697847593198,
+        "voiced_fraction": 0.3896665294359819,
+        "pitch_octave_jump_fraction": 0.004509582863585118
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 145.78263038548752,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 14574,
+        "voiced_frames": 5679
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID31_hc_0_1_1.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 5.807784764801454,
+        "voiced_energy_spread_db": 9.518546309383463,
+        "voiced_fraction": 0.3990048204011818,
+        "pitch_octave_jump_fraction": 0.00449162923642303
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 192.97562358276645,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 19293,
+        "voiced_frames": 7698
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID35_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 13.835674654266981,
+        "voiced_energy_spread_db": 9.615738678536147,
+        "voiced_fraction": 0.3263225667990128,
+        "pitch_octave_jump_fraction": 0.0065812261863526155
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 93.23818594104308,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 9319,
+        "voiced_frames": 3041
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    {
+      "file": "ID36_hc_0_0_0.wav",
+      "group": "HC",
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 5.0113047773036214,
+        "voiced_energy_spread_db": 11.756579208670633,
+        "voiced_fraction": 0.33282876064333017,
+        "pitch_octave_jump_fraction": 0.0002021018593371059
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 44100,
+        "channels": 1,
+        "duration_seconds": 158.59467120181407,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 15855,
+        "voiced_frames": 5277
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    }
+  ]
+}

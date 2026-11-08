@@ -218,3 +218,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Optional local speech-recognition environment and human recordings
+.venv-asr/
+backend/.venv-asr/
+local-recordings/

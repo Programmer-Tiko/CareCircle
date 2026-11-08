@@ -1,0 +1,2 @@
+# NumPy arrays are binary artifacts, not line-oriented text.
+*.npy binary

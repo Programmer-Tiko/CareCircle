@@ -3,6 +3,8 @@
 No model-generated note or question is trusted here: the selector adapter must
 return a validated Selection. The default abstains and preserves uncertainty.
 """
+import math
+import os
 from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
@@ -12,12 +14,17 @@ from fastapi.encoders import jsonable_encoder
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, Field, StringConstraints, model_validator
 
+from app.models.personal_baseline import BaselineStats, FEATURE_ORDER, per_feature_deviation
+from app.dialogue.conversation_adapter import emergency_selection
+
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=5000)]
 
 
 class Source(BaseModel):
     id: Text
     version: Text
+    url: str | None = None
+    excerpt: str | None = None
 
 
 class Question(BaseModel):
@@ -80,25 +87,70 @@ def install_routes(app, get_db, locked_profile):
         return jsonable_encoder({**session, 'turns': turns})
 
     @app.post('/profiles/{profile_id}/conversations')
-    def start(profile_id: str, body: StartRequest, db: Database):
-        locked_profile(db, profile_id)
+    def start(profile_id: str, body: StartRequest, db: Database, selector: Selector):
+        profile = locked_profile(db, profile_id)
         existing = db.execute('SELECT session_id FROM conversations WHERE profile_id = %s AND checkin_time = %s',
                               (profile_id, body.checkin_time)).fetchone()
         if existing:
             return snapshot(db, existing['session_id'])
         row = db.execute('SELECT * FROM checkins WHERE profile_id = %s AND time = %s',
                          (profile_id, body.checkin_time)).fetchone()
-        if row is None or not row['triggered'] or row['note_status'] is not None:
-            raise HTTPException(409, 'Start requires an unanswered triggered check-in.')
+        # A check-in no longer has to have crossed the persistent-deviation
+        # threshold to open a conversation -- every check-in gets one, so a
+        # patient with a typical reading can still say what's on their mind.
+        # row['triggered'] still flows into `measured` below and keeps
+        # gating the units that are specifically about a flagged deviation
+        # (e.g. distraction_check); it just no longer gates whether a
+        # conversation exists at all.
+        if row is None or row['note_status'] is not None:
+            raise HTTPException(409, 'Start requires an unanswered check-in.')
         session_id = uuid4()
-        measured = {'deviation_score': row['deviation_score'],
-                    'features': {key: row[key] for key in ('pause_fraction', 'longest_internal_gap', 'speaking_rate')}}
+        measured = {'deviation_score': row['deviation_score'], 'triggered': bool(row['triggered']),
+                    'features': {key: row[key] for key in FEATURE_ORDER if row.get(key) is not None}}
+        # Prefer the evidence recorded when scoring, not a later baseline.
+        scores = row.get('feature_scores')
+        if scores is None:
+            if all(key in measured['features'] and key in (profile['baseline_median'] or {})
+                   and key in (profile['baseline_mad'] or {}) for key in FEATURE_ORDER):
+                scores = per_feature_deviation(
+                    BaselineStats(median=profile['baseline_median'], mad=profile['baseline_mad']),
+                    measured['features'])
+            else:
+                scores = {}  # Legacy rows cannot invent a missing fourth measurement.
+        measured['feature_scores'] = scores
+        if row.get('waveform_evidence') is not None:
+            measured['waveform_evidence'] = row['waveform_evidence']
+        if row.get('phrase_evidence') is not None:
+            measured['phrase_evidence'] = row['phrase_evidence']
+        if not all(math.isfinite(value) for value in measured['feature_scores'].values()):
+            raise HTTPException(409, 'Check-in produced nonfinite feature scores.')
         db.execute('INSERT INTO conversations (session_id, profile_id, checkin_time, measured) VALUES (%s,%s,%s,%s)',
                    (session_id, profile_id, body.checkin_time, Jsonb(measured)))
-        question = Question(id='legacy-initial', version='1', text=row['question_text'],
-                            sources=[Source(id='prototype-dialogue-policy', version='1')])
-        db.execute('INSERT INTO conversation_turns (turn_id, session_id, ordinal, question) VALUES (%s,%s,1,%s)',
-                   (uuid4(), session_id, Jsonb(question.model_dump())))
+        # The opening question comes from the same selector/eligible-set
+        # mechanism as every follow-up -- not a fixed line of text. With no
+        # answer yet to react to, context flags fall back to whatever the
+        # measurement itself and an empty answer imply (no situational-
+        # distraction signal, no speech-difficulty report yet); units with
+        # no preconditions at all (several already exist in the corpus)
+        # are picked from genuinely, not just nominally.
+        try:
+            selection = Selection.model_validate(selector({'condition': profile['condition'],
+                'measured': measured, 'turns': [], 'answer_text': ''}))
+        except Exception:
+            selection = Selection(decision='abstain')
+        if selection.question:
+            db.execute('INSERT INTO conversation_turns (turn_id, session_id, ordinal, question) VALUES (%s,%s,1,%s)',
+                       (uuid4(), session_id, Jsonb(selection.question.model_dump())))
+        else:
+            # No eligible opening question at all (corpus exhausted or the
+            # selector abstained) -- close the conversation immediately with
+            # an honest, empty note rather than leaving a question-less
+            # active session with nothing to answer.
+            state = 'complete' if selection.decision == 'complete' else 'abstained'
+            note = {'measured': measured, 'patient_said': [],
+                    'unresolved': ['No supported opening question was available for this reading.'],
+                    'status': 'awaiting_confirmation'}
+            db.execute('UPDATE conversations SET state=%s, note=%s WHERE session_id=%s', (state, Jsonb(note), session_id))
         return snapshot(db, session_id)
 
     @app.get('/profiles/{profile_id}/conversations/{session_id}')
@@ -126,16 +178,30 @@ def install_routes(app, get_db, locked_profile):
         profile = locked_profile(db, profile_id)
         history = snapshot(db, session_id)['turns']
         try:
-            selection = Selection.model_validate(selector({'condition': profile['condition'],
-                'measured': session['measured'], 'turns': history, 'answer_text': body.answer_text}))
-            if selection.question and any(t['question']['id'] == selection.question.id for t in history):
+            max_questions=max(1,min(20,int(os.getenv('CADENCE_MAX_QUESTIONS','4'))))
+        except ValueError:
+            max_questions=4
+        budget_reached=len(history)>=max_questions
+        safety = emergency_selection(body.answer_text)
+        if safety is not None:
+            # The question budget and an injected/provider selector must never
+            # suppress the fixed safety notice. This remains a narrow tripwire.
+            selection = Selection.model_validate(safety)
+        elif budget_reached:
+            # Question budget ends the interview, never asserts clinical resolution.
+            selection=Selection(decision='abstain')
+        else:
+            try:
+                selection = Selection.model_validate(selector({'condition': profile['condition'],
+                    'measured': session['measured'], 'turns': history, 'answer_text': body.answer_text}))
+                if selection.question and any(t['question']['id'] == selection.question.id for t in history):
+                    selection = Selection(decision='abstain')
+                if selection.decision == 'complete' and (not selection.resolved or any(
+                        t['answered_at'] and not t['resolved'] for t in history)):
+                    selection = Selection(decision='abstain')
+            except Exception:
+                # Provider/schema/validation failure never loses the patient's answer.
                 selection = Selection(decision='abstain')
-            if selection.decision == 'complete' and (not selection.resolved or any(
-                    t['answered_at'] and not t['resolved'] for t in history)):
-                selection = Selection(decision='abstain')
-        except Exception:
-            # Provider/schema/validation failure never loses the patient's answer.
-            selection = Selection(decision='abstain')
         db.execute('UPDATE conversation_turns SET answer=%s, answered_at=clock_timestamp(), resolved=%s, '
                    'submission_id=%s, selection=%s WHERE turn_id=%s',
                    (body.answer_text, selection.resolved, body.submission_id, Jsonb(selection.model_dump()), turn_id))
@@ -145,7 +211,9 @@ def install_routes(app, get_db, locked_profile):
         state = {'ask': 'active', 'complete': 'complete', 'abstain': 'abstained'}[selection.decision]
         answers = [t['answer'] for t in history if t['answered_at']] + [body.answer_text]
         note = {'measured': session['measured'], 'patient_said': answers,
-                'unresolved': [] if state == 'complete' else ['The conversation contains unresolved information.'],
+                'unresolved': [] if state == 'complete' else [
+                    'This check-in reached its question limit; some details remain unclear.' if budget_reached
+                    else 'The conversation contains unresolved information.'],
                 'status': 'awaiting_confirmation'}
         db.execute('UPDATE conversations SET revision=revision+1, state=%s, note=%s WHERE session_id=%s',
                    (state, Jsonb(note), session_id))

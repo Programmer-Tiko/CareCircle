@@ -41,6 +41,7 @@ def _take_from_file(path: Path) -> dict:
         "pause_fraction": features.pause_fraction,
         "longest_internal_gap": features.longest_internal_gap,
         "speaking_rate": features.speaking_rate,
+        "mean_speech_segment_duration": features.mean_speech_segment_duration,
     }
 
 

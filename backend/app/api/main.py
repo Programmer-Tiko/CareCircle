@@ -20,14 +20,23 @@ from pydantic import BaseModel, StringConstraints
 import soundfile as sf
 
 from app.dialogue.conversation_adapter import selector_adapter
-from app.models.personal_baseline import BaselineStats, PersistentDeviationTracker, fit_baseline
+from app.passage import PASSAGE_SYLLABLE_COUNT
+from app.models.personal_baseline import BaselineStats, PersistentDeviationTracker, fit_baseline, FEATURE_ORDER, per_feature_deviation
+from app.audio.observation_reference import fit_observation_reference, compare_observations
 from app.pipeline import build_take_from_audio, evaluate_checkin, process_answer
 
 load_dotenv(Path(__file__).resolve().parents[2] / '.env')
-
-# Placeholder until the standard passage's actual syllable count is pinned down.
-PASSAGE_SYLLABLE_COUNT = 40
-DEVIATION_THRESHOLD = 2.0
+# The combined score is a Euclidean norm across FEATURE_ORDER's dimensions
+# (personal_baseline.deviation_score) -- under pure noise with four
+# well-estimated z-scores, that norm's expected value is already close to
+# 1.9 (chi distribution, k=4), not 0. 2.0 was workable back when there
+# were three features; with a fourth dimension added, ordinary variation
+# alone regularly clears it. Raised to keep roughly the same real-anomaly
+# sensitivity the three-feature system had, now that there's one more
+# axis for routine noise to add up across. See personal_baseline.py's
+# MIN_RELATIVE_MAD for the other half of this fix (a too-tight enrollment
+# baseline, not just the extra dimension).
+DEVIATION_THRESHOLD = 3.0
 REQUIRED_CONSECUTIVE = 2
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 Condition = Literal['copd', 'parkinsons']
@@ -96,11 +105,31 @@ def audio_path(upload):
         upload.file.close()
 
 
+
+def require_matching_phrase(path, reference_take=None):
+    from app.api.speech import phrase_evidence
+    evidence = phrase_evidence(path)
+    if evidence['status'] != 'available':
+        raise HTTPException(503, 'Phrase verification is unavailable; use typed capture settings or configure local ASR.')
+    if evidence.get('phrase_match') != 'matched':
+        prefix = f'Reference take {reference_take}: ' if reference_take is not None else ''
+        words = evidence.get('observed_tokens') or [word.get('word', '') for word in evidence.get('word_timestamps', [])]
+        recognized = ' '.join(words).strip()[:500]
+        heard = f' The recognizer heard: “{recognized}”.' if recognized else ' The recognizer returned no reliable words.'
+        reason = evidence.get('phrase_match_reason') or 'The transcript did not match closely enough.'
+        raise HTTPException(422, prefix + 'Passage verification did not pass. ' + reason + heard +
+                            ' Your takes are still in this page. Preview the recording and replace this take if needed. '
+                            'If you intentionally want an unverified reference, uncheck optional passage verification and retry.')
+    return evidence
+
+
 @router.post('/profiles/{profile_id}/enroll')
 def enroll(profile_id: str, db: Database,
            files: Annotated[list[UploadFile], File()],
            condition: Annotated[Condition | None, Query()] = None,
-           form_condition: Annotated[Condition | None, Form(alias='condition')] = None):
+           form_condition: Annotated[Condition | None, Form(alias='condition')] = None,
+           verify_passage: Annotated[bool, Query()] = False,
+           experimental: Annotated[bool, Query()] = False):
     try:
         chosen_condition = form_condition or condition
         if chosen_condition is None:
@@ -110,14 +139,24 @@ def enroll(profile_id: str, db: Database,
         if len(files) < 3 or len(files) > 5:
             raise HTTPException(400, 'Provide 3–5 clean reference WAV recordings.')
         takes = []
-        for upload in files:
+        waveform_takes = []
+        for take_number, upload in enumerate(files, start=1):
             with audio_path(upload) as path:
+                if verify_passage:
+                    require_matching_phrase(path, reference_take=take_number)
                 takes.append(build_take_from_audio(path, PASSAGE_SYLLABLE_COUNT))
+                if experimental:
+                    from app.audio.prosody_features import extract_prosody_features
+                    waveform_takes.append(extract_prosody_features(path))
         baseline = fit_baseline(takes)
         try:
             db.execute('INSERT INTO profiles (profile_id, condition, baseline_median, baseline_mad) '
                        'VALUES (%s, %s, %s, %s)',
                        (profile_id, chosen_condition, Jsonb(baseline.median), Jsonb(baseline.mad)))
+            if experimental:
+                reference = fit_observation_reference(waveform_takes)
+                db.execute('UPDATE profiles SET waveform_baseline=%s WHERE profile_id=%s',
+                           (Jsonb(reference),profile_id))
         except psycopg.errors.UniqueViolation:
             raise HTTPException(409, 'Profile is already enrolled.') from None
         return {'status': 'enrolled', 'profile_id': profile_id, 'n_reference_takes': len(takes)}
@@ -127,8 +166,13 @@ def enroll(profile_id: str, db: Database,
 
 
 @router.post('/profiles/{profile_id}/checkin')
-def checkin(profile_id: str, db: Database, file: Annotated[UploadFile, File()]):
+def checkin(profile_id: str, db: Database, file: Annotated[UploadFile, File()],
+            experimental: Annotated[bool, Query()] = False,
+            verify_passage: Annotated[bool, Query()] = False):
     profile = locked_profile(db, profile_id)
+    if any(feature not in (profile['baseline_median'] or {}) or
+           feature not in (profile['baseline_mad'] or {}) for feature in FEATURE_ORDER):
+        raise HTTPException(409, 'Profile uses an older feature baseline; enroll a new profile with four reference features.')
     baseline = BaselineStats(median=profile['baseline_median'], mad=profile['baseline_mad'])
     history = db.execute('SELECT deviation_score FROM checkins WHERE profile_id = %s '
                          'ORDER BY time DESC LIMIT %s', (profile_id, REQUIRED_CONSECUTIVE)).fetchall()
@@ -136,23 +180,37 @@ def checkin(profile_id: str, db: Database, file: Annotated[UploadFile, File()]):
     for row in reversed(history):
         tracker.observe(row['deviation_score'])
     with audio_path(file) as path:
+        phrase = require_matching_phrase(path) if verify_passage else None
         result = evaluate_checkin(path, baseline, tracker, profile['condition'], PASSAGE_SYLLABLE_COUNT)
         take = build_take_from_audio(path, PASSAGE_SYLLABLE_COUNT)
-    if not all(math.isfinite(v) for v in [*take.values(), result.deviation_score]):
+        waveform_evidence = None
+        if experimental:
+            from app.audio.prosody_features import extract_prosody_features
+            waveform_evidence = extract_prosody_features(path)
+            waveform_evidence['personal_reference'] = compare_observations(waveform_evidence,profile.get('waveform_baseline'))
+    feature_scores = per_feature_deviation(baseline, take)
+    if not all(math.isfinite(v) for v in [*take.values(), *feature_scores.values(), result.deviation_score]):
         raise HTTPException(400, 'Recording produced invalid measurements.')
     # Timestamp also identifies the row for answer/confirm. The profile lock and
     # monotonic timestamp prevent ties even when transactions start out of order.
     inserted = db.execute('INSERT INTO checkins (time, profile_id, pause_fraction, longest_internal_gap, '
-               'speaking_rate, deviation_score, triggered, question_text) '
+               'speaking_rate, mean_speech_segment_duration, feature_scores, waveform_evidence, phrase_evidence, deviation_score, triggered, question_text) '
                "VALUES (GREATEST(clock_timestamp(), (SELECT max(time) + interval '1 microsecond' "
-               'FROM checkins WHERE profile_id = %s)), %s, %s, %s, %s, %s, %s, %s) RETURNING time',
+               'FROM checkins WHERE profile_id = %s)), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING time',
                (profile_id, profile_id, take['pause_fraction'], take['longest_internal_gap'],
-                take['speaking_rate'], result.deviation_score, result.triggered, result.question_text)).fetchone()
+                take['speaking_rate'], take['mean_speech_segment_duration'], Jsonb(feature_scores),
+                Jsonb(waveform_evidence) if waveform_evidence is not None else None,
+                Jsonb(phrase) if phrase is not None else None, result.deviation_score, result.triggered, result.question_text)).fetchone()
     return {'profile_id': profile_id, 'checkin_time': inserted['time'],
-            'measured': {'deviation_score': result.deviation_score,
+            'measured': {'features': take, 'feature_scores': feature_scores,
+                         'waveform_evidence': waveform_evidence, 'phrase_evidence': phrase,
+                         'deviation_score': result.deviation_score,
                          'deviation_from_baseline': 'persistent' if result.triggered else
                          ('elevated' if result.deviation_score >= DEVIATION_THRESHOLD else 'usual')},
             'triggered_question': result.question_text,
+            # Preserve the acoustic check-in contract for existing clients.
+            # The UI can start a conversation for either status; start()
+            # selects an opening independently of the acoustic trigger.
             'status': 'awaiting_answer' if result.triggered else 'no_change'}
 
 
@@ -173,7 +231,8 @@ def answer(profile_id: str, body: AnswerRequest, db: Database):
     if row is None or not row['triggered'] or row['note_status'] is not None:
         raise HTTPException(404, 'No pending question to answer.')
     reject_conversation_owned(db, profile_id, row['time'])
-    note, follow_up = process_answer(profile['condition'], row['deviation_score'], body.answer_text)
+    note, follow_up = process_answer(profile['condition'], row['deviation_score'], body.answer_text,
+                                     feature_scores=row.get('feature_scores'))
     db.execute('UPDATE checkins SET patient_said = %s, note_status = %s '
                'WHERE profile_id = %s AND time = %s',
                (note.patient_said, note.status, profile_id, row['time']))
@@ -234,11 +293,15 @@ async def lifespan(app):
 
 
 def create_app():
+    from app.api.workspace import install_routes as install_workspace
+    from app.api.speech import install_routes as install_speech
     application = FastAPI(title='VoiceShift API', lifespan=lifespan)
     application.add_middleware(CORSMiddleware, allow_origins=['*'],
                                allow_methods=['*'], allow_headers=['*'])
     application.include_router(router)
     install_routes(application, get_db, locked_profile)
+    install_workspace(application, get_db, locked_profile)
+    install_speech(application)
     # The default selector always abstains (conversations.py's own safe
     # default); this wires in the validated RAG adapter so conversations
     # actually ask something beyond the legacy initial question.

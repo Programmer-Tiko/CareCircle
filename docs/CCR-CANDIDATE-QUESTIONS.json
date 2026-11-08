@@ -1,0 +1,216 @@
+{
+  "version": "2026-11-08-ccr-candidates-v2",
+  "review_summary": {
+    "total_chunks_reviewed": 311,
+    "candidate_units_produced": 6,
+    "active_candidates": 3,
+    "blocked_candidates": 3,
+    "status": "candidate_proposals_only__not_promoted_to_live_corpus"
+  },
+  "candidates": [
+    {
+      "id": "vocal_fatigue_check",
+      "condition": "parkinsons",
+      "information_sought": "vocal_fatigue_or_evening_decline",
+      "preconditions": [
+        "speech_motor_cue_present"
+      ],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
+      "question_template": "Does your voice feel weaker or more tired as the day goes on?",
+      "evidence_spans": [
+        {
+          "chunk_index": 2,
+          "source_url": "https://www.parkinson.org/library/fact-sheets/speech-swallowing",
+          "source_version": "Parkinson's Foundation, Speech & Swallowing fact sheet",
+          "verbatim_text": "Is my voice weak or does it tire easily?"
+        },
+        {
+          "chunk_index": 281,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.23",
+          "verbatim_text": "My voice is worse in the evening"
+        },
+        {
+          "chunk_index": 282,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.23",
+          "verbatim_text": "My voice “gives out” on me in the middle of speaking"
+        }
+      ],
+      "review_status": "prototype",
+      "eligibility_basis": "Eligible when patient's prior answer explicitly confirms voice/speech motor difficulty (speech_motor_cue_present=True). Never inferred from an acoustic pause deviation alone.",
+      "blocked": false,
+      "blocked_reason": null
+    },
+    {
+      "id": "vocal_quality_hoarseness",
+      "condition": "parkinsons",
+      "information_sought": "vocal_quality_change",
+      "preconditions": [
+        "speech_motor_cue_present"
+      ],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
+      "question_template": "Have you noticed your voice sounding hoarse, breathy, or strained recently?",
+      "evidence_spans": [
+        {
+          "chunk_index": 218,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.5",
+          "verbatim_text": "When the airflow is reduced, it lowers the volume of the voice and makes the voice breathy and/or hoarse in quality."
+        },
+        {
+          "chunk_index": 219,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.5",
+          "verbatim_text": "This changes the quality of the voice, making it sound breathy and/or hoarse, and makes it more difficult"
+        },
+        {
+          "chunk_index": 281,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.23",
+          "verbatim_text": "I feel as though I have to strain to produce voice"
+        }
+      ],
+      "review_status": "prototype",
+      "eligibility_basis": "Eligible when patient reports speech motor difficulty; differentiates dysphonia and vocal roughness from simple hypophonia/softness.",
+      "blocked": false,
+      "blocked_reason": null
+    },
+    {
+      "id": "group_and_noise_communication",
+      "condition": "parkinsons",
+      "information_sought": "ambient_noise_and_group_communication",
+      "preconditions": [
+        "initial_answer_mentions_speech_difficulty"
+      ],
+      "exclusions": [
+        "recording_interrupted_by_distraction"
+      ],
+      "question_template": "Is it harder for people to hear you in group conversations or when there is background noise, like in a restaurant?",
+      "evidence_spans": [
+        {
+          "chunk_index": 277,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.22",
+          "verbatim_text": "People have difficulty understanding me in a noisy room"
+        },
+        {
+          "chunk_index": 278,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.22",
+          "verbatim_text": "I tend to avoid groups of people because of my voice"
+        },
+        {
+          "chunk_index": 279,
+          "source_url": "https://www.apdaparkinson.org/wp-content/uploads/2020/07/APDA-Communication-and-PD.pdf",
+          "source_version": "APDA, Make Your Voice Heard! Healthy Communication and Parkinson's Disease, p.22",
+          "verbatim_text": "I feel left out of conversations because of my voice"
+        }
+      ],
+      "review_status": "prototype",
+      "eligibility_basis": "Eligible as a functional follow-up when patient confirms everyday speech difficulties. Differentiates room noise during recording from ambient noise in daily life.",
+      "blocked": false,
+      "blocked_reason": null
+    },
+    {
+      "id": "daytime_sleepiness_check",
+      "condition": "parkinsons",
+      "information_sought": "daytime_sleepiness_and_napping",
+      "preconditions": [
+        "explicit_patient_report_of_sleepiness"
+      ],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
+      "question_template": "Have you been feeling unusually sleepy during the day, or finding yourself needing unexpected naps?",
+      "evidence_spans": [
+        {
+          "chunk_index": 84,
+          "source_url": "https://www.parkinson.org/library/fact-sheets/sleep",
+          "source_version": "Parkinson's Foundation, Sleep fact sheet",
+          "verbatim_text": "Still feeling tired after a full night in bed"
+        },
+        {
+          "chunk_index": 84,
+          "source_url": "https://www.parkinson.org/library/fact-sheets/sleep",
+          "source_version": "Parkinson's Foundation, Sleep fact sheet",
+          "verbatim_text": "Sleeping more during the day or napping often"
+        },
+        {
+          "chunk_index": 89,
+          "source_url": "https://www.parkinson.org/library/fact-sheets/sleep",
+          "source_version": "Parkinson's Foundation, Sleep fact sheet",
+          "verbatim_text": "Sleeping too much during the day or taking long or late naps can make it harder to sleep at night."
+        }
+      ],
+      "review_status": "prototype",
+      "eligibility_basis": "Requires an explicit patient report of daytime sleepiness or an independently scheduled routine check-in policy. Blocked from triggering based solely on acoustic pause-fraction deviation.",
+      "blocked": true,
+      "blocked_reason": "Blocked under acoustic gate: pause fraction z > 1.5 alone does not support inferring daytime sleepiness as an evidence basis."
+    },
+    {
+      "id": "fatigue_physical_vs_mental",
+      "condition": "parkinsons",
+      "information_sought": "fatigue_physical_motor_vs_mental",
+      "preconditions": [
+        "initial_answer_mentions_fatigue"
+      ],
+      "exclusions": [
+        "answer_indicates_situational_distraction"
+      ],
+      "question_template": "Does that fatigue feel more physical in your body and muscles, more mental where it's hard to concentrate, or a combination of both?",
+      "evidence_spans": [
+        {
+          "chunk_index": 25,
+          "source_url": "https://www.parkinson.org/library/fact-sheets/fatigue",
+          "source_version": "Parkinson's Foundation, Fatigue fact sheet",
+          "verbatim_text": "Fatigue is a feeling of being extremely tired, of being either physically or mentally weary."
+        },
+        {
+          "chunk_index": 29,
+          "source_url": "https://www.parkinson.org/library/fact-sheets/fatigue",
+          "source_version": "Parkinson's Foundation, Fatigue fact sheet",
+          "verbatim_text": "Akinesia, or trouble starting a movement, often feels like fatigue. A person with this symptom must move slowly and will find it hard to finish a task in a regular amount of time."
+        }
+      ],
+      "review_status": "prototype",
+      "eligibility_basis": "Requires context flag initial_answer_mentions_fatigue from prior turn answer. Blocked until fatigue keyword extraction is implemented.",
+      "blocked": true,
+      "blocked_reason": "Context flag initial_answer_mentions_fatigue is not currently implemented in retrieval.py."
+    },
+    {
+      "id": "morning_off_period_check",
+      "condition": "parkinsons",
+      "information_sought": "early_morning_symptom_prominence",
+      "preconditions": [
+        "patient_known_to_take_pd_medication"
+      ],
+      "exclusions": [
+        "medication_status_unknown"
+      ],
+      "question_template": "Did you record this check-in early in the morning, and do your symptoms usually feel more noticeable at that time of day?",
+      "evidence_spans": [
+        {
+          "chunk_index": 303,
+          "source_url": "https://www.parkinson.org/sites/default/files/documents/Managing-off-time-2024.pdf",
+          "source_version": "Parkinson's Foundation, Managing Off-Time in Parkinson's, 2024, p.2",
+          "verbatim_text": "Early morning “off,” before the first dose kicks in"
+        },
+        {
+          "chunk_index": 301,
+          "source_url": "https://www.parkinson.org/sites/default/files/documents/Managing-off-time-2024.pdf",
+          "source_version": "Parkinson's Foundation, Managing Off-Time in Parkinson's, 2024, p.2",
+          "verbatim_text": "Non-movement symptoms like anxiety, depression, fatigue, foggy thinking and pain may also appear or intensify."
+        }
+      ],
+      "review_status": "prototype",
+      "eligibility_basis": "Requires confirmed patient profile with active PD pharmacotherapy. In current retrieval, medication_status_known is False by default.",
+      "blocked": true,
+      "blocked_reason": "Blocked for default anonymous check-ins; requires confirmed profile medication metadata."
+    }
+  ]
+}

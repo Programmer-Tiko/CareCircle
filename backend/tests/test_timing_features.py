@@ -36,3 +36,11 @@ def test_longest_gap_picks_the_largest_of_several():
     features = compute_timing_features(segments, passage_syllable_count=10)
     # gaps are 0.2 and 0.5
     assert math.isclose(features.longest_internal_gap, 0.5)
+
+
+def test_fragmentation_changes_burst_duration_with_same_total_speech():
+    original = compute_timing_features([(0., 4.)], 41)
+    fragmented = compute_timing_features([(0., 1.), (1.6, 2.6), (3.2, 4.2), (4.8, 5.8)], 41)
+    assert original.mean_speech_segment_duration == 4.
+    assert fragmented.mean_speech_segment_duration == pytest.approx(1.)
+    assert fragmented.speaking_rate == pytest.approx(original.speaking_rate)

@@ -1,6 +1,6 @@
 """Per-profile multivariate deviation check, replacing a single-feature
 threshold with a joint robust z-score across pause fraction, longest
-internal gap, and speaking rate. Fit on that person's own clean reference
+internal gap, speaking rate, and mean speech-segment duration. Fit on that person's own clean reference
 takes only -- never on population data, and never on acted/flagged takes.
 
 This is the tier that decides whether to trigger a follow-up question.
@@ -10,7 +10,7 @@ clearly-labeled research signal (see models/pd_severity_infer.py).
 import math
 from dataclasses import dataclass
 
-FEATURE_ORDER = ("pause_fraction", "longest_internal_gap", "speaking_rate")
+FEATURE_ORDER = ("pause_fraction", "longest_internal_gap", "speaking_rate", "mean_speech_segment_duration")
 
 
 @dataclass(frozen=True)
@@ -26,6 +26,19 @@ def _median(values: list[float]) -> float:
     return s[mid] if n % 2 else (s[mid - 1] + s[mid]) / 2
 
 
+# A small number of reference takes recorded back-to-back in one sitting
+# systematically underestimates real day-to-day variation -- people read
+# far more consistently when repeating the same passage three times in a
+# row than they do across separate sessions. An uncorrected MAD from that
+# tight cluster makes ordinary later variation look like a multi-sigma
+# anomaly (observed live: every post-enrollment reading for one real
+# profile exceeded the old threshold). Floor each feature's MAD at a
+# fraction of its own median -- scale-aware, so it works the same way for
+# a 0-1 ratio and a multi-second duration -- not just the near-zero
+# safety floor that only prevented literal division by zero.
+MIN_RELATIVE_MAD = 0.20
+
+
 def fit_baseline(reference_takes: list[dict]) -> BaselineStats:
     if len(reference_takes) < 3:
         raise ValueError("Need at least 3 clean reference takes to fit a baseline.")
@@ -37,8 +50,9 @@ def fit_baseline(reference_takes: list[dict]) -> BaselineStats:
         deviations = [abs(v - med) for v in values]
         # 1.4826 makes MAD a consistent estimator of std under normality.
         mad_val = 1.4826 * _median(deviations)
+        floor = max(MIN_RELATIVE_MAD * abs(med), 1e-6)
         median[feature] = med
-        mad[feature] = mad_val if mad_val > 0 else 1e-6
+        mad[feature] = max(mad_val, floor)
     return BaselineStats(median=median, mad=mad)
 
 

@@ -10,18 +10,29 @@ from typing import Callable
 from app.dialogue.validation import SelectorOutput
 
 SYSTEM_INSTRUCTION = (
-    "You are selecting, not writing, a follow-up question for a voice "
-    "health check-in. You will be given a list of eligible question units "
-    "(each with an id, the information it seeks, and its source excerpt) "
-    "and the patient's latest answer. Choose at most one question id from "
-    "the eligible list that would gather the most useful missing "
-    "information. Quote the exact words from the patient's answer that "
-    "motivated your choice, if any -- if you cannot quote the patient's "
-    "own words, leave patient_quote as an empty string. If no eligible "
-    "question is clearly useful, set abstain to true and leave "
-    "selected_question_id as an empty string. Never invent a question id, "
-    "a source, or medical advice -- you are selecting from the provided "
-    "list only. Respond with exactly this JSON shape: "
+    "You are selecting, not writing, a question for a voice health "
+    "check-in. You will be given a list of eligible question units (each "
+    "with an id, the information it seeks, and its source excerpt), the "
+    "patient's latest answer, and a boolean \"opening_question\".\n\n"
+    "RULE 1, absolute, checked first: if \"opening_question\" is true, "
+    "you MUST set abstain to false and MUST set selected_question_id to "
+    "one of the given eligible ids -- pick whichever is the best general "
+    "opener for a brand-new daily check-in. There is no patient answer "
+    "yet in this case, so leave patient_quote as an empty string; that is "
+    "correct and expected, not a reason to abstain. Abstaining when "
+    "opening_question is true is always wrong, because it would mean the "
+    "conversation never starts.\n\n"
+    "RULE 2: otherwise (opening_question is false, there is a real "
+    "patient_answer), choose at most one question id from the eligible "
+    "list that would gather the most useful missing information. Quote "
+    "the exact words from the patient's answer that motivated your "
+    "choice, if any -- if you cannot quote the patient's own words, leave "
+    "patient_quote as an empty string. If no eligible question is clearly "
+    "useful, set abstain to true and leave selected_question_id as an "
+    "empty string.\n\n"
+    "Never invent a question id, a source, or medical advice -- you are "
+    "selecting from the provided list only. Respond with exactly this "
+    "JSON shape: "
     '{"selected_question_id": "", "evidence_ids": [], "patient_quote": "", "abstain": false}'
 )
 
@@ -50,7 +61,11 @@ def build_prompt(eligible_units: list[dict], latest_answer: str) -> str:
         }
         for u in eligible_units
     ]
-    return json.dumps({"eligible_questions": unit_summaries, "patient_answer": latest_answer})
+    return json.dumps({
+        "eligible_questions": unit_summaries,
+        "patient_answer": latest_answer,
+        "opening_question": latest_answer == "",
+    })
 
 
 def select_question(

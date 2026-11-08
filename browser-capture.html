@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cadence — browser capture proof</title>
+<style>
+body { font: 16px system-ui; max-width: 850px; margin: 24px auto; padding: 0 16px; }
+label { display: block; margin: 10px 0; } button { margin: 4px; padding: 8px; }
+input[type=url] { width: 320px; } textarea { width: 95%; } pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #eee; padding: 12px; }
+audio { display: block; } fieldset { margin: 16px 0; } [hidden] { display: none !important; }
+</style>
+<h1>Cadence: microphone → WAV → API</h1>
+<p>Local capture proof. Use fictional profile IDs and consenting demo audio. Start the API on port 8000, then serve this folder with <code>python3 -m http.server 8080</code> and open <code>http://localhost:8080/browser-capture.html</code>. Microphone access needs localhost or HTTPS.</p>
+<fieldset id="settings"><legend>API / profile</legend>
+<label>API base URL <input id="base" type="url" value="http://localhost:8000" required></label>
+<label>Profile ID <input id="profile" value="browser-demo-1" required></label>
+<label>Condition <select id="condition"><option value="parkinsons">Parkinson's</option><option value="copd">COPD</option></select></label>
+</fieldset>
+<p>Read the <strong>same passage</strong> for every take, using the same microphone. Suggested fixed demo excerpt:</p>
+<blockquote>When the sunlight strikes raindrops in the air, they act as a prism and form a rainbow. The rainbow is a division of white light into many beautiful colors.</blockquote>
+<p>The API uses this excerpt's fixed 41-syllable protocol; this page does not verify that the passage was read.</p>
+<fieldset><legend>1. Record</legend>
+<label>Save next recording as <select id="kind"><option value="reference">Enrollment reference (3–5 takes)</option><option value="checkin">Today's check-in</option></select></label>
+<button id="record">Start recording</button><button id="stop" disabled>Stop / encode WAV</button>
+<p id="status" role="status" aria-live="polite">Ready.</p>
+<div id="takes"></div>
+</fieldset>
+<fieldset><legend>2. Upload</legend>
+<button id="enroll" disabled>Enroll with reference takes</button>
+<button id="checkin" disabled>Upload check-in</button>
+<p>Enrollment creates a new profile (existing IDs return 409). A question requires two consecutive elevated check-ins. Finish a pending answer before uploading another check-in.</p>
+</fieldset>
+<fieldset id="questionBox" hidden><legend>3. Answer</legend>
+<p id="question"></p>
+<label>Your answer <textarea id="answerText" rows="3" maxlength="5000"></textarea></label>
+<button id="answer">POST answer</button>
+</fieldset>
+<fieldset id="noteBox" hidden><legend>4. Review returned note</legend>
+<pre id="note"></pre><p id="followup"></p>
+<button id="confirm">Confirm note</button>
+</fieldset>
+<h2>JSON responses / errors</h2><pre id="output" aria-live="polite">No requests yet.</pre>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const references = [];
+let checkinTake = null, recorder = null, stream = null, context = null;
+let busy = false, capturing = false, pending = false, confirmable = false;
+let session = '', sessionProfile = '';
+const MAX_BYTES = 20 * 1024 * 1024;
+function update() {
+  const locked = busy || capturing;
+  $('settings').disabled = locked;
+  $('kind').disabled = locked;
+  $('record').disabled = locked || (pending || confirmable) || ($('kind').value === 'reference' && references.length >= 5);
+  $('stop').disabled = !capturing || busy;
+  $('enroll').disabled = locked || pending || confirmable || references.length < 3;
+  $('checkin').disabled = locked || pending || confirmable || !checkinTake;
+  $('answer').disabled = locked || !pending;
+  $('confirm').disabled = locked || !confirmable;
+  document.querySelectorAll('[data-remove]').forEach(button => button.disabled = locked);
+}
+function showError(error) { $('status').textContent = error.message; }
+function target() {
+  const base = new URL($('base').value.trim());
+  if (!['http:', 'https:'].includes(base.protocol)) throw new Error('Use an HTTP(S) API URL.');
+  const profile = $('profile').value.trim();
+  if (!profile) throw new Error('Enter a profile ID.');
+  return { base: base.href.replace(/\/$/, ''), profile };
+}
+function profilePath(profile, action) { return '/profiles/' + encodeURIComponent(profile) + '/' + action; }
+async function request(base, path, body) {
+  const options = { method: 'POST' };
+  if (body instanceof FormData) options.body = body;
+  else if (body !== undefined) { options.headers = { 'Content-Type': 'application/json' }; options.body = JSON.stringify(body); }
+  const response = await fetch(base + path, options);
+  const raw = await response.text();
+  let data; try { data = JSON.parse(raw); } catch { data = { raw }; }
+  $('output').textContent = 'POST ' + path + '\nHTTP ' + response.status + '\n' + JSON.stringify(data, null, 2);
+  if (!response.ok) throw new Error('API returned HTTP ' + response.status + '; see response below.');
+  return data;
+}
+async function run(operation) {
+  busy = true; update();
+  try { await operation(); } catch (error) { showError(error); }
+  finally { busy = false; update(); }
+}
+// MediaRecorder typically produces WebM/Opus or MP4/AAC, not WAV. Decode it,
+// downmix to mono, then write a real little-endian 16-bit PCM RIFF/WAVE file.
+function encodeWav(buffer) {
+  const frames = buffer.length, bytes = frames * 2;
+  if (!frames || bytes + 44 > MAX_BYTES) throw new Error('Recording is empty or exceeds the API 20 MiB WAV limit.');
+  const data = new ArrayBuffer(44 + bytes), view = new DataView(data);
+  const text = (offset, value) => { for (let i = 0; i < value.length; i++) view.setUint8(offset + i, value.charCodeAt(i)); };
+  text(0, 'RIFF'); view.setUint32(4, 36 + bytes, true); text(8, 'WAVE'); text(12, 'fmt ');
+  view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+  view.setUint32(24, buffer.sampleRate, true); view.setUint32(28, buffer.sampleRate * 2, true);
+  view.setUint16(32, 2, true); view.setUint16(34, 16, true); text(36, 'data'); view.setUint32(40, bytes, true);
+  const channels = Array.from({ length: buffer.numberOfChannels }, (_, i) => buffer.getChannelData(i));
+  for (let i = 0; i < frames; i++) {
+    let sample = 0; for (const channel of channels) sample += channel[i] / channels.length;
+    sample = Math.max(-1, Math.min(1, sample));
+    view.setInt16(44 + i * 2, Math.round(sample * (sample < 0 ? 32768 : 32767)), true);
+  }
+  return new Blob([data], { type: 'audio/wav' });
+}
+function releaseMic() { if (stream) stream.getTracks().forEach(track => track.stop()); stream = null; }
+function removeTake(take) { URL.revokeObjectURL(take.url); }
+function renderTakes() {
+  $('takes').replaceChildren();
+  [...references.map((take, i) => [take, 'Reference ' + (i + 1)]), ...(checkinTake ? [[checkinTake, 'Check-in']] : [])].forEach(([take, label]) => {
+    const row = document.createElement('div');
+    const caption = document.createElement('p'); caption.textContent = label + ': ' + take.seconds.toFixed(1) + 's, ' + take.blob.size + ' bytes (mono PCM WAV)';
+    const audio = document.createElement('audio'); audio.controls = true; audio.src = take.url;
+    const download = document.createElement('a'); download.href = take.url; download.download = label.replaceAll(' ', '-') + '.wav'; download.textContent = 'Download WAV';
+    const remove = document.createElement('button'); remove.textContent = 'Remove'; remove.dataset.remove = '';
+    remove.onclick = () => { removeTake(take); if (take === checkinTake) checkinTake = null; else references.splice(references.indexOf(take), 1); renderTakes(); update(); };
+    row.append(caption, audio, download, remove); $('takes').append(row);
+  });
+}
+$('record').onclick = () => run(async () => {
+  if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) throw new Error('Microphone recording requires a supported browser on localhost or HTTPS.');
+  const kind = $('kind').value;
+  try {
+    context = new (window.AudioContext || window.webkitAudioContext)();
+    await context.resume();
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    const mimeType = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/ogg;codecs=opus'].find(type => MediaRecorder.isTypeSupported(type));
+    recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+    const chunks = [];
+    recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+    recorder.onerror = event => { showError(new Error(event.error?.message || 'Recorder failed.')); if (recorder.state !== 'inactive') recorder.stop(); };
+    recorder.onstop = () => run(async () => {
+      capturing = false; releaseMic();
+      try {
+        $('status').textContent = 'Decoding and encoding WAV…';
+        const buffer = await context.decodeAudioData(await new Blob(chunks, { type: recorder.mimeType }).arrayBuffer());
+        const blob = encodeWav(buffer);
+        const take = { blob, seconds: buffer.duration, url: URL.createObjectURL(blob) };
+        if (kind === 'reference') references.push(take);
+        else { if (checkinTake) removeTake(checkinTake); checkinTake = take; }
+        renderTakes(); $('status').textContent = 'WAV ready. Record another reference or upload.';
+      } finally { await context.close(); context = null; }
+    });
+    recorder.start(); capturing = true; $('status').textContent = 'Recording… Read the passage, then press Stop. Maximum 60 seconds.';
+    const timer = setTimeout(() => { if (recorder.state === 'recording') recorder.stop(); }, 60000);
+    recorder.addEventListener('stop', () => clearTimeout(timer), { once: true });
+  } catch (error) { releaseMic(); if (context) { await context.close(); context = null; } throw error; }
+});
+$('stop').onclick = () => { $('stop').disabled = true; busy = true; update(); recorder.stop(); };
+$('kind').onchange = update;
+$('enroll').onclick = () => run(async () => {
+  const { base, profile } = target(); const form = new FormData();
+  references.forEach((take, i) => form.append('files', take.blob, 'reference-' + (i + 1) + '.wav'));
+  form.append('condition', $('condition').value); $('status').textContent = 'Enrolling…';
+  await request(base, profilePath(profile, 'enroll'), form); $('status').textContent = 'Enrolled. Switch recording type to check-in.';
+  $('kind').value = 'checkin';
+});
+$('checkin').onclick = () => run(async () => {
+  const { base, profile } = target(); const form = new FormData(); form.append('file', checkinTake.blob, 'checkin.wav');
+  $('status').textContent = 'Uploading check-in…';
+  const data = await request(base, profilePath(profile, 'checkin'), form);
+  session = base; sessionProfile = profile;
+  pending = data.status === 'awaiting_answer' && Boolean(data.triggered_question);
+  confirmable = false; $('questionBox').hidden = !pending; $('noteBox').hidden = true;
+  $('question').textContent = data.triggered_question || ''; $('answerText').value = '';
+  removeTake(checkinTake); checkinTake = null; renderTakes();
+  $('status').textContent = pending ? 'Question returned. Type your answer below.' : 'Check-in stored. Persistence threshold was not met; see measured score below.';
+});
+$('answer').onclick = () => run(async () => {
+  const text = $('answerText').value.trim(); if (!text) throw new Error('Enter an answer first.');
+  const data = await request(session, profilePath(sessionProfile, 'answer'), { answer_text: text });
+  pending = false; confirmable = data.note?.status === 'awaiting_confirmation';
+  $('questionBox').hidden = true; $('noteBox').hidden = false; $('note').textContent = JSON.stringify(data.note, null, 2);
+  $('followup').textContent = data.follow_up_question ? 'Follow-up: ' + data.follow_up_question + ' (Display only: the current API accepts one answer per check-in.)' : '';
+  $('status').textContent = 'Answer stored. Review the note before confirming.';
+});
+$('confirm').onclick = () => run(async () => {
+  await request(session, profilePath(sessionProfile, 'confirm')); confirmable = false;
+  $('status').textContent = 'Note confirmed. You can record another check-in.';
+});
+window.addEventListener('pagehide', releaseMic);
+update();
+</script>
+</html>

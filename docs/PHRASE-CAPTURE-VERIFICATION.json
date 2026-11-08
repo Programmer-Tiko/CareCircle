@@ -1,0 +1,18 @@
+{
+  "result": "PASS",
+  "transport": "real localhost HTTP + local PostgreSQL + cached Whisper base",
+  "positive_fixture": "supplied fixed-passage recording",
+  "negative_fixture": "supplied different-content recording",
+  "reference_take_count": 3,
+  "positive_checkin_status": 200,
+  "negative_checkin_status": 422,
+  "phrase_match": "matched",
+  "alignment_available": true,
+  "persisted_checkins_after_negative": 1,
+  "comparability": {
+    "phrase": "matched",
+    "overall": "not_assessed",
+    "reason": "Phrase evidence does not establish comparable device, channel, recording quality, or health status."
+  },
+  "test_schema_removed": true
+}

@@ -28,3 +28,9 @@ def test_confirm_changes_status():
     note = build_note(deviation_score=0.5, patient_said=None, cue_resolved=True)
     note.confirm()
     assert note.status == "confirmed"
+
+
+def test_segment_duration_dominant_note_does_not_claim_longer_pauses():
+    note = build_note(3.0, 'Words felt different', False,
+                      feature_scores={'mean_speech_segment_duration':-3.0,'pause_fraction':.2})
+    assert 'speech-burst duration' in note.measured

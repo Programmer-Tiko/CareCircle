@@ -20,6 +20,24 @@ def _stub(selected_id: str, quote: str, abstain: bool = False):
     return model_call
 
 
+def test_opening_turn_selects_from_real_choice_with_no_answer_yet():
+    """conversations.py's start() now calls this with turns=[] and
+    answer_text='' -- there's no patient text yet to quote, so the model is
+    expected to leave patient_quote empty (validation only checks a quote
+    against the answer when one was actually given) and still choose a real
+    question rather than being forced to abstain just because nothing was
+    said yet."""
+    context = {
+        "condition": "parkinsons",
+        "measured": {"deviation_score": 0.4, "features": {}, "triggered": False},
+        "turns": [],
+        "answer_text": "",
+    }
+    result = selector_adapter(context, model_call=_stub("fatigue_level_check", ""))
+    assert result["decision"] == "ask"
+    assert result["question"]["id"] == "fatigue_level_check"
+
+
 def test_ask_decision_validates_against_the_real_conversations_selection_model():
     """The actual contract test: conversations.py's Selection.model_validate
     must accept this dict as-is, not just "look right" to this test file."""
@@ -47,7 +65,9 @@ def test_policy_sourced_unit_gets_a_placeholder_source():
 
     context = {
         "condition": "parkinsons",
-        "measured": {"deviation_score": 2.4, "features": {}},
+        # distraction_check is only reachable when the check-in's own
+        # deviation was actually persistent -- see conversation_adapter.py.
+        "measured": {"deviation_score": 2.4, "features": {}, "triggered": True},
         "turns": [],
         "answer_text": "the dog interrupted me, nothing wrong",
     }

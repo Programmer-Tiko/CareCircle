@@ -11,7 +11,11 @@ legacy flows remain intact. The check-in response now also returns
    `{"checkin_time":"<exact timestamp returned by checkin>"}` creates a session
    for an unanswered triggered check-in. Repeating the start returns the same
    session. It snapshots the existing prototype initial question and raw measured
-   features/aggregate score. It does not manufacture per-feature z-scores.
+   features/aggregate score plus signed robust z-scores in `measured.feature_scores`,
+   copied from the check-in when available. New check-ins persist four raw
+   features (including `mean_speech_segment_duration`) and signed robust
+   z-scores. Historical rows without a complete four-feature baseline retain
+   unavailable scores rather than inventing missing measurements.
 2. `GET /profiles/{profile}/conversations/{session_id}` restores session, note,
    revision and ordered turns after reload/restart.
 3. `POST /profiles/{profile}/conversations/{session_id}/turns/{turn_id}/answer`
@@ -73,13 +77,15 @@ The adapter must enforce corpus membership, source eligibility, quote checking,
 question eligibility and a bounded provider timeout before returning. Pydantic
 validation enforces shape, not groundedness. Selection happens under the profile
 transaction lock to serialize duplicate answers; keep provider calls short.
-The default adapter always abstains; no Gemini integration is claimed.
+The standalone route default abstains. The application in `main.py` overrides
+it with the validated Groq/RAG adapter; no Gemini integration is claimed.
 
 The persisted note currently contains structured measured evidence, verbatim
 answers, and a conservative unresolved marker. It does not call the legacy note
 builder or imply feature-specific explanations. The dialogue owner's new note
-builder and per-feature z-score field still need explicit wiring after their
-contracts land. Source versions on the initial question identify the existing
+builder still needs explicit wiring. The adapter now consumes the persisted
+`measured.feature_scores`; older snapshots without that key retain unavailable
+feature evidence, so score-gated question units stay ineligible. Source versions on the initial question identify the existing
 prototype dialogue policy, not clinical review.
 
 ## Verification
@@ -91,3 +97,31 @@ fresh-app recovery, question snapshots, concurrent answers, duplicate submission
 profile isolation, stale confirmation, provider failure and the additive check-in
 timestamp. These tables do not need TimescaleDB; the existing API integration
 suite still independently requires `TEST_TIGER_DATA_URL` for hypertable behavior.
+
+## Integrated self-check additions
+
+The browser now uses the durable conversation paths, not the legacy answer
+endpoint. Source snapshots can include optional `url` and exact `excerpt` fields.
+GET `/capabilities` and GET `/profiles/{profile_id}` support setup; GET
+`/profiles/{profile_id}/history` returns actual check-ins with linked sessions and
+exact-word patient reports. POST `/profiles/{profile_id}/reports` accepts
+`{"report_text":"..."}` without requiring an acoustic trigger.
+
+POST `/profiles/{profile_id}/conversations/{session_id}/correction` accepts
+`{"revision":1,"correction_text":"..."}` for an unconfirmed terminal note.
+It adds the correction while preserving original answers/measurement, increments
+the note revision, and makes stale confirmation fail with 409.
+
+POST `/profiles/{profile_id}/conversations/{session_id}/finish` accepts
+`{"revision":0}` (or current revision) to end questions early. It preserves
+unanswered question snapshots with `closed_at`, changes the session to abstained,
+and keeps unresolved information in the reviewable note. It does not fabricate
+an answer or claim the cause is resolved.
+
+Optional `/transcribe` accepts one multipart WAV `file`, uses a cached local
+Whisper model and returns text/word evidence for review before answer submission.
+`verify_passage=true` on enrollment/check-in rejects unverified transcripts before
+scoring/inserting a new reading. Phrase match does not certify capture quality.
+`experimental=true` on enrollment fits separate pitch/energy references; check-in
+returns those descriptive comparisons inside waveform_evidence.personal_reference.
+They never change the timing trigger score.

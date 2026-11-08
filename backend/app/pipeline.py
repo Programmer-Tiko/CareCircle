@@ -29,7 +29,7 @@ class CheckinResult:
 
 def build_take_from_audio(wav_path: str, passage_syllable_count: int) -> dict:
     """Shared by enrollment (building reference takes) and check-in
-    (scoring a new take against them) -- both need the same three numbers
+    (scoring a new take against them) -- both need the same four numbers
     from the same VAD + timing-feature pipeline, just used differently.
     """
     segments = detect_speech_segments(wav_path)
@@ -38,6 +38,7 @@ def build_take_from_audio(wav_path: str, passage_syllable_count: int) -> dict:
         "pause_fraction": timing.pause_fraction,
         "longest_internal_gap": timing.longest_internal_gap,
         "speaking_rate": timing.speaking_rate,
+        "mean_speech_segment_duration": timing.mean_speech_segment_duration,
     }
 
 
@@ -76,8 +77,8 @@ def process_answer(
     more to ask and the note is ready as-is.
 
     `feature_scores` is optional and backward compatible -- existing
-    callers that only have the aggregate deviation_score (the checkins
-    table doesn't persist per-feature scores yet) keep working exactly as
+    callers that only have the aggregate deviation_score (historical checkins
+    may not have persisted per-feature scores) keep working exactly as
     before; passing it in lets the note name which feature actually moved.
     """
     cue = classify_answer(condition, answer_text)

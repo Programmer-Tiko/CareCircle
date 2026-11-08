@@ -1,0 +1,173 @@
+{
+  "scope": "Real Chrome UI, Tiger Cloud, cached local Whisper, Groq, ElevenLabs; no provider stubs",
+  "audio": "HTTP setup uses constructed attributed speech fixtures; browser answer microphone uses synthetic Rainbow speech",
+  "scripted_answers": "fictional; no real patient interaction",
+  "events": [
+    {
+      "path": "/profiles/live-ui-proof/enroll",
+      "status": 200
+    },
+    {
+      "path": "/profiles/live-ui-proof/checkin?experimental=true",
+      "status": 200
+    },
+    {
+      "path": "/profiles/live-ui-proof/checkin?experimental=true",
+      "status": 200
+    }
+  ],
+  "selector_calls": [
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "volume_awareness"
+    },
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "repetition_frequency"
+    },
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "vocal_quality_hoarseness"
+    },
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "everyday_communication_impact"
+    },
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "vocal_fatigue_check"
+    },
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "breath_support_phrasing"
+    },
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "rate_change_direction"
+    },
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "fatigue_level_check"
+    },
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "group_and_noise_communication"
+    },
+    {
+      "status": "error",
+      "error_type": "RateLimitError"
+    }
+  ],
+  "real_capabilities": {
+    "asr_enabled": true,
+    "tts_enabled": true
+  },
+  "browser": {
+    "provider_stubs": false,
+    "browser": "installed real Chrome headless",
+    "microphone": "synthetic speech file through real MediaRecorder",
+    "events": [
+      {
+        "answer": 1,
+        "state": "active",
+        "revision": 1,
+        "next_question_id": "volume_awareness"
+      },
+      {
+        "answer": 2,
+        "state": "active",
+        "revision": 2,
+        "next_question_id": "repetition_frequency"
+      },
+      {
+        "answer": 3,
+        "state": "active",
+        "revision": 3,
+        "next_question_id": "vocal_quality_hoarseness"
+      },
+      {
+        "answer": 4,
+        "state": "active",
+        "revision": 4,
+        "next_question_id": "everyday_communication_impact"
+      },
+      {
+        "answer": 5,
+        "state": "active",
+        "revision": 5,
+        "next_question_id": "vocal_fatigue_check"
+      },
+      {
+        "answer": 6,
+        "state": "active",
+        "revision": 6,
+        "next_question_id": "breath_support_phrasing"
+      },
+      {
+        "answer": 7,
+        "state": "active",
+        "revision": 7,
+        "next_question_id": "rate_change_direction"
+      },
+      {
+        "answer": 8,
+        "state": "active",
+        "revision": 8,
+        "next_question_id": "fatigue_level_check"
+      },
+      {
+        "answer": 9,
+        "state": "active",
+        "revision": 9,
+        "next_question_id": "group_and_noise_communication"
+      },
+      {
+        "answer": 10,
+        "state": "abstained",
+        "revision": 10,
+        "next_question_id": "group_and_noise_communication"
+      }
+    ],
+    "question_tts": {
+      "http_status": 200,
+      "content_type": "audio/mpeg",
+      "bytes": 21776,
+      "playable": true
+    },
+    "real_asr": {
+      "http_status": 200,
+      "model_id": "whisper-base",
+      "characters": 236,
+      "word_count": 45,
+      "review_without_autosend": true
+    },
+    "terminal_state": "abstained",
+    "note_tts": {
+      "http_status": 200,
+      "content_type": "audio/mpeg",
+      "bytes": 1449107,
+      "playable": true
+    },
+    "confirmed_revision": 11,
+    "reload_history_confirmed": true,
+    "javascript_errors": [],
+    "result": "PASS"
+  },
+  "stored_confirmed_sessions": 1,
+  "stored_answered_turns": 10,
+  "result": "PASS",
+  "schema_removed": true,
+  "observed_provider_errors": [
+    "RateLimitError"
+  ],
+  "conversation_completed_naturally": false
+}
