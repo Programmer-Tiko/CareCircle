@@ -1,0 +1,12 @@
+{
+  "n_samples": 37,
+  "n_features": 768,
+  "observed_auc": 0.886904761904762,
+  "null_mean": 0.49183531746031744,
+  "null_std": 0.13020158561502976,
+  "null_95th_percentile": 0.7032738095238098,
+  "null_max": 0.8273809523809523,
+  "n_permutations": 300,
+  "empirical_p_value": 0.0,
+  "note": "null_max is the highest AUC chance alone produced across n_permutations label-shuffles, in this exact high-dimensional (768 features, 37 samples) regime. observed_auc beating every permutation is real evidence, not an artifact of dimensionality."
+}

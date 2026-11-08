@@ -1,0 +1,30 @@
+{
+  "n_samples": 37,
+  "hand_engineered_alone_auc": 0.7380952380952381,
+  "embeddings_alone_auc": 0.8898809523809524,
+  "combined_auc": 0.8869047619047619,
+  "hand_features_used": [
+    "pause_fraction",
+    "longest_internal_gap",
+    "num_pauses",
+    "mean_pause_duration",
+    "std_pause_duration",
+    "mean_speech_segment_duration",
+    "std_speech_segment_duration",
+    "pause_rate_per_min",
+    "Jitter(%)",
+    "Jitter(Abs)",
+    "Jitter:RAP",
+    "Jitter:PPQ5",
+    "Jitter:DDP",
+    "Shimmer",
+    "Shimmer(dB)",
+    "Shimmer:APQ3",
+    "Shimmer:APQ5",
+    "Shimmer:APQ11",
+    "Shimmer:DDA",
+    "NHR",
+    "HNR"
+  ],
+  "note": "Same 37 real patients, same 5-fold stratified CV throughout -- only the feature set differs. hand_engineered_alone should match analyze_voice_breakdown_pd_vs_hc.py's combined_classifier result (0.75) up to CV-fold randomness."
+}
