@@ -510,14 +510,12 @@
     renderSession(result); message('Conversation saved for now. Review the note; unanswered details remain unclear.'); await refreshHistory();
   });
   $('resetCheckinBtn').onclick = () => task(async () => {
-    // Save the open conversation through the same finish/confirm steps a
-    // patient could do by hand (nothing is discarded), then clear it from
-    // the screen so a new check-in can start. Not a delete -- a shortcut.
+    // Preserve the previous conversation as a draft. Starting another check-in
+    // is not approval of an unreviewed note; only Confirm can grant that state.
     if (session.state === 'active') session = await request(connected, sessionPath() + '/finish', { method: 'POST', body: { revision: session.revision } });
-    if (['complete', 'abstained'].includes(session.state)) session = await request(connected, sessionPath() + '/confirm', { method: 'POST', body: { revision: session.revision } });
     session = null; saveConnection();
     $('conversationPanel').hidden = true; $('notePanel').hidden = true;
-    message('Your previous check-in was saved. Ready to record a new one.'); await refreshHistory();
+    message('Your previous check-in was saved as an unconfirmed draft. Ready to record a new one.'); await refreshHistory();
   });
   $('correctionBtn').onclick = () => task(async () => {
     const text = $('correctionText').value.trim(); if (!text) throw new Error('Enter the correction you want to add.');

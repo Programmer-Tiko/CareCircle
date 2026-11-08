@@ -35,6 +35,18 @@ def test_real_database_connections_are_blocked():
         psycopg.connect('')
 
 
+@pytest.mark.parametrize('url', [
+    'postgresql://postgres@remote.example:5432/cadence_integration_test',
+    'postgresql://postgres:secret@127.0.0.1:5432/cadence_integration_test',
+    'postgresql://postgres@127.0.0.1:5432/production',
+    'postgresql://postgres@127.0.0.1:5432/cadence_integration_test?service=production',
+])
+def test_disposable_database_option_rejects_other_connections(url):
+    from conftest import _validate_disposable_database
+    with pytest.raises(pytest.UsageError):
+        _validate_disposable_database(url)
+
+
 @pytest.mark.parametrize('provider', ['groq', 'async_groq', 'gemini'])
 def test_real_provider_clients_are_blocked(provider):
     from google import genai

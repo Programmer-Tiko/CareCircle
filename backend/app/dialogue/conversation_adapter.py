@@ -52,6 +52,20 @@ def _sources_for(unit):
              'excerpt':span['verbatim_text']} for span in spans]
 
 
+def emergency_selection(answer_text: str) -> dict | None:
+    """The existing narrow, deterministic notice; never asks a provider."""
+    if not contains_emergency_signal(answer_text):
+        return None
+    safety_unit = next(u for u in load_corpus() if u['id'] == 'safety_notice')
+    return {
+        'decision': 'ask', 'resolved': False,
+        'question': {
+            'id': safety_unit['id'], 'version': load_corpus_version(),
+            'text': safety_unit['question_template'], 'sources': [_source_for(safety_unit)],
+        },
+    }
+
+
 def selector_adapter(context: dict, model_call: Callable[[str], str] = _default_model_call) -> dict:
     """context: {"condition", "measured", "turns", "answer_text"} exactly as
     conversations.py's answer() builds it. Returns a plain dict shaped for
@@ -83,18 +97,9 @@ def selector_adapter(context: dict, model_call: Callable[[str], str] = _default_
     # by a bad model response. "resolved": False is deliberate -- this
     # does not claim to have understood or addressed what was disclosed,
     # only to have surfaced the fixed notice.
-    if contains_emergency_signal(answer_text):
-        safety_unit = next(u for u in load_corpus() if u["id"] == "safety_notice")
-        return {
-            "decision": "ask",
-            "resolved": False,
-            "question": {
-                "id": safety_unit["id"],
-                "version": load_corpus_version(),
-                "text": safety_unit["question_template"],
-                "sources": [_source_for(safety_unit)],
-            },
-        }
+    safety = emergency_selection(answer_text)
+    if safety is not None:
+        return safety
 
     prior_answers = [t["answer"] for t in turns if t.get("answer")] + [answer_text]
     already_asked_ids = {t["question"]["id"] for t in turns if t.get("question")}

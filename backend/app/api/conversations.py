@@ -15,6 +15,7 @@ from psycopg.types.json import Jsonb
 from pydantic import BaseModel, Field, StringConstraints, model_validator
 
 from app.models.personal_baseline import BaselineStats, FEATURE_ORDER, per_feature_deviation
+from app.dialogue.conversation_adapter import emergency_selection
 
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=5000)]
 
@@ -181,7 +182,12 @@ def install_routes(app, get_db, locked_profile):
         except ValueError:
             max_questions=4
         budget_reached=len(history)>=max_questions
-        if budget_reached:
+        safety = emergency_selection(body.answer_text)
+        if safety is not None:
+            # The question budget and an injected/provider selector must never
+            # suppress the fixed safety notice. This remains a narrow tripwire.
+            selection = Selection.model_validate(safety)
+        elif budget_reached:
             # Question budget ends the interview, never asserts clinical resolution.
             selection=Selection(decision='abstain')
         else:

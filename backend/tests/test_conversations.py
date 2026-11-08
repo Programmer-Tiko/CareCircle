@@ -1,5 +1,6 @@
 """Conversation SQL tests use isolated schemas in an opt-in PostgreSQL database."""
 import os
+import json
 from pathlib import Path
 import sys
 from uuid import uuid4
@@ -15,6 +16,17 @@ from fastapi.testclient import TestClient
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.api import main as api
 from app.api.conversations import get_selector, Selection
+from app.dialogue.conversation_adapter import selector_adapter
+
+
+def corpus_selector(context):
+    """Real retrieval and validation, with only the provider ID choice mocked."""
+    def choose(prompt):
+        payload = json.loads(prompt)
+        unit = payload['eligible_questions'][0]
+        return json.dumps({'selected_question_id': unit['id'], 'evidence_ids': [unit['id']],
+                           'patient_quote': payload['patient_answer'], 'abstain': False})
+    return selector_adapter(context, model_call=choose)
 
 
 @pytest.fixture
@@ -43,14 +55,20 @@ def conversation_clients(monkeypatch):
                                "pause_fraction,longest_internal_gap,speaking_rate,mean_speech_segment_duration) VALUES "
                                "('demo',TRUE,'What happened?',3,0.4,1.2,2.3,1.5) RETURNING time").fetchone()['time']
         monkeypatch.setattr(api, 'initialize_database', lambda: None)
-        def factory(selector=None):
+        def factory(selector=None, *, opening_selector=corpus_selector):
             app = api.create_app()
             def dependency():
                 with connect() as db:
                     yield db
             app.dependency_overrides[api.get_db] = dependency
-            if selector:
-                app.dependency_overrides[get_selector] = lambda: selector
+            def select(context):
+                # Existing scenarios inject follow-up behavior. The newer
+                # opening selection must also be explicit and independent of
+                # both that follow-up stub and the real provider.
+                if not context['turns']:
+                    return opening_selector(context)
+                return (selector or corpus_selector)(context)
+            app.dependency_overrides[get_selector] = lambda: select
             return TestClient(app)
         factory.connect = connect
         yield factory, stamp

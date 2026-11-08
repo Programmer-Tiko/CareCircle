@@ -1,5 +1,70 @@
 """UI-facing read models and patient-owned note changes, using actual SQL."""
 from test_conversations import conversation_clients
+import pytest
+
+
+@pytest.mark.parametrize('limit', ['1', '4'])
+def test_emergency_notice_precedes_budget_and_provider(conversation_clients, monkeypatch, limit):
+    from uuid import uuid4
+    monkeypatch.setenv('CADENCE_MAX_QUESTIONS', limit)
+    factory, stamp = conversation_clients
+    calls = []
+
+    def broken_selector(context):
+        calls.append(context)
+        raise AssertionError('Safety handling must not invoke the selector.')
+
+    with factory(broken_selector) as client:
+        session = client.post('/profiles/demo/conversations', json={'checkin_time': stamp.isoformat()}).json()
+        root = '/profiles/demo/conversations/' + session['session_id']
+        result = client.post(root + '/turns/' + session['turns'][0]['turn_id'] + '/answer', json={
+            'submission_id': str(uuid4()), 'answer_text': 'I fell and I cannot get up'})
+        assert result.status_code == 200, result.text
+        saved = result.json()
+        assert saved['state'] == 'active'
+        assert saved['turns'][-1]['question']['id'] == 'safety_notice'
+        assert 'emergency services' in saved['turns'][-1]['question']['text']
+        assert saved['note']['patient_said'] == ['I fell and I cannot get up']
+        assert saved['note']['unresolved'] and not saved['turns'][0]['resolved']
+        assert client.post(root + '/confirm', json={'revision': 1}).status_code == 409
+    assert calls == []
+
+
+def test_typical_reading_still_accepts_symptom_report(conversation_clients):
+    from test_api import recording, checkin
+    from uuid import uuid4
+    factory, stamp = conversation_clients
+    with factory() as client:
+        files = [('files', (f'ref{i}.wav', recording(.4 + i * .02), 'audio/wav')) for i in range(3)]
+        assert client.post('/profiles/routine/enroll?condition=parkinsons', files=files).status_code == 200
+        reading = checkin(client, .42, profile='routine')
+        assert reading.status_code == 200
+        assert reading.json()['status'] == 'no_change'
+        assert reading.json()['measured']['deviation_from_baseline'] == 'usual'
+        session = client.post('/profiles/routine/conversations', json={
+            'checkin_time': reading.json()['checkin_time']}).json()
+        assert session['state'] == 'active' and not session['measured']['triggered']
+        root = '/profiles/routine/conversations/' + session['session_id']
+        answer = client.post(root + '/turns/' + session['turns'][0]['turn_id'] + '/answer', json={
+            'submission_id': str(uuid4()), 'answer_text': 'People ask me to repeat myself'})
+        assert answer.status_code == 200, answer.text
+        assert answer.json()['note']['patient_said'] == ['People ask me to repeat myself']
+        assert answer.json()['state'] == 'active'
+        assert answer.json()['turns'][-1]['question']['id'] != session['turns'][0]['question']['id']
+
+
+def test_missing_groq_keeps_checkin_and_produces_reviewable_uncertainty(conversation_clients):
+    from app.dialogue.conversation_adapter import selector_adapter
+    factory, stamp = conversation_clients
+    with factory(opening_selector=selector_adapter) as client:
+        result = client.post('/profiles/demo/conversations', json={'checkin_time': stamp.isoformat()})
+        assert result.status_code == 200, result.text
+        session = result.json()
+        assert session['state'] == 'abstained' and session['turns'] == []
+        assert session['note']['unresolved']
+        assert session['note']['status'] == 'awaiting_confirmation'
+        history = client.get('/profiles/demo/history').json()
+        assert history['checkins'][0]['conversation']['state'] == 'abstained'
 
 
 def test_profile_real_history_and_report_without_trigger(conversation_clients):

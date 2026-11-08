@@ -77,7 +77,8 @@ The adapter must enforce corpus membership, source eligibility, quote checking,
 question eligibility and a bounded provider timeout before returning. Pydantic
 validation enforces shape, not groundedness. Selection happens under the profile
 transaction lock to serialize duplicate answers; keep provider calls short.
-The default adapter always abstains; no Gemini integration is claimed.
+The standalone route default abstains. The application in `main.py` overrides
+it with the validated Groq/RAG adapter; no Gemini integration is claimed.
 
 The persisted note currently contains structured measured evidence, verbatim
 answers, and a conservative unresolved marker. It does not call the legacy note
