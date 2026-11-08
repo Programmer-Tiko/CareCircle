@@ -100,6 +100,43 @@ def _recording_interruption(answer: str) -> bool:
     return state
 
 
+# "I feel good, nothing unusual" was getting followed by an unrelated sleep
+# question, then anxiety, then balance -- several corpus units have no
+# preconditions at all (deliberately, so an opening question always has a
+# real choice), which also meant nothing made them *stop* being offered
+# once the patient had already said they're fine. This flag exists so a
+# clear, current reassurance can close those out, same spirit as
+# _recording_interruption: narrow and literal, latest answer only (an
+# earlier "I feel good" must not block a later answer that says otherwise),
+# not a claim of understanding sentiment in general.
+_WELLNESS_POSITIVE_STATE = re.compile(
+    r"\b(?:feel(?:ing)?|doing|am|is|was|seem(?:s|ing)?) "
+    r"(?:pretty |really |just |quite )?(?:good|fine|okay|ok|well|great|normal|alright)\b"
+)
+_WELLNESS_NO_PROBLEMS = re.compile(
+    r"\bnothing (?:unusual|wrong|new|different|to report)\b"
+    r"|\bno (?:concerns|issues|problems|complaints)\b"
+    r"|\ball (?:good|fine|well|okay|ok)\b"
+)
+# The single most common real answer to "how are you doing?" is just one
+# of these words on its own, with or without "I'm" in front -- exactly the
+# example given when this flag was requested ("I'll say good"). A clause
+# that short has no verb for _WELLNESS_POSITIVE_STATE to anchor on.
+_WELLNESS_BARE = re.compile(
+    r"^(?:i'?m|i am|im)?\s*(?:pretty |really |just |quite )?(?:good|fine|okay|ok|well|great|normal|alright)$"
+)
+_NEGATION_TOKEN = re.compile(r"\b(?:not|never|hardly)\b")
+
+
+def _wellness_reassurance(answer: str) -> bool:
+    for clause in _clauses(answer):
+        if _WELLNESS_NO_PROBLEMS.search(clause) or _WELLNESS_BARE.match(clause):
+            return True
+        if _WELLNESS_POSITIVE_STATE.search(clause) and not _NEGATION_TOKEN.search(clause):
+            return True
+    return False
+
+
 _STOPWORDS = {"the", "a", "an", "and", "or", "to", "of", "in", "on", "at", "is", "it", "that", "this", "was", "were"}
 
 
@@ -144,6 +181,7 @@ def compute_context_flags(
         if update is not None:
             speech_reported = update
     interruption = _recording_interruption(prior_answers[-1]) if prior_answers else False
+    reassured = _wellness_reassurance(prior_answers[-1]) if prior_answers else False
     return {
         "persistent_deviation_triggered": persistent_deviation_triggered,
         "measured_pause_fraction_elevated": feature_scores.get("pause_fraction", 0.0) > 1.5,
@@ -153,6 +191,7 @@ def compute_context_flags(
         "answer_indicates_situational_distraction": interruption,  # compatibility alias
         "patient_known_to_take_pd_medication": medication_status_known,
         "medication_status_unknown": not medication_status_known,
+        "patient_reports_no_concerns": reassured,
     }
 
 

@@ -69,6 +69,32 @@ def test_everyday_noise_does_not_exclude_communication_question():
     assert 'everyday_communication_impact' in {unit['id'] for unit in units}
 
 
+@pytest.mark.parametrize('answer',[
+    'Good', 'good', "I'm good", 'Im good', 'fine', 'okay', 'well',
+    'I feel good, nothing unusual', 'all good, no complaints', 'no issues today',
+])
+def test_wellness_reassurance_is_recognized(answer):
+    assert flags(answer)['patient_reports_no_concerns']
+
+
+@pytest.mark.parametrize('answer',[
+    'not good', "I'm not good", "I'm not doing great today", 'pretty tired today honestly',
+    'fine I guess', 'my balance has been off',
+])
+def test_wellness_reassurance_requires_a_real_positive_statement(answer):
+    assert not flags(answer)['patient_reports_no_concerns']
+
+
+def test_wellness_reassurance_closes_out_the_generic_checklist_questions():
+    # The actual bug this was written for: "I feel good, nothing unusual"
+    # must not leave anything in the generic always-eligible set (fatigue,
+    # anxiety, sleep, balance, volume, rate) still offerable -- those are
+    # exactly the units with no content-specific precondition to fall back
+    # on otherwise.
+    units = retrieve_eligible_units('parkinsons', {}, ['I feel good, nothing unusual'], set())
+    assert units == []
+
+
 def test_medication_status_comes_only_from_explicit_known_parameter():
     result=flags('My medication is wearing off')
     assert not result['patient_known_to_take_pd_medication']

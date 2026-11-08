@@ -190,6 +190,14 @@
         // need an explicit Save after collecting 3-5 of them, so this only
         // applies to a single check-in recording.
         if (capture.kind === 'checkin' && !capture.failed && checkinTake) task(submitCheckin);
+        // Same reasoning for a spoken answer -- once it's transcribed,
+        // send it immediately instead of waiting for a separate Send
+        // press. finishRecording already refused to populate answerText
+        // at all if transcription came back empty, so there's nothing to
+        // accidentally auto-send blank.
+        if (capture.kind === 'answer' && !capture.failed && $('answerText').value.trim()) {
+          task(() => submitAnswer($('answerText').value.trim()));
+        }
       });
       recording = capture; recorder.start(500);
       capture.limit = setTimeout(() => stopRecording(), 60000);
@@ -224,15 +232,23 @@
       let sumSquares = 0; for (const sample of samples) sumSquares += sample * sample;
       const rms = Math.sqrt(sumSquares / samples.length);
       const now = Date.now();
-      if (rms >= SPEECH_RMS) { speechStartedAt ??= now; silenceStartedAt = null; return; }
-      if (!speechStartedAt || now - speechStartedAt < MIN_SPEECH_MS) return;
-      if (rms >= SILENCE_RMS) { silenceStartedAt = null; return; }
+      // Visible readout so a silent mic (stale cached JS, blocked
+      // permission, wrong input device) is immediately distinguishable
+      // from "the thresholds just don't suit this room" -- both look the
+      // same from the outside (nothing auto-stops) without this.
+      const report = (label) => { $('silenceDebug').textContent = `vol ${rms.toFixed(3)} · ${label}`; };
+      if (rms >= SPEECH_RMS) { speechStartedAt ??= now; silenceStartedAt = null; report('speaking'); return; }
+      if (!speechStartedAt || now - speechStartedAt < MIN_SPEECH_MS) { report('waiting for speech'); return; }
+      if (rms >= SILENCE_RMS) { silenceStartedAt = null; report('speaking (quiet)'); return; }
       silenceStartedAt ??= now;
+      const quietFor = ((now - silenceStartedAt) / 1000).toFixed(1);
+      report(`quiet ${quietFor}s / ${SILENCE_HOLD_MS / 1000}s`);
       if (now - silenceStartedAt >= SILENCE_HOLD_MS) stopRecording();
     }, 100);
   }
   async function finishRecording(capture) {
     clearTimeout(capture.limit); clearInterval(capture.timer); clearInterval(capture.silenceWatch);
+    $('silenceDebug').textContent = '';
     capture.stream.getTracks().forEach(track => track.stop());
     recording = null; busy = true; updateControls(); $('recordingTimer').textContent = '';
     try {
@@ -472,15 +488,19 @@
   // take recorded with an older build. Normal use submits automatically the
   // moment a check-in recording finishes (see recorder.onstop above).
   $('uploadBtn').onclick = () => task(submitCheckin);
-  $('answerBtn').onclick = () => task(async () => {
+  async function submitAnswer(text) {
     const binding = connected, active = session, turn = active.turns.find(item => !item.answered_at && !item.closed_at);
-    const text = $('answerText').value.trim(); if (!text) throw new Error('Type an answer, or record one and review its transcript first.');
+    if (!text) throw new Error('Type an answer, or record one and review its transcript first.');
     const key = turn.turn_id + '\n' + text;
     const submission = retryAnswers.get(key) || crypto.randomUUID(); retryAnswers.set(key, submission);
     message('Saving your answer and selecting the next supported question…');
     const result = await request(binding, sessionPath(binding, active) + '/turns/' + turn.turn_id + '/answer', { method: 'POST', body: { submission_id: submission, answer_text: text } });
     renderSession(result); message(result.state === 'active' ? 'Answer saved. A follow-up question is ready.' : 'Answers saved. Review the note below.'); await refreshHistory();
-  });
+  }
+  // Manual fallback -- e.g. a typed answer, or a transcribed one the
+  // patient edited before it auto-sent. Normal use sends automatically the
+  // moment transcription finishes (see recorder.onstop above).
+  $('answerBtn').onclick = () => task(() => submitAnswer($('answerText').value.trim()));
   $('confirmBtn').onclick = () => task(async () => {
     const result = await request(connected, sessionPath() + '/confirm', { method: 'POST', body: { revision: session.revision } });
     renderSession(result); message('Your reviewed note is confirmed and saved.'); await refreshHistory();

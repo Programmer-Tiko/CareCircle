@@ -7,7 +7,8 @@
       "information_sought": "fatigue_level",
       "preconditions": [],
       "exclusions": [
-        "answer_indicates_situational_distraction"
+        "answer_indicates_situational_distraction",
+        "patient_reports_no_concerns"
       ],
       "question_template": "How's your energy right now compared to a typical day -- more tired than usual?",
       "source_type": "patient_education",
@@ -39,7 +40,8 @@
       "information_sought": "anxiety_presence",
       "preconditions": [],
       "exclusions": [
-        "answer_indicates_situational_distraction"
+        "answer_indicates_situational_distraction",
+        "patient_reports_no_concerns"
       ],
       "question_template": "Have you been feeling anxious, worried, or on edge today?",
       "source_type": "patient_education",
@@ -54,7 +56,8 @@
       "information_sought": "sleep_quality",
       "preconditions": [],
       "exclusions": [
-        "answer_indicates_situational_distraction"
+        "answer_indicates_situational_distraction",
+        "patient_reports_no_concerns"
       ],
       "question_template": "How did you sleep last night -- any more trouble than usual falling or staying asleep?",
       "source_type": "patient_education",
@@ -82,7 +85,8 @@
       "information_sought": "balance_unsteadiness",
       "preconditions": [],
       "exclusions": [
-        "answer_indicates_situational_distraction"
+        "answer_indicates_situational_distraction",
+        "patient_reports_no_concerns"
       ],
       "question_template": "Have you noticed any new unsteadiness, trouble with balance, or near-falls recently?",
       "source_type": "patient_education",
@@ -148,7 +152,8 @@
       "information_sought": "voice_volume_change",
       "preconditions": [],
       "exclusions": [
-        "answer_indicates_situational_distraction"
+        "answer_indicates_situational_distraction",
+        "patient_reports_no_concerns"
       ],
       "question_template": "Have people been asking you to speak up, or mentioning your voice sounds softer than usual?",
       "source_type": "patient_education",
@@ -163,7 +168,8 @@
       "information_sought": "speech_rate_direction",
       "preconditions": [],
       "exclusions": [
-        "answer_indicates_situational_distraction"
+        "answer_indicates_situational_distraction",
+        "patient_reports_no_concerns"
       ],
       "question_template": "Does it feel like your speech has been coming out faster or slower than usual lately?",
       "source_type": "patient_education",
