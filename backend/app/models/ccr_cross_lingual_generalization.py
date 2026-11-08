@@ -1,11 +1,20 @@
 """Run this on CCR -- needs real compute (a 300M+ param multilingual model
-across ~87 recordings) and is self-contained: downloads both datasets,
+across ~85 recordings) and is self-contained: downloads both datasets,
 extracts embeddings, and runs the single most convincing generalization
 test available to us: train a classifier on PD-vs-HC in ENGLISH connected
-speech, test it on ITALIAN word-list speech never seen in training, and
+speech, test it on ITALIAN connected speech never seen in training, and
 vice versa. No cross-validation needed for this part -- train and test are
 two fully independent real-world datasets, so there's no leakage risk at
 all, unlike same-dataset CV.
+
+Task-matched as of this version: ItalianPVS code B1 ("Il ramarro della
+zia", a continuous phonemically-balanced passage, confirmed directly from
+each group's own FILE CODES.xlsx), not PR1 (an earlier run used PR1,
+which turned out to be an isolated-word-list task -- confounding language
+with task type). This version isolates language as the actual variable.
+Keep the earlier PR1-based result too (cross_lingual_generalization.json)
+-- don't overwrite it, save this run's output under a different filename
+so both are visible side by side.
 
 Also reruns the within-dataset numbers with this larger model for
 comparison against the wav2vec2-base results already in the repo.
@@ -62,7 +71,9 @@ def prepare_mdvr_kcl(workdir: Path) -> Path:
 
 
 def prepare_italianpvs(workdir: Path) -> tuple[Path, Path]:
-    pd_dir, hc_dir = workdir / "italianpvs_pd", workdir / "italianpvs_hc"
+    # Different dir names than the earlier (PR1, wrong task) run used, on
+    # purpose -- same workdir must not silently reuse those cached files.
+    pd_dir, hc_dir = workdir / "italianpvs_b1_pd", workdir / "italianpvs_b1_hc"
     pd_dir.mkdir(parents=True, exist_ok=True)
     hc_dir.mkdir(parents=True, exist_ok=True)
     if any(pd_dir.iterdir()) and any(hc_dir.iterdir()):
@@ -71,8 +82,8 @@ def prepare_italianpvs(workdir: Path) -> tuple[Path, Path]:
     with urllib.request.urlopen(HF_API) as resp:
         meta = json.load(resp)
     files = [s["rfilename"] for s in meta.get("siblings", [])]
-    pd_files = [f for f in files if "People with Parkinson's disease" in f and "/PR1" in f and f.endswith(".wav")]
-    hc_files = [f for f in files if "Elderly Healthy Control" in f and "/PR1" in f and f.endswith(".wav")]
+    pd_files = [f for f in files if "People with Parkinson's disease" in f and "/B1" in f and f.endswith(".wav")]
+    hc_files = [f for f in files if "Elderly Healthy Control" in f and "/B1" in f and f.endswith(".wav")]
 
     for label, file_list, out_dir in [("pd", pd_files, pd_dir), ("hc", hc_files, hc_dir)]:
         for i, f in enumerate(file_list):
@@ -157,7 +168,7 @@ def main():
     italian_df = build_embeddings(model, it_pd_dir, it_hc_dir, source="italianpvs")
 
     mdvr_df.to_csv(args.out / "mdvr_kcl_xlsr_embeddings.csv", index=False)
-    italian_df.to_csv(args.out / "italianpvs_xlsr_embeddings.csv", index=False)
+    italian_df.to_csv(args.out / "italianpvs_b1_xlsr_embeddings.csv", index=False)
 
     results = {}
     auc_en_to_it = cross_dataset_auc(mdvr_df, italian_df)
@@ -177,9 +188,9 @@ def main():
         "refits, never touching the held-out test set, so it's a clean "
         "significance check on a genuinely held-out generalization test."
     )
-    (args.out / "cross_lingual_generalization.json").write_text(json.dumps(results, indent=2))
+    (args.out / "cross_lingual_generalization_taskmatched_b1.json").write_text(json.dumps(results, indent=2))
     print(json.dumps(results, indent=2))
-    print(f"\nBring back {args.out}/cross_lingual_generalization.json and the two embeddings CSVs.")
+    print(f"\nBring back {args.out}/cross_lingual_generalization_taskmatched_b1.json and the two embeddings CSVs.")
 
 
 if __name__ == "__main__":
