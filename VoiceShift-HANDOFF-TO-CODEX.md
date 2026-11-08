@@ -52,9 +52,12 @@ time unless something has materially changed:
      built, not a wrapper.
   2. The **research finding that `mean_speech_segment_duration` is the single strongest acoustic
      correlate of Parkinson's severity** found anywhere in this project's own analysis (Spearman
-     r=-0.80 vs Hoehn-Yahr stage in MDVR-KCL, beating pause_fraction's r=0.73), which replicated
-     in a second language (ItalianPVS, task B1) — see Research section. This was *this team's
-     own result*, not copied from a paper, and it was just wired into the live detector (see
+     r=-0.80 vs Hoehn-Yahr stage in MDVR-KCL, beating pause_fraction's r=0.73). **Correction from
+     my own earlier claim**: ItalianPVS B1 is same-direction but borderline (p=0.053, d=-0.60) —
+     not a significant replication. Codex caught and fixed this in the code comment and brief;
+     this file had the overclaim until this review pass. See Research section for the honest
+     numbers. This was *this team's own result*, not copied from a paper, and it was just wired
+     into the live detector (see
      "In-progress work" below — this is the task you're picking up).
 - **CCR (the HPC cluster) must produce things that get used live, not performative compute-burning.**
   The user has twice pushed back hard when CCR work ("we have the compute, use it") produced
@@ -226,7 +229,8 @@ Datasets actually used:
 Key verified results:
 - `mean_speech_segment_duration`: Spearman r=-0.80 vs Hoehn-Yahr stage in MDVR-KCL — the single
   strongest correlate found in any analysis in this project, stronger than `pause_fraction`
-  (r=0.73). Replicated in ItalianPVS task B1 (second language, same task type).
+  (r=0.73). ItalianPVS task B1 (same task type, second language) is same-direction but
+  borderline (p=0.053, d=-0.60) — not a significant replication. Don't call this "replicated."
 - Severity regression attempt (trying to predict a continuous severity score) failed (R²=-0.35) —
   diagnosed as a between-subject vs. within-subject variance confound. Correctly retired from the
   live product rather than patched; documented as a negative result, not hidden.
