@@ -2,6 +2,12 @@
 
 Wraps the already-built, already-tested pipeline in `backend/app/pipeline.py` as a minimal HTTP API, so the UI (`Daily Hello Family.html`, or whatever it becomes) can call something real instead of only the mock JSON in `VoiceShift-Demo-Brief.md`.
 
+**This build also targets two MLH prize tracks, and both are genuine fits, not bolted on:**
+- **Best Use of Tiger Data** — VoiceShift's whole mechanism is time-series by nature (daily check-ins, personal baselines built from history, deviation tracked over time), so Tiger Data (TimescaleDB/PostgreSQL) replaces the in-memory storage below — see the State storage section.
+- **Best Use of ElevenLabs** — the brief's caregiver workflow already calls for reading the proposed report back for confirmation; ElevenLabs voicing the follow-up question and the note read-back turns the check-in into an actual spoken conversation instead of a text quiz — see the Voice synthesis section.
+
+Priority order if you don't finish everything: **core endpoints first** (enroll/checkin/answer/confirm, working against Postgres), **then** ElevenLabs voice synthesis. Partial is fine either way, per the note at the bottom — just be clear in your commit message about what's done.
+
 **Everything underneath the API is done and tested (21/21 tests passing).** This spec is only about the HTTP layer on top: endpoints, request/response shapes, and where to store per-profile state. Don't modify `app/audio/`, `app/dialogue/`, `app/models/`, or `app/pipeline.py` — call them, don't rewrite them. If something there seems to be missing a capability, ask rather than reworking it.
 
 ## Before you start
@@ -26,21 +32,39 @@ python -m pytest tests/ -q   # confirm 21 passed before you add anything
 
 `condition` is always `"copd"` or `"parkinsons"`. `passage_syllable_count` is a fixed int per the standard passage — use `40` as a placeholder (the Rainbow Passage excerpt's actual count isn't pinned down yet; make it a constant in one place so it's a one-line fix later).
 
-## State storage
+## State storage — Tiger Data (TimescaleDB / PostgreSQL)
 
-In-memory, process-local dict keyed by `profile_id`. No database, no persistence across server restarts — this is explicitly fine for the hackathon demo; don't build more than this.
+Not in-memory. Sign up for a free Tiger Cloud instance (search "Tiger Data" / "TimescaleDB cloud free tier" to find the current signup page — don't guess a URL, find the real one) and get a connection string. If that signup has any friction, a local Postgres with the `timescaledb` extension works identically for this scope; either way the schema below is the same.
 
-```python
-# something like this, in its own module (e.g. app/api/state.py)
-@dataclass
-class ProfileState:
-    condition: str
-    baseline: BaselineStats | None = None
-    tracker: PersistentDeviationTracker = field(default_factory=lambda: PersistentDeviationTracker(2.0, 2))
-    pending_deviation_score: float | None = None  # set when a check-in triggers, used by /answer
+Two tables: `profiles` (one row per enrolled person, holds the fitted baseline) and `checkins` (one row per check-in, a **hypertable** — this is the actual time-series data the prize track is about, and it's also genuinely useful: it's what a real "history" view would query, and it's how `PersistentDeviationTracker`'s "N consecutive" logic can be rebuilt from the last few rows instead of living only in process memory).
 
-PROFILES: dict[str, ProfileState] = {}
+```sql
+CREATE TABLE profiles (
+    profile_id TEXT PRIMARY KEY,
+    condition TEXT NOT NULL,
+    baseline_median JSONB,
+    baseline_mad JSONB,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE checkins (
+    time TIMESTAMPTZ NOT NULL DEFAULT now(),
+    profile_id TEXT NOT NULL REFERENCES profiles(profile_id),
+    pause_fraction DOUBLE PRECISION,
+    longest_internal_gap DOUBLE PRECISION,
+    speaking_rate DOUBLE PRECISION,
+    deviation_score DOUBLE PRECISION,
+    triggered BOOLEAN,
+    question_text TEXT,
+    patient_said TEXT,
+    note_status TEXT
+);
+SELECT create_hypertable('checkins', 'time');
 ```
+
+`baseline_median`/`baseline_mad` store `BaselineStats.median` / `.mad` (both are already plain dicts, so `json.dumps` them straight into the `JSONB` columns). Use `psycopg` (sync, simplest to wire into FastAPI handlers for this scope — no need for an async driver here) for the connection. Keep the connection string in an environment variable, never committed — add a `.env.example` with a placeholder, and make sure `.env` itself is gitignored (check `backend/.gitignore`, add it if it's missing).
+
+Rebuild `PersistentDeviationTracker`'s consecutive-hit state per request by querying the most recent `required_consecutive` rows for that `profile_id` from `checkins` and replaying `.observe()` on their stored `deviation_score` values, rather than keeping a tracker object alive in memory between requests — this is what makes the design actually stateless/restart-safe, which is the whole point of using a real database here instead of a dict.
 
 ## Endpoints
 
@@ -51,16 +75,17 @@ Multipart form upload, field name `files`, 3–5 wav files (the reference takes)
 
 - For each uploaded file: save to a temp path, call `build_take_from_audio`, collect the dicts.
 - Call `fit_baseline(takes)`.
-- Store a new `ProfileState(condition=condition, baseline=baseline)` in `PROFILES[profile_id]`.
+- `INSERT` a row into `profiles` (`profile_id`, `condition`, `baseline_median`, `baseline_mad`).
 - Response: `{"status": "enrolled", "profile_id": "...", "n_reference_takes": 4}`
 - If fewer than 3 files: 400 with a clear error (matches `fit_baseline`'s own `ValueError` — just catch and translate it to an HTTP error, don't change the validation logic itself).
 
 ### `POST /profiles/{profile_id}/checkin`
 Multipart form upload, field name `file`, one wav (today's reading).
 
-- 404 if `profile_id` not enrolled.
-- Call `evaluate_checkin(path, state.baseline, state.tracker, state.condition, PASSAGE_SYLLABLE_COUNT)`.
-- If `triggered`: store `state.pending_deviation_score = result.deviation_score` (the `/answer` endpoint needs this next).
+- 404 if `profile_id` has no row in `profiles`.
+- Load `BaselineStats` back from the `profiles` row. Rebuild the tracker by replaying the last `required_consecutive` `checkins` rows for this profile (see the State storage section) rather than holding a tracker object across requests.
+- Call `evaluate_checkin(path, baseline, tracker, condition, PASSAGE_SYLLABLE_COUNT)`.
+- `INSERT` the result into `checkins` (the timing features from `build_take_from_audio`, the `deviation_score`, `triggered`, `question_text`) — every check-in gets a row, triggered or not, since that history is what makes the tracker rebuild actually work and is also the real time-series data for a history view.
 - Response shape, matching `VoiceShift-Demo-Brief.md`'s mock JSON as closely as possible:
 ```json
 {
@@ -78,9 +103,9 @@ When not triggered, `triggered_question` is `null` and `status` is `"no_change"`
 ### `POST /profiles/{profile_id}/answer`
 JSON body: `{"answer_text": "I stopped to catch my breath"}`.
 
-- 404 if `profile_id` not enrolled or has no pending check-in (no `pending_deviation_score` set) — this means `/answer` was called without a preceding triggered `/checkin`.
-- Call `process_answer(state.condition, state.pending_deviation_score, answer_text)`.
-- Clear `state.pending_deviation_score` after this call (one answer resolves one pending check-in; a returned follow-up question is communicated to the caller, but re-asking it is a second full `/answer` call with the new reply, not special-cased state).
+- 404 if `profile_id` has no row in `profiles`, or if the most recent `checkins` row for this profile isn't `triggered`, or `note_status` on that row is already set (already answered) — any of those means there's no pending question to answer right now.
+- Read `condition` and the most recent row's `deviation_score` from the DB, then call `process_answer(condition, deviation_score, answer_text)`.
+- `UPDATE` that `checkins` row with `patient_said` and `note_status` (no separate "pending" flag needed — the most-recent-triggered-row-with-no-answer-yet check above does that job).
 - Response:
 ```json
 {
@@ -96,9 +121,11 @@ JSON body: `{"answer_text": "I stopped to catch my breath"}`.
 `follow_up_question` is `null` when there's nothing more to ask.
 
 ### `POST /profiles/{profile_id}/confirm`
-No body needed for now (there's no stored note object to mutate server-side yet — the UI holds the note after `/answer` and confirms its own copy). Response: `{"status": "confirmed"}`. This is intentionally thin; don't build note persistence beyond this unless asked.
+No body needed. `UPDATE` the most recent `checkins` row for this profile, setting `note_status = 'confirmed'`. Response: `{"status": "confirmed"}`.
 
 ## Testing it yourself
+
+Needs `TIGER_DATA_URL` (the Postgres connection string) and, once you get to that section, `ELEVENLABS_API_KEY` set in the environment (or a `.env` file loaded via `python-dotenv` — add it to requirements if you use it).
 
 ```bash
 uvicorn app.api.main:app --reload --port 8000
@@ -111,9 +138,17 @@ FastAPI gives you free interactive docs at `http://localhost:8000/docs` — use 
 
 If you don't have real wav files handy to test with: `backend/tests/fixtures/speech_chunk.wav` is a 1-second real speech clip (see its own README for attribution) — not long enough to be a realistic check-in, but enough to confirm the endpoints don't crash on real audio input.
 
+## Voice synthesis (ElevenLabs)
+
+After the core endpoints work, add one small addition: voicing text via ElevenLabs. Sign up for a free ElevenLabs account (search for the current signup page, don't guess a URL) and get an API key — their free tier's character quota is enough for a hackathon demo. Keep the key in an environment variable, same as the Postgres connection string, never committed.
+
+Add a `POST /speak` endpoint: JSON body `{"text": "..."}`, calls ElevenLabs' text-to-speech REST API (a single POST to their `text-to-speech/{voice_id}` endpoint with the API key in a header, picking any one of their stock voices is fine), and returns the audio bytes directly with `media_type="audio/mpeg"` — no need to save it anywhere, stream it straight through.
+
+This is intentionally generic (any text in, audio out) rather than baked into `/checkin` or `/answer` specifically — the UI calls `/speak` with whatever text it wants voiced: the triggered question, the follow-up question, or the note's `measured`/`patient_said` text read back for confirmation (the brief's caregiver workflow already calls for reading the report back before approval — this is that, for real).
+
 ## What NOT to build
 
-No auth, no database, no deployment config, no HTTPS, no rate limiting, no phone/Twilio integration (that's a separate, deprioritized track). CORS: add permissive CORS (`allow_origins=["*"]`) since this is a local demo, not a security review.
+No auth, no deployment config, no HTTPS, no rate limiting, no phone/Twilio integration (that's a separate, deprioritized track — ElevenLabs here is for voicing the web/app check-in, not for placing calls). CORS: add permissive CORS (`allow_origins=["*"]`) since this is a local demo, not a security review.
 
 ## When you're done
 
