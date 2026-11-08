@@ -44,6 +44,10 @@ def install_routes(app,get_db,locked_profile):
     def home():
         return FileResponse(repo/'Daily Hello Family.html',media_type='text/html',headers={'Cache-Control':'no-cache'})
 
+    @app.get('/favicon.ico',include_in_schema=False)
+    def favicon():
+        return FileResponse(repo/'frontend/favicon.svg',media_type='image/svg+xml')
+
     @app.get('/capabilities')
     def capabilities():
         configured=os.getenv('CADENCE_ASR_ENABLED','').lower() in ('1','true','yes')

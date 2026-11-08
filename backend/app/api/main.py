@@ -96,13 +96,20 @@ def audio_path(upload):
 
 
 
-def require_matching_phrase(path):
+def require_matching_phrase(path, reference_take=None):
     from app.api.speech import phrase_evidence
     evidence = phrase_evidence(path)
     if evidence['status'] != 'available':
         raise HTTPException(503, 'Phrase verification is unavailable; use typed capture settings or configure local ASR.')
     if evidence.get('phrase_match') != 'matched':
-        raise HTTPException(422, 'The transcript could not verify the fixed passage. Listen to your take and record the passage again, or explicitly disable optional verification.')
+        prefix = f'Reference take {reference_take}: ' if reference_take is not None else ''
+        words = evidence.get('observed_tokens') or [word.get('word', '') for word in evidence.get('word_timestamps', [])]
+        recognized = ' '.join(words).strip()[:500]
+        heard = f' The recognizer heard: “{recognized}”.' if recognized else ' The recognizer returned no reliable words.'
+        reason = evidence.get('phrase_match_reason') or 'The transcript did not match closely enough.'
+        raise HTTPException(422, prefix + 'Passage verification did not pass. ' + reason + heard +
+                            ' Your takes are still in this page. Preview the recording and replace this take if needed. '
+                            'If you intentionally want an unverified reference, uncheck optional passage verification and retry.')
     return evidence
 
 
@@ -123,10 +130,10 @@ def enroll(profile_id: str, db: Database,
             raise HTTPException(400, 'Provide 3–5 clean reference WAV recordings.')
         takes = []
         waveform_takes = []
-        for upload in files:
+        for take_number, upload in enumerate(files, start=1):
             with audio_path(upload) as path:
                 if verify_passage:
-                    require_matching_phrase(path)
+                    require_matching_phrase(path, reference_take=take_number)
                 takes.append(build_take_from_audio(path, PASSAGE_SYLLABLE_COUNT))
                 if experimental:
                     from app.audio.prosody_features import extract_prosody_features

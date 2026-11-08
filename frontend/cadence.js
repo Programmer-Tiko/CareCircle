@@ -88,7 +88,10 @@
       $('apiResponse').textContent = `${method} ${path}\nHTTP ${response.status}\n${JSON.stringify(data, null, 2)}`;
       if (allow404 && response.status === 404) return null;
       if (!response.ok) {
-        const detail = typeof data.detail === 'string' ? data.detail : `Request returned HTTP ${response.status}.`;
+        const detail = typeof data.detail === 'string' ? data.detail
+          : typeof data.detail?.message === 'string' ? data.detail.message
+          : Array.isArray(data.detail) ? data.detail.map(item => `${(item.loc || []).join('.')}: ${item.msg}`).join('; ')
+          : `Request returned HTTP ${response.status}.`;
         const problem = new Error(detail); problem.status = response.status; throw problem;
       }
       return data;

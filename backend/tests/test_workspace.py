@@ -102,3 +102,20 @@ def test_question_budget_preserves_last_answer_without_extra_provider_call(conve
         assert session['state']=='abstained'
         assert session['note']['patient_said']==['Words felt different','During dinner']
         assert 'question limit' in session['note']['unresolved'][0]
+
+
+def test_enrollment_verification_identifies_take_and_transcript_without_storing_profile(conversation_clients,monkeypatch):
+    from app.api import speech
+    from test_api import recording
+    factory,stamp=conversation_clients
+    evidence=iter([{'status':'available','phrase_match':'matched'},
+        {'status':'available','phrase_match':'mismatch','observed_tokens':['a','different','reading'],
+         'phrase_match_reason':'Too many words differ from the expected passage.'}])
+    monkeypatch.setattr(speech,'phrase_evidence',lambda path:next(evidence))
+    with factory() as client:
+        files=[('files',(f'ref{i}.wav',recording(.4),'audio/wav')) for i in range(3)]
+        response=client.post('/profiles/failed-reference/enroll?verify_passage=true',data={'condition':'parkinsons'},files=files)
+        assert response.status_code==422
+        detail=response.json()['detail']
+        assert 'Reference take 2' in detail and 'a different reading' in detail
+        assert client.get('/profiles/failed-reference').status_code==404
