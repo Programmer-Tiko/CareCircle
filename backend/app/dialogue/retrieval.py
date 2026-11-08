@@ -9,11 +9,27 @@ from pathlib import Path
 
 _CORPUS_PATH = Path(__file__).with_name("question_corpus.json")
 
+# Deliberately narrow and literal, not a clinical triage system: catches
+# an unambiguous disclosure of injury/emergency so the fixed safety notice
+# fires every time, not only when a language model happens to notice. A
+# prototype safety net, not exhaustive -- documented as such, not implied
+# to be complete.
+EMERGENCY_KEYWORDS = (
+    "i fell", "fell down", "fell and", "hurt myself", "injured", "broke my",
+    "can't get up", "cant get up", "bleeding", "call 911", "need an ambulance",
+    "hospital now", "chest pain",
+)
+
 _DISTRACTION_KEYWORDS = ("dog", "interrupt", "noise", "distract", "phone rang", "someone else")
 _SPEECH_DIFFICULTY_KEYWORDS = ("hard to", "difficult", "words", "trouble speaking", "slur", "repeat")
 _SPEECH_MOTOR_KEYWORDS = _SPEECH_DIFFICULTY_KEYWORDS + ("breath", "slower", "faster", "quiet", "soft")
 
 _STOPWORDS = {"the", "a", "an", "and", "or", "to", "of", "in", "on", "at", "is", "it", "that", "this", "was", "were"}
+
+
+def contains_emergency_signal(answer_text: str) -> bool:
+    text = answer_text.lower()
+    return any(kw in text for kw in EMERGENCY_KEYWORDS)
 
 
 def load_corpus() -> list[dict]:
@@ -91,6 +107,7 @@ def retrieve_eligible_units(
         unit
         for unit in load_corpus()
         if unit["condition"] == condition
+        and unit["id"] != "safety_notice"  # reachable only via the hard-coded emergency check, never normal selection
         and unit["id"] not in already_asked_ids
         and is_eligible(unit, context)
     ]

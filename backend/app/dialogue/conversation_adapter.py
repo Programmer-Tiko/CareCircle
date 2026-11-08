@@ -7,7 +7,7 @@ either side can change independently as long as that shape holds.
 from typing import Callable
 
 from app.dialogue.groq_selector import _default_model_call, select_question
-from app.dialogue.retrieval import load_corpus_version, retrieve_eligible_units
+from app.dialogue.retrieval import contains_emergency_signal, load_corpus, load_corpus_version, retrieve_eligible_units
 from app.dialogue.validation import validate_selection
 
 # Matches the id/version conversations.py's own legacy-initial question
@@ -43,20 +43,31 @@ def selector_adapter(context: dict, model_call: Callable[[str], str] = _default_
     turns = context.get("turns") or []
     answer_text = context["answer_text"]
 
+    # Deterministic, model-free, checked first and unconditionally: an
+    # unambiguous disclosure of injury/emergency gets the fixed safety
+    # notice every time, never routed through the LLM and never skippable
+    # by a bad model response. "resolved": False is deliberate -- this
+    # does not claim to have understood or addressed what was disclosed,
+    # only to have surfaced the fixed notice.
+    if contains_emergency_signal(answer_text):
+        safety_unit = next(u for u in load_corpus() if u["id"] == "safety_notice")
+        return {
+            "decision": "ask",
+            "resolved": False,
+            "question": {
+                "id": safety_unit["id"],
+                "version": load_corpus_version(),
+                "text": safety_unit["question_template"],
+                "sources": [_source_for(safety_unit)],
+            },
+        }
+
     prior_answers = [t["answer"] for t in turns if t.get("answer")] + [answer_text]
     already_asked_ids = {t["question"]["id"] for t in turns if t.get("question")}
 
-    # `measured.features` (context["measured"]) currently holds raw feature
-    # values (pause_fraction, longest_internal_gap, speaking_rate), not the
-    # per-feature z-scores personal_baseline.per_feature_deviation() can
-    # produce -- that wiring from checkin into the conversations table
-    # isn't in yet (flagged in CONVERSATIONS.md). Passing an empty dict
-    # here is deliberate, not an oversight: a context flag like
-    # measured_pause_fraction_elevated needs a z-score to mean anything,
-    # and computing it from a raw value on the wrong scale would be worse
-    # than leaving it unavailable. Units gated on that flag (e.g.
-    # breath_support_phrasing) simply stay ineligible until this lands.
-    feature_scores: dict[str, float] = {}
+    # Older immutable snapshots have no scores. Keep their gated units
+    # ineligible rather than treating raw features as standardized evidence.
+    feature_scores = (context.get("measured") or {}).get("feature_scores") or {}
 
     eligible = retrieve_eligible_units(
         condition=condition,

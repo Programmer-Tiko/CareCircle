@@ -54,6 +54,19 @@
       "review_status": "prototype"
     },
     {
+      "id": "safety_notice",
+      "condition": "parkinsons",
+      "information_sought": "safety_disclosure_acknowledgement",
+      "preconditions": [],
+      "exclusions": [],
+      "question_template": "It sounds like something may have happened that needs more than this check-in can help with. If you're injured or need help right now, please contact your doctor or local emergency services -- this system can't do that for you. Would you like to continue the check-in?",
+      "source_type": "design_policy",
+      "source_url": null,
+      "source_excerpt": null,
+      "source_version": null,
+      "review_status": "prototype"
+    },
+    {
       "id": "balance_concern_check",
       "condition": "parkinsons",
       "information_sought": "balance_unsteadiness",
