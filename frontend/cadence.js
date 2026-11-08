@@ -165,6 +165,15 @@
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) throw new Error('Microphone recording needs a supported browser on localhost or HTTPS.');
     const binding = connected;
     if (!binding) throw new Error('Connect a profile first.');
+    if (kind === 'checkin' && capabilities.tts_enabled) {
+      // The AI should ask you to read, out loud, before the mic opens --
+      // not just show text with a Record button. Speaking and recording
+      // can't happen at once here: the prompt would bleed into the very
+      // passage recording the trigger math depends on, so this fully
+      // finishes (including playback) before the microphone is requested.
+      message('Listen for the prompt…');
+      try { await speak('Please read today’s passage at your comfortable pace.'); } catch { /* speak() already reported a fallback */ }
+    }
     let stream, context;
     try {
       context = new (window.AudioContext || window.webkitAudioContext)(); await context.resume();
@@ -174,7 +183,14 @@
       const capture = { kind, binding, context, stream, recorder, chunks: [], activeSession: session, failed: false, started: Date.now() };
       recorder.ondataavailable = event => { if (event.data.size) capture.chunks.push(event.data); };
       recorder.onerror = event => { capture.failed = true; error(event.error?.message || 'Recording failed. Please try again.'); if (recorder.state !== 'inactive') recorder.stop(); };
-      recorder.onstop = () => finishRecording(capture);
+      recorder.onstop = () => finishRecording(capture).then(() => {
+        // The check-in reading itself should feel like one continuous
+        // interaction, not record-then-remember-to-press-another-button --
+        // submit it the moment it's ready. Reference/enrollment takes still
+        // need an explicit Save after collecting 3-5 of them, so this only
+        // applies to a single check-in recording.
+        if (capture.kind === 'checkin' && !capture.failed && checkinTake) task(submitCheckin);
+      });
       recording = capture; recorder.start(500);
       capture.limit = setTimeout(() => stopRecording(), 60000);
       capture.timer = setInterval(() => { $('recordingTimer').textContent = `${Math.floor((Date.now() - capture.started) / 1000)}s · recording`; }, 1000);
@@ -302,7 +318,18 @@
     // check-in feel like a conversation rather than a form to fill out.
     if (turn && turn.turn_id !== spokenTurnId) {
       spokenTurnId = turn.turn_id;
-      speak(turn.question.text).catch(() => message('Could not play the question aloud automatically. It is shown above; use the speaker button to try again.'));
+      speak(turn.question.text)
+        .catch(() => message('Could not play the question aloud automatically. It is shown above; use the speaker button to try again.'))
+        .then(() => {
+          // Once the AI finishes asking, start listening for the answer
+          // automatically instead of waiting for a separate "Record an
+          // answer" press -- same reasoning as the question itself: this is
+          // what makes it feel like a conversation. Falls back to the
+          // existing manual button (still visible) if a mic can't be
+          // opened right now, or if local transcription isn't available at
+          // all, in which case typing remains the only path either way.
+          if (capabilities.asr_enabled && !recording && !busy) task(() => startRecording('answer'));
+        });
     }
     $('conversationState').textContent = value.state === 'abstained' ? 'No further supported question was selected. Uncertainty remains in your note.' : value.state === 'complete' ? 'The question sequence has ended. Please review your note.' : value.state === 'confirmed' ? 'Your note is confirmed and saved.' : '';
     $('notePanel').hidden = !value.note;
@@ -368,8 +395,15 @@
   async function speak(text) {
     const blob = await request(connected, '/speak', { method: 'POST', body: { text: text.slice(0, 5000) }, audio: true });
     if (speechUrl) URL.revokeObjectURL(speechUrl); speechUrl = URL.createObjectURL(blob);
-    $('speechPlayer').src = speechUrl; $('speechPlayer').hidden = false;
-    try { await $('speechPlayer').play(); } catch { message('Spoken audio is ready. Press Play below to listen.'); }
+    const player = $('speechPlayer'); player.src = speechUrl; player.hidden = false;
+    try {
+      await player.play();
+      // Resolve once playback actually finishes, not once it merely starts
+      // (that's all Audio.play()'s own promise means) -- callers that want
+      // to do something right after the AI stops talking (e.g. start
+      // listening for the answer) need the real end, not the start.
+      await new Promise(resolve => { player.onended = resolve; });
+    } catch { message('Spoken audio is ready. Press Play below to listen.'); }
   }
   $('connectBtn').onclick = () => task(connect);
   $('newProfileBtn').onclick = () => { if (busy || recording || pending()) return; $('profileId').value = 'demo-' + crypto.randomUUID().slice(0, 8); $('connectionSettings').open = true; $('profileId').focus(); updateControls(); message('New ID prepared. Choose Connect to start a new reference; existing history is preserved.'); };
@@ -392,7 +426,7 @@
     $('connectionSettings').open = false;
     message('Your reference is saved. Record your first check-in when ready.'); await refreshHistory();
   });
-  $('uploadBtn').onclick = () => task(async () => {
+  async function submitCheckin() {
     const binding = connected, form = new FormData(); form.append('file', checkinTake.blob, 'checkin.wav');
     message('Comparing this reading with your reference…');
     const params = new URLSearchParams();
@@ -404,13 +438,17 @@
     URL.revokeObjectURL(checkinTake.url); checkinTake = null; renderTakes();
     if (result.status === 'awaiting_answer') {
       renderSession(await request(binding, profilePath(binding, '/conversations'), { method: 'POST', body: { checkin_time: result.checkin_time } }));
-      message('A question is ready. Tell us what you noticed below.'); $('questionText').scrollIntoView({ block: 'center', behavior: 'smooth' });
+      message('A question is ready.'); $('questionText').scrollIntoView({ block: 'center', behavior: 'smooth' });
     } else {
       session = null; saveConnection(); $('conversationPanel').hidden = true; $('notePanel').hidden = true;
       message('Reading saved. The repeated-change threshold was not met. You can still add a personal note.');
     }
     await refreshHistory();
-  });
+  }
+  // Manual fallback/retry -- e.g. a check-in whose auto-submit failed, or a
+  // take recorded with an older build. Normal use submits automatically the
+  // moment a check-in recording finishes (see recorder.onstop above).
+  $('uploadBtn').onclick = () => task(submitCheckin);
   $('answerBtn').onclick = () => task(async () => {
     const binding = connected, active = session, turn = active.turns.find(item => !item.answered_at && !item.closed_at);
     const text = $('answerText').value.trim(); if (!text) throw new Error('Type an answer, or record one and review its transcript first.');

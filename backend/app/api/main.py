@@ -26,7 +26,17 @@ from app.audio.observation_reference import fit_observation_reference, compare_o
 from app.pipeline import build_take_from_audio, evaluate_checkin, process_answer
 
 load_dotenv(Path(__file__).resolve().parents[2] / '.env')
-DEVIATION_THRESHOLD = 2.0
+# The combined score is a Euclidean norm across FEATURE_ORDER's dimensions
+# (personal_baseline.deviation_score) -- under pure noise with four
+# well-estimated z-scores, that norm's expected value is already close to
+# 1.9 (chi distribution, k=4), not 0. 2.0 was workable back when there
+# were three features; with a fourth dimension added, ordinary variation
+# alone regularly clears it. Raised to keep roughly the same real-anomaly
+# sensitivity the three-feature system had, now that there's one more
+# axis for routine noise to add up across. See personal_baseline.py's
+# MIN_RELATIVE_MAD for the other half of this fix (a too-tight enrollment
+# baseline, not just the extra dimension).
+DEVIATION_THRESHOLD = 3.0
 REQUIRED_CONSECUTIVE = 2
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 Condition = Literal['copd', 'parkinsons']
