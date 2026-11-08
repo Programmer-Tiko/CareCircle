@@ -10,17 +10,23 @@ teammate branches were preserved.
 | --- | --- | --- |
 | `codex/four-feature-integration` | `68321e7` | Ancestor of multisignal and UI |
 | `codex/multisignal-experiments` | `7363896` | Seven commits ahead of main; ancestor of UI |
-| `codex/ui-integration` | `da7583f` | Contains all 17 teammate commits |
+| `codex/ui-integration` | `59c7590` | Contains all 17 implementation commits plus the latest demo guide |
 | PR #2 / `fix/transaction-test-and-groq` | `256b5d7` | One separate test-fix commit |
 | `docs/cadence-architecture-roadmap` | `8fce598` | Already contained in main |
 
-The UI branch was fast-forwarded into the isolated integration branch once.
+The UI implementation at `da7583f` was fast-forwarded into the isolated integration branch once.
 PR #2's original commit was merged with merge commit `145fa1c`; it was not
 cherry-picked or duplicated. The only conflict was the database test double in
 `test_api.py`. Resolution retains the ownership-query behavior, real `get_db`
 teardown, commit-attempt checks, sanitized response check, and HTTP 503 assertion.
 PR #2 was not merged into main. Its standalone suite was reverified in a separate
 temporary worktree: **70 passed, 6 database tests skipped**.
+
+A final fetch found documentation-only teammate commit `59c7590`, adding
+`TEAMMATE-WORKFLOW-AND-DEMO-GUIDE.md`. It was reviewed and merged separately;
+application code and tests were unchanged, so the completed verification remains
+applicable. The guide's narration of live-provider behavior is not an additional
+live-service verification by this integration task.
 
 ## Stabilization changes
 
