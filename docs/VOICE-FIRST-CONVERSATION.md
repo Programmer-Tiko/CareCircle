@@ -37,11 +37,17 @@ legacy reads), and history. No medical analysis threshold is changed.
 ## Providers and retention
 
 * **Preferred TTS:** ElevenLabs through the existing backend `/speak` route.
-  The launcher defaults to Rachel (`21m00Tcm4TlvDq8ikWAM`), an American female
-  voice, at speed 0.92. `CADENCE_VOICE_ID` can select another available warm
+  The backend retains the legacy Rachel ID (`21m00Tcm4TlvDq8ikWAM`) at speed
+  0.92. The provider may route it to a replacement; API availability depends
+  on the account. `CADENCE_VOICE_ID` can select an accessible warm
   American female voice. The backend also accepts the legacy
   `ELEVENLABS_VOICE_ID` configuration when `CADENCE_VOICE_ID` is absent.
   Voice availability and account permissions must be checked with the provider.
+  The checked account rejects the default Voice Library voice on its free API
+  plan. A different API-permitted voice/account configuration is required;
+  this is not fixed by assuming the key is invalid or purchasing access
+  automatically. See the [provider voice changes](https://elevenlabs.io/docs/help-center/product/voices/voice-library/how-are-voices-updated-changed)
+  and [default-voice access rules](https://elevenlabs.io/docs/help-center/product/voices/my-voices/how-do-i-access-eleven-labs-default-voices).
 * **TTS fallback:** browser speech synthesis, preferring an available local
   American female voice such as Microsoft Zira. The exact selected voice is
   shown; availability and quality vary by browser and operating system.

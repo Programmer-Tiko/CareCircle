@@ -77,12 +77,12 @@ Coverage includes:
 
 | Component | Observed result | Limit |
 |---|---|---|
-| FastAPI/frontend | 8001, 8002, and updated guided 8003 reachable | A reachable page does not prove microphone use. |
+| FastAPI/frontend | 8001, 8002, guided 8003, and fresh live-Groq 8004 reachable | A reachable page does not prove microphone use. |
 | Local Whisper | Actual 8003 `/transcribe`: HTTP 200, `whisper-base.en`, nonempty transcript, `needs_review: true`, about 33 seconds | Input was an existing dramatized answer WAV, not a newly recorded physical-microphone answer. No SQL profile/check-in created. |
-| Groq | `GROQ_API_KEY` missing in original backend settings and inherited process environment | A real inference was not attempted without credentials; live inference remains unverified. |
+| Groq | Initially missing; user updated settings. Actual `openai/gpt-oss-20b` application-adapter inference succeeded with structured JSON in 1.77 seconds. Fresh 8004 capabilities report `groq`. | This proves connectivity/inference, not a completed live adaptive patient conversation. |
 | ElevenLabs configuration | `ELEVENLABS_API_KEY` present; voice/model overrides absent | Presence is not a health check. No key value was shown. |
 | ElevenLabs voice/models/subscription reads | HTTP 401, sanitized category `missing_permissions` | Voice availability, model access, and quota could not be confirmed. These responses do not establish that the key is invalid. |
-| ElevenLabs synthesis | Actual minimal request: HTTP 402, sanitized category `payment_required` | Live ElevenLabs output is not verified. Account/voice entitlement or credits require local correction. |
+| ElevenLabs synthesis | Actual minimal request: HTTP 402, sanitized category `payment_required`; internally classified as the free-tier Voice Library API restriction, not an insufficient-credit error | Live ElevenLabs output is not verified. An API-permitted voice/account configuration is required; no account purchase or credential edit was performed. |
 | Browser TTS | Available fallback in UI; API behavior tested with injected browser speech | Audible voice on the user's speakers still needs human verification. |
 | Offline selector | 8002/8003 explicitly return `question_selection: offline-demo` | Only model ID choice is simulated; never call this a live Groq test. |
 
@@ -93,11 +93,13 @@ the backend default. Inherited environment variables precede dotenv values.
 
 ## Manual verification still required
 
-The user has not yet confirmed a completed physical-microphone rehearsal
-of this new feature. The following remain pending:
+The user reported that reference recording on 8004/profile
+`voice-manual-20261108` is in progress. Completion has not been confirmed.
+The server is left running without restart while those takes are unsaved.
+The following remain pending:
 
-1. Correct local provider access and verify actual Groq inference plus
-   nonempty ElevenLabs audio using the loaded settings.
+1. Configure an API-permitted ElevenLabs voice and verify nonempty synthesis
+   using the loaded settings. Groq's minimal real inference has passed.
 2. On a single new fictional profile: three full physical-microphone reference
    readings, successful enrollment with `n_reference_takes: 3`, and today's
    new recording through real acoustic processing.

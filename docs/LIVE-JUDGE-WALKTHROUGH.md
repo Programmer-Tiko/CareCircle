@@ -9,6 +9,12 @@ validated disease-progression assessment.
 
 As checked on November 8, 2026 (America/New_York):
 
+* `http://127.0.0.1:8004/` is the freshly loaded **live Groq** process.
+  Both provider keys are present, and a real structured Groq inference through
+  the application adapter succeeded. Local Whisper and per-take acoustic
+  validation are enabled. ElevenLabs synthesis still fails; the browser
+  voice fallback remains explicitly labeled. The live-provider rehearsal
+  is not fully verified.
 * `http://127.0.0.1:8003/` is the updated guided walkthrough. Real microphone,
   acoustic processing, optional passage verification, cached local Whisper,
   and persistent SQL are available. **Question ID selection is explicitly
@@ -85,11 +91,17 @@ database URL in the file from redirecting the rehearsal. FastAPI's default
 dotenv lookup is relative to the feature checkout's backend, not the original
 checkout. Supply `-SettingsFile` when using this isolated worktree.
 
-At verification, Groq's key was missing. ElevenLabs read calls returned
-HTTP 401 `missing_permissions`; synthesis returned HTTP 402
-`payment_required`. Those are separate findings. The read failures do not
-prove that the key is invalid. Voice access, model availability, and quota
-could not be independently confirmed with the current permissions.
+Initially, Groq's key was missing. After the user updated local settings,
+both required keys were present. Real inference using the existing
+`openai/gpt-oss-20b` adapter then succeeded in about 1.8 seconds with structured
+JSON. The fresh 8004 process reports live Groq selection.
+
+ElevenLabs read calls returned HTTP 401 `missing_permissions`; synthesis
+returned HTTP 402 `payment_required`. Internal classification of the error
+identified the free-tier restriction on using a Voice Library voice through
+the API, not an insufficient-credit error. No account details or full response
+body were exposed. The read failures do not prove that the key is invalid.
+Voice metadata, model access, and quota remain unreadable with those permissions.
 
 Use [Groq keys](https://console.groq.com/keys) and
 [ElevenLabs API-key settings](https://elevenlabs.io/app/settings/api-keys)
@@ -99,6 +111,12 @@ free account can synthesize a particular voice. No paid upgrade is performed
 by this project. References: [key permissions](https://elevenlabs.io/docs/overview/administration/workspaces/api-keys),
 [provider error categories](https://elevenlabs.io/docs/eleven-api/resources/errors),
 [Groq setup](https://console.groq.com/docs/quickstart).
+
+The retained legacy Rachel ID may route to a replacement, and default-voice
+access is account-dependent. Choose a voice explicitly permitted for your
+account's API and copy its ID into `CADENCE_VOICE_ID` locally. References:
+[voice replacements](https://elevenlabs.io/docs/help-center/product/voices/voice-library/how-are-voices-updated-changed),
+[default-voice access](https://elevenlabs.io/docs/help-center/product/voices/my-voices/how-do-i-access-eleven-labs-default-voices).
 
 After updating settings, start a new live process on an unused port. Verify
 a real minimal Groq inference and an actual nonempty ElevenLabs audio response
