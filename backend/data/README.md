@@ -42,18 +42,28 @@ Not committed to the repo. Download these yourself:
 
 4. **ItalianPVS** (public, no login needed, mirrored on Hugging Face from IEEE Dataport DOI 10.21227/aw6b-tg17):
    https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech
-   Real raw audio from 28 diagnosed PD patients and 22 elderly healthy controls,
-   "PR1" task (reading a phonetically-balanced word list). An independent
-   replication dataset -- different language, research group, protocol, and
-   task type from MDVR-KCL. Download the PR1 wav for each participant via
-   `https://huggingface.co/datasets/.../resolve/main/<path from the HF file list>`.
-   Already downloaded, run, and validated locally — see
-   `backend/data/pd_classifier_out/italianpvs_replication.json`: pause
-   fraction replicates strongly (PD 0.347 vs HC 0.178, p=0.0001, d=1.21,
-   even stronger than MDVR-KCL); mean speech-segment duration does not
-   replicate here (p=0.21), expected since a word-list task lacks the
-   breath-driven continuous-speech rhythm that feature measures. Reproduce
-   with: `python app/models/analyze_italianpvs_replication.py --pd-dir <PD wavs> --hc-dir <HC wavs> --out data/pd_classifier_out`
+   Real raw audio from 28 diagnosed PD patients and 22 elderly healthy controls.
+   **Check each group folder's own `FILE CODES.xlsx` before assuming what a
+   filename prefix means** — an earlier pass guessed "PR1" was a word-list
+   task from the filename alone; the actual documented codes are:
+     - **B1 / B2** = reading the phonemically-balanced continuous text "Il
+       ramarro della zia" — this is the real match to MDVR-KCL's "read the
+       same paragraph" task. Use B1 as the primary replication.
+     - **FB2** = reading phonemically-balanced isolated words — this is
+       what's actually in the files named "PR1..." in this HF mirror
+       (confirmed by reading one file's transcript `.txt`, which shows
+       isolated words, not sentences). Secondary comparison only.
+   Download either task's wav for each participant via
+   `https://huggingface.co/datasets/.../resolve/main/<path from the HF file list>`
+   (filter the file list for `/B1` or `/PR1` respectively).
+   Already downloaded, run, and validated locally for both tasks — see
+   `backend/data/pd_classifier_out/italianpvs_continuous_passage_B1_replication.json`
+   (primary: pause fraction p=0.044 d=0.61, segment duration p=0.053 d=-0.60,
+   both same direction as MDVR-KCL) and
+   `backend/data/pd_classifier_out/italianpvs_wordlist_PR1_replication.json`
+   (secondary: pause fraction p=0.0001 d=1.21, segment duration p=0.21 as
+   expected for a word-by-word task). Reproduce with:
+   `python app/models/analyze_italianpvs_replication.py --pd-dir <PD wavs> --hc-dir <HC wavs> --out data/pd_classifier_out`
 
 5. **COPD dataset** — not yet confirmed accessible without a request process.
    If you find a public one with raw audio or extracted jitter/shimmer/HNR-style

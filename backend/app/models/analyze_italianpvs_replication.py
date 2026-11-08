@@ -1,21 +1,30 @@
 """Independent replication of the MDVR-KCL pause-timing finding on a
 completely different real dataset: different language (Italian), different
-research group, different recording protocol, different task type (reading
-a phonetically-balanced word list rather than a continuous passage).
+research group, different recording protocol.
 
 Source: ItalianPVS (Dimauro & Girardi, IEEE Dataport DOI 10.21227/aw6b-tg17),
 mirrored openly on Hugging Face (birgermoell/Italian_Parkinsons_Voice_and_Speech,
 not gated, no login required). 28 diagnosed PD patients, 22 elderly healthy
-controls, "PR1" task (word-list reading).
+controls.
 
-Note the task-type difference matters: mean_speech_segment_duration tracks
-breath-driven continuous-speech rhythm, which a word-by-word task doesn't
-have in the same way -- it is NOT expected to replicate here, and reporting
-that honestly (rather than cherry-picking only the feature that works) is
-the point.
+Task codes are confirmed directly from this dataset's own FILE CODES.xlsx
+in each group's folder, not inferred from filenames -- an earlier pass
+guessed "PR1" was a word-list task without checking this file, which was
+imprecise. The actual codes:
+  B1 / B2  = first/second reading of the phonemically-balanced continuous
+             text "Il ramarro della zia" -- the real match to MDVR-KCL's
+             "read the same paragraph" task. Pass --pd-dir/--hc-dir pointed
+             at B1 files for the primary, task-matched replication.
+  FB2      = reading of phonemically-balanced isolated words (this is what
+             the files happened to be named "PR1..." in this HF mirror --
+             confirmed by reading the transcript .txt, which shows isolated
+             words, not connected sentences). Run separately as a secondary
+             comparison, not the primary replication, since a word-by-word
+             task doesn't have the breath-driven continuous-speech rhythm
+             mean_speech_segment_duration is meant to measure.
 
 Usage:
-    python analyze_italianpvs_replication.py --pd-dir /path/to/PD --hc-dir /path/to/HC --out out/
+    python analyze_italianpvs_replication.py --pd-dir /path/to/B1/PD --hc-dir /path/to/B1/HC --out out/
 """
 import argparse
 import json
