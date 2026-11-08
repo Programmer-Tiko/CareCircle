@@ -14,7 +14,7 @@ happens after this, not inside this script.
 
 Usage:
     python ccr_build_knowledge_index.py --out out/
-Requires: pip install sentence-transformers pypdf trafilatura requests
+Requires: pip install sentence-transformers pypdf beautifulsoup4 requests
 """
 import argparse
 import json
@@ -48,11 +48,16 @@ CHUNK_OVERLAP_WORDS = 15
 
 
 def fetch_html_text(url: str) -> str:
-    import trafilatura
+    # bs4 instead of trafilatura's HTML path -- trafilatura's optional
+    # lxml[html_clean] extra doesn't resolve on all lxml versions (hit
+    # this for real on CCR), and bs4 has no such fragile dependency chain.
+    from bs4 import BeautifulSoup
 
-    downloaded = requests.get(url, timeout=20, headers={"User-Agent": "Mozilla/5.0"}).text
-    extracted = trafilatura.extract(downloaded) or ""
-    return extracted
+    response = requests.get(url, timeout=20, headers={"User-Agent": "Mozilla/5.0"})
+    soup = BeautifulSoup(response.text, "html.parser")
+    for tag in soup(["script", "style", "nav", "header", "footer"]):
+        tag.decompose()
+    return soup.get_text(separator=" ", strip=True)
 
 
 def fetch_pdf_text(url: str) -> str:
