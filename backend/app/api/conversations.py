@@ -86,7 +86,7 @@ def install_routes(app, get_db, locked_profile):
         return jsonable_encoder({**session, 'turns': turns})
 
     @app.post('/profiles/{profile_id}/conversations')
-    def start(profile_id: str, body: StartRequest, db: Database):
+    def start(profile_id: str, body: StartRequest, db: Database, selector: Selector):
         profile = locked_profile(db, profile_id)
         existing = db.execute('SELECT session_id FROM conversations WHERE profile_id = %s AND checkin_time = %s',
                               (profile_id, body.checkin_time)).fetchone()
@@ -94,10 +94,17 @@ def install_routes(app, get_db, locked_profile):
             return snapshot(db, existing['session_id'])
         row = db.execute('SELECT * FROM checkins WHERE profile_id = %s AND time = %s',
                          (profile_id, body.checkin_time)).fetchone()
-        if row is None or not row['triggered'] or row['note_status'] is not None:
-            raise HTTPException(409, 'Start requires an unanswered triggered check-in.')
+        # A check-in no longer has to have crossed the persistent-deviation
+        # threshold to open a conversation -- every check-in gets one, so a
+        # patient with a typical reading can still say what's on their mind.
+        # row['triggered'] still flows into `measured` below and keeps
+        # gating the units that are specifically about a flagged deviation
+        # (e.g. distraction_check); it just no longer gates whether a
+        # conversation exists at all.
+        if row is None or row['note_status'] is not None:
+            raise HTTPException(409, 'Start requires an unanswered check-in.')
         session_id = uuid4()
-        measured = {'deviation_score': row['deviation_score'],
+        measured = {'deviation_score': row['deviation_score'], 'triggered': bool(row['triggered']),
                     'features': {key: row[key] for key in FEATURE_ORDER if row.get(key) is not None}}
         # Prefer the evidence recorded when scoring, not a later baseline.
         scores = row.get('feature_scores')
@@ -118,10 +125,31 @@ def install_routes(app, get_db, locked_profile):
             raise HTTPException(409, 'Check-in produced nonfinite feature scores.')
         db.execute('INSERT INTO conversations (session_id, profile_id, checkin_time, measured) VALUES (%s,%s,%s,%s)',
                    (session_id, profile_id, body.checkin_time, Jsonb(measured)))
-        question = Question(id='legacy-initial', version='1', text=row['question_text'],
-                            sources=[Source(id='prototype-dialogue-policy', version='1')])
-        db.execute('INSERT INTO conversation_turns (turn_id, session_id, ordinal, question) VALUES (%s,%s,1,%s)',
-                   (uuid4(), session_id, Jsonb(question.model_dump())))
+        # The opening question comes from the same selector/eligible-set
+        # mechanism as every follow-up -- not a fixed line of text. With no
+        # answer yet to react to, context flags fall back to whatever the
+        # measurement itself and an empty answer imply (no situational-
+        # distraction signal, no speech-difficulty report yet); units with
+        # no preconditions at all (several already exist in the corpus)
+        # are picked from genuinely, not just nominally.
+        try:
+            selection = Selection.model_validate(selector({'condition': profile['condition'],
+                'measured': measured, 'turns': [], 'answer_text': ''}))
+        except Exception:
+            selection = Selection(decision='abstain')
+        if selection.question:
+            db.execute('INSERT INTO conversation_turns (turn_id, session_id, ordinal, question) VALUES (%s,%s,1,%s)',
+                       (uuid4(), session_id, Jsonb(selection.question.model_dump())))
+        else:
+            # No eligible opening question at all (corpus exhausted or the
+            # selector abstained) -- close the conversation immediately with
+            # an honest, empty note rather than leaving a question-less
+            # active session with nothing to answer.
+            state = 'complete' if selection.decision == 'complete' else 'abstained'
+            note = {'measured': measured, 'patient_said': [],
+                    'unresolved': ['No supported opening question was available for this reading.'],
+                    'status': 'awaiting_confirmation'}
+            db.execute('UPDATE conversations SET state=%s, note=%s WHERE session_id=%s', (state, Jsonb(note), session_id))
         return snapshot(db, session_id)
 
     @app.get('/profiles/{profile_id}/conversations/{session_id}')

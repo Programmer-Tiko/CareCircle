@@ -25,6 +25,11 @@ def _default_model_call(prompt: str) -> str:
     client = Groq(api_key=api_key, timeout=8.0, max_retries=0)
     response = client.chat.completions.create(
         model=MODEL,
+        # Deliberately not lowered -- measured live: a low temperature
+        # makes repeated identical prompts (the opening-question retry in
+        # conversation_adapter.py) come back nearly identical too, which
+        # defeats the retry instead of helping it. Provider default gives
+        # retries an actual chance at a different sample.
         messages=[
             {"role": "system", "content": SYSTEM_INSTRUCTION},
             {"role": "user", "content": prompt},

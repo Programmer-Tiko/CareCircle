@@ -122,12 +122,20 @@ def compute_context_flags(
     feature_scores: dict[str, float],
     prior_answers: list[str],
     medication_status_known: bool = False,
+    persistent_deviation_triggered: bool = False,
 ) -> dict[str, bool]:
     """Derives the named boolean flags units' preconditions/exclusions
     check against, from what's actually available: the per-feature
     deviation scores and the conversation's answers so far. Anything not
     derivable (we don't track medication status yet) defaults to False/
     excluded, rather than guessing.
+
+    `persistent_deviation_triggered` used to be hardcoded True here, back
+    when this function was only ever reachable from an already-triggered
+    conversation. Now every check-in opens a conversation, so the caller
+    must pass the real value -- defaulting to False keeps units gated on
+    an actual persistent deviation (e.g. distraction_check) from firing
+    on ordinary readings just because a conversation exists at all.
     """
     # Replay explicit reports, not substrings in only the latest sentence.
     speech_reported = False
@@ -137,7 +145,7 @@ def compute_context_flags(
             speech_reported = update
     interruption = _recording_interruption(prior_answers[-1]) if prior_answers else False
     return {
-        "persistent_deviation_triggered": True,
+        "persistent_deviation_triggered": persistent_deviation_triggered,
         "measured_pause_fraction_elevated": feature_scores.get("pause_fraction", 0.0) > 1.5,
         "initial_answer_mentions_speech_difficulty": speech_reported,
         "speech_motor_cue_present": speech_reported,
@@ -179,11 +187,12 @@ def retrieve_eligible_units(
     prior_answers: list[str],
     already_asked_ids: set[str],
     medication_status_known: bool = False,
+    persistent_deviation_triggered: bool = False,
 ) -> list[dict]:
     """Returns eligible units ranked by lexical overlap with the latest
     answer, most relevant first. Already-asked units are excluded
     entirely -- the selector should never be offered a repeat."""
-    context = compute_context_flags(feature_scores, prior_answers, medication_status_known)
+    context = compute_context_flags(feature_scores, prior_answers, medication_status_known, persistent_deviation_triggered)
     latest_answer = prior_answers[-1] if prior_answers else ""
 
     candidates = [

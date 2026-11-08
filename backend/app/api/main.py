@@ -208,7 +208,13 @@ def checkin(profile_id: str, db: Database, file: Annotated[UploadFile, File()],
                          'deviation_from_baseline': 'persistent' if result.triggered else
                          ('elevated' if result.deviation_score >= DEVIATION_THRESHOLD else 'usual')},
             'triggered_question': result.question_text,
-            'status': 'awaiting_answer' if result.triggered else 'no_change'}
+            # Every check-in now opens a conversation -- conversations.py's
+            # start() selects the opening question itself (via the same RAG
+            # selector as every follow-up) rather than depending on a
+            # question_text this endpoint precomputed. 'no_change' retired;
+            # result.triggered still persists and still gates the units that
+            # are specifically about a flagged deviation.
+            'status': 'awaiting_answer'}
 
 
 def reject_conversation_owned(db, profile_id, checkin_time):

@@ -194,7 +194,8 @@
       recording = capture; recorder.start(500);
       capture.limit = setTimeout(() => stopRecording(), 60000);
       capture.timer = setInterval(() => { $('recordingTimer').textContent = `${Math.floor((Date.now() - capture.started) / 1000)}s · recording`; }, 1000);
-      message(kind === 'answer' ? 'Recording your answer. Choose Finish answer recording when ready.' : 'Recording. Read the passage, then choose Finish recording.');
+      watchForSilence(capture);
+      message(kind === 'answer' ? 'Recording your answer. It will stop automatically once you finish speaking, or choose Finish answer recording.' : 'Recording. Read the passage; it will stop automatically once you finish, or choose Finish recording.');
     } catch (problem) {
       stream?.getTracks().forEach(track => track.stop()); if (context) await context.close();
       if (problem.name === 'NotAllowedError') throw new Error('Microphone permission was denied. Allow microphone access in your browser, then try again.');
@@ -206,8 +207,32 @@
     if (!recording || recording.recorder.state === 'inactive') return;
     busy = true; updateControls(); recording.recorder.stop();
   }
+  // Natural turn-taking instead of a manual Stop press: watch real mic
+  // volume while recording and end the turn automatically once speech has
+  // clearly started and then clearly stopped. Heuristic (RMS over a
+  // rolling window, not a trained VAD) -- it needs a genuinely quiet room
+  // to behave well, and the manual Stop button and the 60s hard limit both
+  // stay as fallbacks if it misreads a noisy environment.
+  function watchForSilence(capture) {
+    const SPEECH_RMS = 0.02, SILENCE_RMS = 0.012, SILENCE_HOLD_MS = 1500, MIN_SPEECH_MS = 400;
+    const analyser = capture.context.createAnalyser(); analyser.fftSize = 2048;
+    capture.context.createMediaStreamSource(capture.stream).connect(analyser);
+    const samples = new Float32Array(analyser.fftSize);
+    let speechStartedAt = null, silenceStartedAt = null;
+    capture.silenceWatch = setInterval(() => {
+      analyser.getFloatTimeDomainData(samples);
+      let sumSquares = 0; for (const sample of samples) sumSquares += sample * sample;
+      const rms = Math.sqrt(sumSquares / samples.length);
+      const now = Date.now();
+      if (rms >= SPEECH_RMS) { speechStartedAt ??= now; silenceStartedAt = null; return; }
+      if (!speechStartedAt || now - speechStartedAt < MIN_SPEECH_MS) return;
+      if (rms >= SILENCE_RMS) { silenceStartedAt = null; return; }
+      silenceStartedAt ??= now;
+      if (now - silenceStartedAt >= SILENCE_HOLD_MS) stopRecording();
+    }, 100);
+  }
   async function finishRecording(capture) {
-    clearTimeout(capture.limit); clearInterval(capture.timer);
+    clearTimeout(capture.limit); clearInterval(capture.timer); clearInterval(capture.silenceWatch);
     capture.stream.getTracks().forEach(track => track.stop());
     recording = null; busy = true; updateControls(); $('recordingTimer').textContent = '';
     try {
@@ -368,7 +393,7 @@
       const row = document.createElement('div'); row.className = 'history-row';
       const text = document.createElement('div');
       paragraph(text, new Date(item.time).toLocaleString());
-      paragraph(text, item.triggered ? 'Timing question opened' : 'Reading saved · repeated-change threshold not met', 'muted');
+      paragraph(text, item.triggered ? 'A repeated timing change was noticed' : 'Reading saved · within your usual range', 'muted');
       if (item.conversation) {
         paragraph(text, item.conversation.state === 'confirmed' ? 'Note confirmed' : 'Conversation: ' + item.conversation.state, 'small muted');
         const open = document.createElement('button'); open.className = 'secondary'; open.textContent = item.conversation.state === 'active' ? 'Continue conversation' : 'View note'; open.dataset.openSession = '';
@@ -436,13 +461,11 @@
     const result = await request(binding, profilePath(binding, suffix), { method: 'POST', body: form });
     latestCheckin = result; renderMeasured(result.measured);
     URL.revokeObjectURL(checkinTake.url); checkinTake = null; renderTakes();
-    if (result.status === 'awaiting_answer') {
-      renderSession(await request(binding, profilePath(binding, '/conversations'), { method: 'POST', body: { checkin_time: result.checkin_time } }));
-      message('A question is ready.'); $('questionText').scrollIntoView({ block: 'center', behavior: 'smooth' });
-    } else {
-      session = null; saveConnection(); $('conversationPanel').hidden = true; $('notePanel').hidden = true;
-      message('Reading saved. The repeated-change threshold was not met. You can still add a personal note.');
-    }
+    // Every check-in opens a conversation now, triggered or not -- a
+    // typical reading still gets a real (RAG-selected, not fixed) opening
+    // question, same as a flagged one; renderSession/auto-speak handle
+    // whatever comes back either way.
+    renderSession(await request(binding, profilePath(binding, '/conversations'), { method: 'POST', body: { checkin_time: result.checkin_time } }));
     await refreshHistory();
   }
   // Manual fallback/retry -- e.g. a check-in whose auto-submit failed, or a
