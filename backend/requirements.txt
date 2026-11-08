@@ -17,3 +17,4 @@ psycopg[binary]
 httpx
 python-dotenv
 google-genai
+groq
