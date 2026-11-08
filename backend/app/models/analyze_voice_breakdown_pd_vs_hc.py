@@ -33,6 +33,7 @@ from scipy import stats
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -152,10 +153,13 @@ def severity_gradient_within_pd(df: pd.DataFrame) -> dict:
 def combined_classifier_auc(df: pd.DataFrame) -> dict:
     usable_features = [f for f in TIMING_FEATURES + VOICE_FEATURES
                         if f in df.columns and not df[f].isna().any()]
-    X = StandardScaler().fit_transform(df[usable_features].to_numpy())
+    X = df[usable_features].to_numpy()
     y = df["label"].to_numpy()
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
-    model = LogisticRegression(max_iter=2000, C=0.1)
+    # Scaler inside the pipeline: fit fresh per fold, not on the whole
+    # dataset before splitting, which would leak each fold's held-out
+    # rows into the normalization used to score them.
+    model = Pipeline([("scale", StandardScaler()), ("clf", LogisticRegression(max_iter=2000, C=0.1))])
     proba = cross_val_predict(model, X, y, cv=cv, method="predict_proba")[:, 1]
     return {
         "features_used": usable_features,

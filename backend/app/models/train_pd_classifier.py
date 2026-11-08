@@ -27,6 +27,7 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 import sys
@@ -58,13 +59,16 @@ def build_feature_table(dataset_dir: Path) -> pd.DataFrame:
 
 
 def train_and_evaluate(df: pd.DataFrame):
-    X = StandardScaler().fit_transform(df[FEATURES].to_numpy())
+    X = df[FEATURES].to_numpy()
     y = df["label"].to_numpy()
 
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
-    model = LogisticRegression(max_iter=1000)
-    cv_pred = cross_val_predict(model, X, y, cv=cv)
-    cv_proba = cross_val_predict(model, X, y, cv=cv, method="predict_proba")[:, 1]
+    # Scaler lives inside the pipeline so cross_val_predict fits it fresh on
+    # each fold's training data only -- fitting it on the whole X first
+    # would leak each fold's held-out rows into its own normalization.
+    pipe = Pipeline([("scale", StandardScaler()), ("clf", LogisticRegression(max_iter=1000))])
+    cv_pred = cross_val_predict(pipe, X, y, cv=cv)
+    cv_proba = cross_val_predict(pipe, X, y, cv=cv, method="predict_proba")[:, 1]
 
     metrics = {
         "n_pd": int((y == 1).sum()),
@@ -74,11 +78,12 @@ def train_and_evaluate(df: pd.DataFrame):
         "confusion_matrix": confusion_matrix(y, cv_pred).tolist(),
         "note": (
             "5-fold stratified cross-validation, one recording per subject "
-            "so there is no subject leakage between folds."
+            "so there is no subject leakage between folds. Scaling is fit "
+            "inside the pipeline per fold, not on the whole dataset first."
         ),
     }
 
-    final_model = LogisticRegression(max_iter=1000).fit(X, y)
+    final_model = Pipeline([("scale", StandardScaler()), ("clf", LogisticRegression(max_iter=1000))]).fit(X, y)
     return final_model, metrics
 
 
@@ -98,7 +103,7 @@ def main():
 
     joblib.dump({"model": model, "features": FEATURES}, args.out / "pd_classifier.joblib")
 
-    coefs = model.coef_[0]
+    coefs = model.named_steps["clf"].coef_[0]
     order = np.argsort(coefs)
     plt.figure(figsize=(7, 5))
     plt.barh(np.array(FEATURES)[order], coefs[order])

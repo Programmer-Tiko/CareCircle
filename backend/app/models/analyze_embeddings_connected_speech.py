@@ -23,6 +23,7 @@ import torchaudio
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 import sys
@@ -68,9 +69,10 @@ def build_embedding_table(dataset_dir: Path) -> pd.DataFrame:
 
 
 def evaluate(X: np.ndarray, y: np.ndarray) -> float:
-    X = StandardScaler().fit_transform(X)
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
-    model = LogisticRegression(max_iter=2000, C=0.05)
+    # Scaler inside the pipeline, fit per fold -- matches
+    # permutation_test_embeddings.py's already-correct methodology.
+    model = Pipeline([("scale", StandardScaler()), ("clf", LogisticRegression(max_iter=2000, C=0.05))])
     proba = cross_val_predict(model, X, y, cv=cv, method="predict_proba")[:, 1]
     return float(roc_auc_score(y, proba))
 

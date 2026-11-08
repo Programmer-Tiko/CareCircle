@@ -408,7 +408,7 @@
       "HNR"
     ],
     "n_samples": 37,
-    "cv_roc_auc": 0.7529761904761905
+    "cv_roc_auc": 0.7470238095238095
   },
   "note": "pd_vs_hc_by_feature: every feature tested individually, sorted by p-value, on real patients reading connected speech. severity_gradient_within_pd: Spearman correlation against real Hoehn-Yahr/UPDRS scores encoded in the dataset's filenames -- a dose-response check, not just binary PD/HC. combined_classifier: all usable features together, not just pause_fraction alone."
 }

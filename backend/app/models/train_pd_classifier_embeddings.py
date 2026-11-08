@@ -27,6 +27,7 @@ import torchaudio
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -76,13 +77,15 @@ def build_embedding_table(dataset_dir: Path) -> pd.DataFrame:
 
 def train_and_evaluate(df: pd.DataFrame):
     embedding_cols = [c for c in df.columns if c.startswith("emb_")]
-    X = StandardScaler().fit_transform(df[embedding_cols].to_numpy())
+    X = df[embedding_cols].to_numpy()
     y = df["label"].to_numpy()
 
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
     # L2-regularized logistic regression -- 768 dims on 81 samples needs
     # strong regularization or it will just memorize the training folds.
-    model = LogisticRegression(max_iter=2000, C=0.05)
+    # Scaler lives inside the pipeline so each fold's held-out rows never
+    # influence the normalization used to score them.
+    model = Pipeline([("scale", StandardScaler()), ("clf", LogisticRegression(max_iter=2000, C=0.05))])
     cv_pred = cross_val_predict(model, X, y, cv=cv)
     cv_proba = cross_val_predict(model, X, y, cv=cv, method="predict_proba")[:, 1]
 
@@ -107,7 +110,7 @@ def train_and_evaluate(df: pd.DataFrame):
         ),
     }
 
-    final_model = LogisticRegression(max_iter=2000, C=0.05).fit(X, y)
+    final_model = Pipeline([("scale", StandardScaler()), ("clf", LogisticRegression(max_iter=2000, C=0.05))]).fit(X, y)
     return final_model, metrics
 
 

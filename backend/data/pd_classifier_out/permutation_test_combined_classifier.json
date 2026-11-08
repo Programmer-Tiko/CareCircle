@@ -1,0 +1,11 @@
+{
+  "n_samples": 37,
+  "n_features": 21,
+  "observed_auc": 0.7470238095238095,
+  "null_mean": 0.4703968253968254,
+  "null_95th_percentile": 0.6699404761904764,
+  "null_max": 0.7619047619047619,
+  "n_permutations": 300,
+  "empirical_p_value": 0.0033333333333333335,
+  "note": "Replaces an earlier, invalid bootstrap CI (resampling 37 subjects with replacement before CV duplicates subjects across folds). This is a label-permutation test instead: shuffle labels, rerun the identical per-fold-scaled cross-validation, see what chance alone produces at this sample size/feature count."
+}

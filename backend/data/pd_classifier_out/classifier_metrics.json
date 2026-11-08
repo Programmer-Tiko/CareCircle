@@ -1,17 +1,17 @@
 {
   "n_pd": 40,
   "n_hc": 41,
-  "cv_accuracy": 0.6172839506172839,
-  "cv_roc_auc": 0.6304878048780488,
+  "cv_accuracy": 0.6296296296296297,
+  "cv_roc_auc": 0.624390243902439,
   "confusion_matrix": [
     [
       26,
       15
     ],
     [
-      16,
-      24
+      15,
+      25
     ]
   ],
-  "note": "5-fold stratified cross-validation, one recording per subject so there is no subject leakage between folds."
+  "note": "5-fold stratified cross-validation, one recording per subject so there is no subject leakage between folds. Scaling is fit inside the pipeline per fold, not on the whole dataset first."
 }

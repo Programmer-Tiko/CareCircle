@@ -1,7 +1,7 @@
 {
   "n_samples": 37,
   "hand_engineered_alone_auc": 0.7380952380952381,
-  "embeddings_alone_auc": 0.8898809523809524,
+  "embeddings_alone_auc": 0.886904761904762,
   "combined_auc": 0.8869047619047619,
   "hand_features_used": [
     "pause_fraction",
