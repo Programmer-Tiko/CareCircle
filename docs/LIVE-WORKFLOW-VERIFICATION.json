@@ -1,0 +1,192 @@
+{
+  "scope": "Real localhost HTTP / Tiger Cloud / Groq / ElevenLabs; constructed real-speech fixtures",
+  "browser_microphone": "not exercised",
+  "passage_verification": "separate ASR smoke, not wired into API",
+  "events": [
+    {
+      "path": "/profiles/live-proof/enroll",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/checkin?experimental=true",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/checkin?experimental=true",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/turns/59824810-abdf-48cf-ac7b-c5556429b066/answer",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/turns/59824810-abdf-48cf-ac7b-c5556429b066/answer",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/turns/d1aba471-a2e1-4bc5-87c3-d6fd1bbb1c4b/answer",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/turns/d1aba471-a2e1-4bc5-87c3-d6fd1bbb1c4b/answer",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/turns/0a10840f-63df-4733-8fa8-d320fae05c69/answer",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/turns/0a10840f-63df-4733-8fa8-d320fae05c69/answer",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/turns/d016de01-a59f-4e39-8f82-0f7eedc4dab3/answer",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/turns/d016de01-a59f-4e39-8f82-0f7eedc4dab3/answer",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/turns/6d8ec15b-c24d-4e2c-b4a5-b8fa34e59c57/answer",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/turns/6d8ec15b-c24d-4e2c-b4a5-b8fa34e59c57/answer",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/turns/faa1ba5d-3f3c-46bd-ba64-318ec7062cd0/answer",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/turns/faa1ba5d-3f3c-46bd-ba64-318ec7062cd0/answer",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/confirm",
+      "http_status": 409
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/confirm",
+      "http_status": 200
+    },
+    {
+      "path": "/profiles/live-proof/conversations/1bb3c115-0f5a-45d8-bceb-b11c0e5d2cec/confirm",
+      "http_status": 200
+    },
+    {
+      "path": "/speak",
+      "http_status": 200
+    }
+  ],
+  "selector_calls": [
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "repetition_frequency"
+    },
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "volume_awareness"
+    },
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "everyday_communication_impact"
+    },
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "breath_support_phrasing"
+    },
+    {
+      "status": "ok",
+      "decision": "ask",
+      "question_id": "rate_change_direction"
+    },
+    {
+      "status": "error",
+      "type": "SelectionRejected"
+    }
+  ],
+  "checkin_measured": {
+    "features": {
+      "pause_fraction": 0.6610169491525423,
+      "longest_internal_gap": 3.9,
+      "speaking_rate": 20.5,
+      "mean_speech_segment_duration": 1.0
+    },
+    "feature_scores": {
+      "pause_fraction": 530582.1665438467,
+      "longest_internal_gap": 3600000.0000000005,
+      "speaking_rate": 0.0,
+      "mean_speech_segment_duration": 0.0
+    },
+    "waveform_evidence": {
+      "experimental": true,
+      "metrics": {
+        "f0_spread_semitones": 4.390507486125685,
+        "voiced_energy_spread_db": 8.304206011820028,
+        "voiced_fraction": 0.23825503355704697,
+        "pitch_octave_jump_fraction": 0.0
+      },
+      "quality_flags": [],
+      "capture": {
+        "sample_rate": 16000,
+        "channels": 1,
+        "duration_seconds": 6.0,
+        "clipping_fraction": 0.0,
+        "pitch_frames": 596,
+        "voiced_frames": 142
+      },
+      "parameters": {
+        "pitch_method": "praat_raw_autocorrelation",
+        "energy_window_seconds": 0.04,
+        "f0_floor_hz": 60.0,
+        "f0_ceiling_hz": 500.0,
+        "frame_step_seconds": 0.01,
+        "minimum_voiced_frames": 20,
+        "pitch_jump_threshold_semitones": 9.0,
+        "maximum_jump_fraction": 0.05
+      }
+    },
+    "deviation_score": 3638889.5882472675,
+    "deviation_from_baseline": "persistent"
+  },
+  "conversation": {
+    "state": "abstained",
+    "turn_count": 6,
+    "question_ids": [
+      "legacy-initial",
+      "repetition_frequency",
+      "volume_awareness",
+      "everyday_communication_impact",
+      "breath_support_phrasing",
+      "rate_change_direction"
+    ],
+    "unresolved": [
+      "The conversation contains unresolved information."
+    ]
+  },
+  "tts": {
+    "content_type": "audio/mpeg",
+    "bytes": 56049
+  },
+  "browser_cors_preflight": "PASS",
+  "fresh_app_recovery": "PASS",
+  "db_checkins": 2,
+  "db_answered_turns": 6,
+  "timescale_hypertable": "PASS",
+  "result": "PASS",
+  "test_schema_removed": true
+}

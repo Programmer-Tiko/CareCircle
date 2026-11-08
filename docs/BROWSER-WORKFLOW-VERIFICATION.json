@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "browser": "installed Chrome headless",
+  "microphone": "simulated file input through real MediaRecorder",
+  "reference_captures": 3,
+  "recorded_checkin_status": "Check-in stored. Persistence threshold was not met; see measured score below.",
+  "legacy_answer_confirm": "PASS",
+  "multi_turn_UI": "not implemented by this page",
+  "javascript_errors": [],
+  "storage": "isolated real Tiger Cloud schema"
+}

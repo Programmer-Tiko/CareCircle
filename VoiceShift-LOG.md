@@ -249,3 +249,62 @@ balancing without leaking participants. Regression checks 101 shuffled label
 assignments at the MDVR 16/21 imbalance; both classes remain in every fold and
 each participant appears exactly once in held-out predictions. Re-evaluation
 only needs the existing feature CSV; no audio re-extraction is necessary.
+
+## Local audit of returned CCR artifacts — November 8, 2026
+
+Fetched `96f0c1b`; verified feature SHA256 and fold participant isolation.
+Recomputed all twelve observed AUCs from features.csv: exact agreement within
+1e-12, with no new permutations. Full audit:
+`docs/CCR-MULTISIGNAL-ARTIFACT-AUDIT.md`. Prosody helps within-cohort ranking but
+has weak transfer, and paired incremental significance has not been tested.
+Keep it experimental. Notable quality findings: clipped Italian hc_06 is
+correctly suppressed; noisy hc_19 shifts pitch spread by -5.8166 semitones with
+no flag; Italian pd_19 contains a single 1.1s detected burst (old analysis
+excluded single-segment recordings). No participant was dropped to improve
+results. Review raw capture/phrase completeness and tracking reliability before
+promoting candidate features or claiming general noise robustness.
+
+## Full workflow verification — November 8, 2026
+
+User requested whole-flow testing after revised Antigravity candidates. Verified
+16/16 exact source spans but did not promote proposals: existing context flags
+still mishandle negation, voice fatigue, interruption, noisy daily conversation
+and symptom memory. The proposed interruption case must not claim the tracker
+never advanced: check-in scoring is persisted before the later answer.
+
+Independent alignment review found/fixed four further gaps: exact cached-path
+loading (no named-model downloader), normalized empty ASR token index drift,
+standalone expected punctuation index drift, and global timestamp ordering.
+Focused helper suite passed 97 with two optional ASR skips. Real cached Whisper
+was then executed in a separate temporary Python 3.11 environment, with model
+weight downloading explicitly blocked: synthetic full passage matched at bounded
+disagreement 0.0345, different-content attributed speech mismatched at 0.8966.
+One transcriber instance handled both. Core backend environment was unchanged.
+
+Actual localhost HTTP + isolated Tiger Cloud schema + live Groq + live ElevenLabs
+workflow passed: enrollment, two-check-in persistence, waveform evidence, five
+selected follow-ups, a sixth answer saved under graceful abstention with
+uncertainty, stale revision rejection, confirmation, duplicate requests, fresh
+app recovery, Timescale hypertable and 56,049-byte MP3. Near-identical short
+fixture references produce numerical-floor MAD/huge scores: this is mechanical
+verification, not score calibration. All test schemas were removed.
+
+Installed Chrome headless with a file-simulated microphone passed actual
+MediaRecorder capture, WAV conversion, three-take enrollment, recorded check-in,
+controlled long-gap trigger, legacy answer and confirmation against isolated
+Tiger Cloud. No browser JS errors. Not a human microphone test and not a
+multi-turn UI (that wiring does not exist yet). Corrected stale HTML count copy
+from placeholder 40 to the real 41; no visual redesign or dashboard edits.
+
+Final full regression from backend/ with cloud and local SQL integrations:
+186 passed, 2 optional ASR tests skipped, one PyTorch/Python deprecation warning.
+Separate real-ASR smoke passed as above. Reports and reproducible harnesses:
+`docs/END-TO-END-STATUS.md`, LIVE-WORKFLOW-VERIFICATION.json,
+BROWSER-WORKFLOW-VERIFICATION.json, REAL-ASR-VERIFICATION.json and verify_* scripts.
+
+Original-idea delivery: real self-check core is implementable now, but finish
+browser session/turn/TTS wiring, phrase-evidence integration, corrected context
+and explicit resolution, non-triggered symptom reporting and editable note
+review. History is stored but not exposed as an authorized history UI. Caregiver
+sharing requires identity and separate consent; phone path remains unbuilt.
+No diagnosis/progression/medication claim follows from current research.
