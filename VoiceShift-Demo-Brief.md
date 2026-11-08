@@ -1,10 +1,26 @@
-# VoiceShift — what we're building, for the person building the demo
+# Cadence — demo design (formerly VoiceShift)
+
+**Implementation status, November 8, 2026:** this is the intended demo, not a
+description of a completed UI. The current MVP primarily focuses on Parkinson's.
+The API implements enrollment, check-in, one answer, confirmation and ElevenLabs
+speech output. `Daily Hello Family.html` remains a separate sample dashboard
+without microphone capture or calls to those routes. Phone calling, linked
+caregiver authorization/sharing, note editing, completed follow-up turns and
+history access remain planned. COPD/asthma extensions require separate clinical
+validation. See [current status](README.md) and
+[the roadmap](docs/CADENCE-ARCHITECTURE-ROADMAP.md).
 
 One paragraph, then the exact screens and copy to build.
 
 ## The idea, in plain terms
 
-VoiceShift is a between-visit check-in for people already diagnosed with COPD or Parkinson's. Once a day, they read a short standard passage into their phone or laptop mic. The system compares *that person's own* speech timing (pauses, speaking rate) against *their own* past recordings — never against other people. Most days, nothing changes, and the check-in is a 30-second non-event. When something repeatable changes, the system asks a smarter follow-up question instead of a generic one, and whatever the person says — not the measurement — becomes the actual note. A linked caregiver can also trigger an AI phone call that does the same thing on the patient's behalf.
+Cadence's intended self-check is a between-visit record for people with a known
+care context, currently emphasizing Parkinson's. A person reads a standard
+passage and the software compares speech timing with their own references. A
+repeatable difference can select a prototype question; the person's explanation
+and unresolved details remain separate from the measurement. The proposed
+daily/30-second experience and caregiver phone variant below are design goals,
+not implemented scheduling, measured latency, or a functioning phone service.
 
 **The pitch in three words, say this explicitly in the demo narration: Sense → Understand → Act.** Sense: the mic is the physical sensor. Understand: compare today's reading against this person's own baseline. Act: ask a different, better question because of what changed.
 
@@ -54,7 +70,13 @@ Narrate day 5 live: "here's where it notices something repeatable, and here's th
 
 ## Mock data shape, so the UI doesn't need to wait on the backend
 
-Build against this shape now; it'll match what the backend actually returns later.
+This richer fixture describes a proposed assembled UI record. It is not the
+current `/checkin` response. The actual response has `profile_id`,
+`measured.deviation_score`, `measured.deviation_from_baseline`,
+`triggered_question`, and `status`; `/answer` returns `note` and
+`follow_up_question` separately. Read the unchanged
+[API contract](VoiceShift-API-Spec.md) before wiring the UI. No new response
+fields or endpoints are introduced by this mock example.
 
 ```json
 {

@@ -1,6 +1,10 @@
-# Data
+# Cadence data and research reproduction
 
-Not committed to the repo. Download these yourself:
+Raw cohort datasets are generally downloaded separately. This directory does
+contain committed research results and model artifacts; the short attributed
+software-test clip is under `backend/tests/fixtures/`. Those outputs are offline
+research, not a clinically validated model used by the API. Download the cohort
+sources below separately and retain their terms and provenance.
 
 1. **UCI Oxford Parkinson's Telemonitoring dataset** (public, no request needed):
    https://archive.ics.uci.edu/dataset/189/parkinsons+telemonitoring
@@ -58,15 +62,44 @@ Not committed to the repo. Download these yourself:
    (filter the file list for `/B1` or `/PR1` respectively).
    Already downloaded, run, and validated locally for both tasks — see
    `backend/data/pd_classifier_out/italianpvs_continuous_passage_B1_replication.json`
-   (primary: pause fraction p=0.044 d=0.61, segment duration p=0.053 d=-0.60,
-   both same direction as MDVR-KCL) and
+   (primary: **27 PD / 21 HC actually analyzed**, pause fraction p=0.044 d=0.61,
+   segment duration p=0.053 d=-0.60, both same direction as MDVR-KCL; segment
+   duration is not significant at 0.05) and
    `backend/data/pd_classifier_out/italianpvs_wordlist_PR1_replication.json`
    (secondary: pause fraction p=0.0001 d=1.21, segment duration p=0.21 as
    expected for a word-by-word task). Reproduce with:
    `python app/models/analyze_italianpvs_replication.py --pd-dir <PD wavs> --hc-dir <HC wavs> --out data/pd_classifier_out`
 
-5. **COPD dataset** — not yet confirmed accessible without a request process.
-   If you find a public one with raw audio or extracted jitter/shimmer/HNR-style
-   features in the next ~20 minutes, drop it here and flag it; otherwise the
-   COPD side stays rule-based (personal baseline + ALA/GOLD-sourced question
-   cards) for this build, with the trained-model tier noted as future work.
+   The analysis script writes `italianpvs_replication.json` under `--out`; use
+   distinct output directories for B1 and PR1 to avoid overwriting results.
+   The committed B1 artifact's `note` still describes the older word-list
+   interpretation; use the corrected task documentation and numerical summary.
+
+5. **COPD search limitation.** The team did not verify a source satisfying all
+   requirements during its documented search: diagnosed COPD, raw spoken or
+   vowel audio, usable labels, immediate access, and clear reuse provenance.
+   Evaluated sources included gated/unreleased data, cough/stethoscope audio,
+   feature-only files, and uncertain interview labels/reuse terms. Some API
+   searches were blocked. This is not proof that no public COPD dataset exists.
+   Extracted features alone do not satisfy the raw-speech validation need.
+   Current COPD cards are prototype deterministic behavior, not clinically
+   approved rules. See [the project brief](../../VoiceShift-Project-Brief.md).
+
+## Interpretation and pending research work
+
+Public PD/control comparisons and severity correlations do not validate
+day-to-day within-person alerts. Report the analyzed cohort, task, nominal
+statistics and uncertainty without converting an AUC into a disease probability.
+Small cohorts, multiple tests and age/device/protocol confounding remain.
+
+`pd_classifier_out/cross_lingual_generalization.json` is the earlier PR1/word-list
+versus continuous-reading result (AUC approximately 0.61/0.55, permutation
+p approximately 0.20/0.34). `app/models/ccr_cross_lingual_generalization.py`
+now selects B1, but no `cross_lingual_generalization_taskmatched_b1.json` is
+committed in the reviewed snapshot. Do not claim the task-matched rerun finished.
+
+The historical bootstrap interval and high within-dataset embedding AUC also
+need methodological review: full-dataset preprocessing and duplicate subjects
+across resampled folds can bias evaluation. The outputs remain unchanged as
+research history. [The roadmap](../../docs/CADENCE-ARCHITECTURE-ROADMAP.md)
+documents validation gates and known interpretation issues.

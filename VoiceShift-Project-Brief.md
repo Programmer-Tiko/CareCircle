@@ -1,85 +1,180 @@
-# VoiceShift
-## Build specification for UB Hacking 2026 · Radial Atoms
+# Cadence
 
-VoiceShift uses the microphone as a physical sensor. A change in speech timing can alter what the software asks next, even when the spoken words are the same. The conversation establishes what the patient experienced and creates a record they can share between visits.
+Build and research brief for UB Hacking 2026 / Radial Atoms. Previously
+VoiceShift / CareCircle; this filename is retained for existing links.
 
-## Pitch framing
+## Current focus and status
 
-VoiceShift maps directly onto a Sense → Understand → Act loop. **Sense:** the phone or laptop microphone is the physical sensor — no hardware required. **Understand:** each check-in is compared only against that person's own prior baseline, not a population norm, using measurable timing features from a standardized reading passage. **Act:** a persistent, repeatable deviation changes which question the system asks next and shapes a patient-confirmed note. Lead every pitch and demo with this three-step loop, not with disease-detection language — the evidence below explains why.
+Cadence is an AI-assisted, voice-guided health check-in prototype. The current
+hackathon MVP primarily focuses on Parkinson's disease and uses the loop
+**Sense -> Understand -> Act**: accept a standardized reading, compare measurable
+speech timing with that individual's reference takes, then ask a relevant
+question and distinguish what was measured from what the patient reported.
 
-## Evidence and Buffalo relevance
+This is not a diagnostic medical device. Acoustic changes do not identify a
+cause, and a typical sample does not rule out illness. The current software
+mechanism is tested, but the longitudinal clinical monitoring hypothesis is not
+validated by the public-dataset comparisons below.
 
-- **COPD:** A 50-person single-center study reported differences in structured speech during and after exacerbation, with associations between speech timing and pulmonary measures. The study used a multifeature model. It does not validate using pauses alone in an at-home check-in. [Study](https://pmc.ncbi.nlm.nih.gov/articles/PMC11761136/)
-- **COPD, real patients, exactly our task and signal — but no public data, and we checked three independent studies before concluding that:** a 2026 longitudinal telehealth study (16 real COPD patients, 4,741 patient-days, University of Cádiz/INiBICA) using a **daily sentence-reading task** found pause count and duration change significantly (p < 0.01) before an exacerbation — independent confirmation of VoiceShift's core COPD hypothesis, with the real task type our live app actually uses. [Study](https://zenodo.org/records/23600864) Its own cited reference — an 18-patient, ~200-days-per-person smartwatch speech study published in *Scientific Reports* — found the same kind of signal. [Study](https://pmc.ncbi.nlm.nih.gov/articles/PMC12480672/) Both, like the first COPD study above, are restricted to request-only access, not public download — three separate recent, serious longitudinal COPD speech studies, all gated the same way, is a real pattern in this research field (privacy/IRB constraints on continuous home recordings), not a search failure. An extensive search (IEEE DataPort, OSF, Mendeley, Harvard Dataverse, Zenodo, GitHub, plus everything already ruled out: COPDVD, the Danish COPD dataset, PC-GITA, NeuroVoz, UK COVID-19 Sounds, Coswara) found no public, downloadable, real-patient COPD speech dataset meeting this project's bar. One GitHub repository surfaced with real audio and COPD/healthy folder labels, deliberately not used: the audio is scraped from named, identifiable patients' personal YouTube health-advocacy videos, with no license and no indication of consent for this reuse — a consent problem, not just a data-quality one, and inconsistent with this project's own standard.
-- **Parkinson’s:** A systematic review examined acoustic changes relevant to speech monitoring and identified longitudinal evidence gaps. Use speech timing to prompt questions about everyday communication. [Review](https://pmc.ncbi.nlm.nih.gov/articles/PMC11939921/)
-- **Recording setup:** Telehealth acoustic measurements can be affected by device settings and mic distance. Keeping comparable references is central to the design. [Recording study](https://pmc.ncbi.nlm.nih.gov/articles/PMC8740561/)
-- **Elicitation protocol:** The COPD study above elicited speech with a standardized reading passage ("Der Nordwind und die Sonne," the international phonetics-standard text), not free speech, specifically because fixed text keeps acoustic measurements comparable across sessions. English-language speech-language pathology uses the same approach with the Rainbow Passage. VoiceShift uses a short Rainbow Passage excerpt as its fixed phrase for the same reason — a named, standardized elicitation text instead of an arbitrary one. [Rainbow Passage](https://dailycues.com/learn/iqpedia/pages/rainbow-passage/) · [ASHA voice assessment protocol](https://pubs.asha.org/doi/10.1044/2018_AJSLP-17-0009)
-- **The live app's actual mechanism, tested directly on real diagnosed patients, then broken down further:** Everything below this point tested sustained-vowel features, which is not what the live app measures. This one tests the real thing — pause and rhythm structure from connected, read speech, using our own VAD + timing-feature code. Source: [MDVR-KCL](https://zenodo.org/records/2867216) (Zenodo, public, no request needed), 16 diagnosed PD patients and 21 healthy controls reading the same paragraph aloud on a real smartphone. First pass: PD patients' pause fraction averaged 0.328 vs. 0.233 for healthy controls (Cohen's d = 1.07, p = 0.008). Breaking the signal down further than one or two numbers found the more specific mechanism: PD patients speak in **shorter bursts between pauses**, not just longer pauses overall (mean speech-segment duration 2.09s vs. 2.81s, p = 0.016) — consistent with reduced respiratory/phonatory support, a real and specific clinical phenomenon, not an arbitrary statistical artifact. **This is a dose-response relationship, not just a binary split:** MDVR-KCL's filenames encode each PD patient's real Hoehn & Yahr stage and UPDRS scores, and within the PD group alone, mean speech-segment duration correlates with Hoehn & Yahr stage at r = -0.80 (p < 0.001), and pause fraction at r = 0.73 (p = 0.001) — more severe patients pause more and speak in shorter bursts, in real clinical severity data. Combining all 21 timing + voice-quality features (voice quality measured on the connected speech itself this time, not a sustained vowel) into one classifier reached cross-validated ROC-AUC 0.75, the best result in any test we've run — bootstrapped 95% CI [0.58, 0.92] (1000 resamples): the point estimate is real, not a fluke of one CV split (bootstrap mean 0.77), but report the range, not the bare 0.75 — N=37 means real uncertainty, and the honest lower bound sits just above chance. Caveat taken seriously: ~20 features were tested individually on 37 subjects, so a couple of the weaker individual p-values (0.02–0.08, mostly jitter/shimmer) could be multiple-comparison noise — pause fraction and speech-segment duration are the robust findings, both corroborated independently by the severity-gradient test. This is still cross-sectional (one session per subject), not a test of change over time for one person — no public dataset with repeat sessions on connected speech was found (the one COPD study that recorded patients twice, at hospitalization and discharge, exists but its data is request-only, confirmed directly with its own data-availability statement, not assumed). Age remains an unruled-out confound. **Robustness check:** reran both headline features (pause fraction, mean speech-segment duration) at three different VAD sensitivity thresholds (0.3/0.5/0.7) — both stayed significant (p = 0.006–0.025) with the same direction and similar magnitude at every setting, so this isn't an artifact of one particular VAD tuning choice. Scripts and raw results: `backend/app/models/analyze_pause_timing_pd_vs_hc.py`, `backend/app/models/analyze_voice_breakdown_pd_vs_hc.py`, `backend/app/models/analyze_vad_sensitivity.py`, `backend/data/pd_classifier_out/`.
-- **Deep embeddings on the connected-speech data too — and a statistical trap caught along the way:** the wav2vec2 comparison run earlier only used the sustained-vowel dataset; running it on MDVR-KCL's connected speech instead (embeddings from the VAD-detected speech-only audio) reached AUC 0.89 — well above the hand-engineered feature set's 0.74–0.75 on the same 37 people. A first naive bootstrap CI came back absurdly high ([0.83, 1.0]) — caught and rejected, not reported: resampling 37 subjects with replacement can duplicate one subject's exact 768-dim embedding into both the train and test side of a fold, letting the model memorize rather than generalize, which is exactly the kind of small-sample/high-dimension trap this project's own standard exists to catch. The correct check — shuffle the labels 300 times and rerun the identical clean cross-validation — shows chance alone, in this same 768-feature/37-sample regime, tops out at AUC 0.83 (mean 0.49, as expected). The real result (0.89) beats every single one of those 300 label-shuffled runs (empirical p < 1/300). Scripts and results: `backend/app/models/analyze_embeddings_connected_speech.py`, `backend/app/models/permutation_test_embeddings.py`, `backend/data/pd_classifier_out/permutation_test_embeddings.json`.
-- **That same embedding classifier does not generalize across languages — run on CCR, a genuine negative result, and it changes our recommendation:** trained a classifier on English (MDVR-KCL) embeddings, tested on Italian (ItalianPVS) ones never seen in training, and vice versa — no cross-validation, no resampling, zero leakage risk, since train and test are two fully independent real-world datasets. Result: AUC 0.61 and 0.55 in the two directions, neither distinguishable from chance (permutation p = 0.20 and p = 0.34 — chance alone reaches AUC 0.78–0.81 in this same setup). The high within-dataset AUC (0.89, above) does not transfer across language and task. This is not a contradiction of the earlier result — within a single dataset, the embedding classifier is genuinely picking up *something* real (it beat 300/300 label-shuffles there) — but whatever it's picking up is entangled with language- and task-specific acoustic structure that doesn't carry over, a known failure mode in ML called domain shift. The simple, interpretable timing features (pause fraction, speech-segment duration) are the ones we've shown *do* carry over, replicating in direction and significance across language, research group, protocol, and task type. That's exactly why the live app's trigger is built on transparent personal-baseline timing features and never on an opaque trained classifier — not only for safety and explainability, but because it's now the empirically more robust choice too. Run on CCR (a 300M-parameter multilingual model, XLSR-53, across both real datasets). **Caveat found after the fact:** this run used ItalianPVS's PR1 (word-list) files, not the task-matched B1 (continuous passage) — the same wrong-task mixup caught and fixed in the replication finding above, but this script predates that fix. So this specific result conflates language *and* task type, not language alone; a task-matched rerun (B1 vs. MDVR-KCL's continuous passage) is queued to isolate language as the actual variable. Script and results: `backend/app/models/ccr_cross_lingual_generalization.py`, `backend/data/pd_classifier_out/cross_lingual_generalization.json` (PR1, task-confounded) — `cross_lingual_generalization_taskmatched_b1.json` (B1, task-matched) to follow.
-- **Independently replicated, on a second real dataset in a different language — corrected after checking the dataset's own task documentation:** [ItalianPVS](https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech) (28 diagnosed PD patients, 22 elderly healthy controls, Italian, different research group, different recording protocol). An earlier pass guessed the task from the filename ("PR1") without checking the dataset's own `FILE CODES.xlsx`; that file shows "PR1" is actually the isolated-word-list task (code `FB2`), and the real continuous-passage task matching MDVR-KCL's "read the same paragraph" is code **B1** (reading the phonemically-balanced text "Il ramarro della zia"). Corrected result, on the task-matched B1 recordings: pause fraction replicates significantly, PD 0.265 vs. HC 0.196, p = 0.044, Cohen's d = 0.61 — a real, moderate effect, weaker than the word-list task happened to show but on the right task this time. Mean speech-segment duration, which didn't replicate on the word-list task, is now borderline/trending in the same direction as MDVR-KCL on the task-matched data: p = 0.053, d = -0.60 — not clean significance, but far more coherent than the earlier wrong-task conclusion that it "doesn't replicate." The word-list task's numbers are kept too, now correctly labeled, as a secondary comparison: pause fraction PD 0.347 vs. HC 0.178, p = 0.0001, d = 1.21; segment duration p = 0.21 (expected, word-by-word tasks lack continuous-speech breath rhythm). Pause fraction replicating on *both* task types, and segment duration replicating specifically on the task type mechanistically suited to it, is a more accurate and more interesting result than the original single-task version of this finding. Scripts and results: `backend/app/models/analyze_italianpvs_replication.py`, `backend/data/pd_classifier_out/italianpvs_continuous_passage_B1_replication.json`, `backend/data/pd_classifier_out/italianpvs_wordlist_PR1_replication.json`.
-- **Our own validation, on real diagnosed patients, not teammates:** We ran our own jitter/shimmer/HNR extraction code — the same code the live app uses — against 81 real, raw recordings (40 diagnosed PD patients, 41 healthy controls, sustained vowel /a/) from a public dataset. 5-fold cross-validated, split by subject: accuracy 0.617, ROC-AUC 0.630 — only modestly above chance. [Dataset: Voice Samples for Patients with Parkinson's Disease and Healthy Controls](https://figshare.com/articles/dataset/Voice_Samples_for_Patients_with_Parkinson_s_Disease_and_Healthy_Controls/23849127)
-- **The same features do not track longitudinal change, and we checked rather than assumed it:** Against the 42-patient UCI Telemonitoring dataset, a model predicting an unseen patient's absolute UPDRS severity from sustained-vowel features scored R² = -0.35 (worse than guessing the mean). Reframing the target as within-subject deviation (removing each patient's own baseline level) still scored R² = -0.09. A simpler, more direct check — per-subject Pearson correlation between each feature and that subject's own UPDRS over time — found a median r of 0.02–0.03 across HNR, jitter, shimmer, and NHR, with only 52–60% of subjects even sharing the same sign. Sustained-vowel voice quality, in real longitudinal patient data, does not reliably move with symptom severity for a given person. This matches the published claim that sustained vowels suit cross-sectional diagnosis, not longitudinal monitoring, and it is why VoiceShift's live trigger is built on reading-passage pause-timing instead, and why no trained severity score is ever shown to the patient. Scripts and raw results: `backend/app/models/analyze_severity_tracking.py`, `backend/data/out/severity_tracking_analysis.json`.
-- **A richer feature representation helps a little, on the diagnosis task specifically:** on the same 81-patient PD vs. healthy-control classification, swapping the 13 hand-engineered jitter/shimmer/HNR numbers for a 768-dim embedding from a pretrained self-supervised speech model (wav2vec2, trained on ~960 hours of real speech) raised cross-validated ROC-AUC from 0.630 to 0.679 — same accuracy, better ranking. Real, reproducible, and modest, not transformative, on this sample size. This comparison could not be run for the longitudinal-tracking finding above, because that dataset only provides pre-extracted numbers, not raw audio — no feature representation, however rich, can recover a recording that was never released. Scripts and results: `backend/app/models/train_pd_classifier_embeddings.py`, `backend/data/pd_classifier_out/embedding_classifier_metrics.json`.
-- **Buffalo:** CDC’s 2021 age-adjusted estimate for diagnosed COPD in Erie County was 6.5% of adults. ECMC’s pulmonary clinic and UB’s Neurodegenerative Disease Clinic are potential discovery contacts. No partnership is established. [CDC](https://www.cdc.gov/copd/php/case-reporting/county-level-estimates-in-copd.html) · [ECMC](https://www.ecmc.edu/health-services/outpatient-services/pulmonary-sleep-clinic-and-function-testing-lab/) · [UB](https://arts-sciences.buffalo.edu/cds/clinic/specialty-clinics/neurodegenerative-disease.html)
+The [README](README.md) describes the actual stack and launch instructions.
+[The API contract](VoiceShift-API-Spec.md) and
+[API implementation notes](backend/app/api/README.md) describe the five existing
+routes. [The architecture and roadmap](docs/CADENCE-ARCHITECTURE-ROADMAP.md)
+separates proposed features from working components.
 
-## Design decisions after review
+| Status | Scope |
+| --- | --- |
+| Implemented and software-tested | WAV upload, Silero VAD, three timing features, personal median/MAD reference, two-check-in trigger, prototype question lookup, note/confirmation, TimescaleDB history, and ElevenLabs text-to-MP3. |
+| Separate UI prototype | `Daily Hello Family.html`: sample caregiver records, charts, local settings/audio playback, optional host Claude summaries. No microphone capture or backend API calls are present. |
+| Planned MVP integration | Browser recording/WAV encoding, current API wiring, MP3 playback, frozen passage/count, human clean/acted demo fixtures, follow-up completion, note corrections and history access. |
+| Future product/research | Reviewed adaptive questioning, medical-history and wearable context, authorized caregiver reports/updates, phone capture, separate disease validation and prospective monitoring evaluation. |
 
-1. **Track fit:** Use actual audio measurements alongside the transcript. Check whether they change a question and uncover a useful detail.
-2. **Clinical validity:** Compare the person with their own reference. Confirm the meaning of a difference through conversation.
-3. **Product value:** Benchmark against a fixed questionnaire. Acoustic monitoring already exists, including Hyfe’s cough monitoring. Patient correction and condition-aware follow-up are the workflow to test.
-4. **Scope:** Reuse the measurement engine across COPD and Parkinson’s. Give phone and web distinct capture adapters and reference sets. Cough detection is optional.
-5. **Operational fit:** Let the patient confirm the note. Before a pilot, ask local clinicians whether the note is useful, who would review it, and how patients would share it.
-6. **Cadence:** Default to a daily, optional check-in (~30 seconds). Longitudinal home-monitoring precedent ranges from daily (HopkinsPD smartphone monitoring) to weekly (Oxford PD Telemonitoring Voice Dataset) — no study validates one correct cadence. Daily matches the timescale a COPD exacerbation actually develops on and is consistent with available precedent. Taper to every 2–3 days after a stable run to protect adherence; tighten back to daily after a persistent deviation.
-7. **Population-trained signal, not teammate-trained — and reported honestly even when the result is weak.** Never train anything that makes a disease-correlated claim on our own recordings — three healthy teammates is not evidence of anything and would undercut the project's own evidence-based framing the moment anyone asks how it was validated. Train only on real diagnosed-patient data: the public [UCI Oxford Parkinson's Telemonitoring dataset](https://archive.ics.uci.edu/dataset/189/parkinsons+telemonitoring) (42 patients, longitudinal UPDRS, trained on CCR) and the public [figshare PD/HC voice dataset](https://figshare.com/articles/dataset/Voice_Samples_for_Patients_with_Parkinson_s_Disease_and_Healthy_Controls/23849127) (81 real participants, raw audio, run through our own live-app feature-extraction code). The severity-regression model did not generalize (see evidence section) — so it stays an offline research artifact that backs the pitch's evidence section, and is never wired into the live app as a patient-facing score. Showing a number we already know doesn't hold up, just because we trained something, would be the opposite of this project's own standard. No comparable public COPD dataset with accessible raw audio was confirmed in time; the COPD path stays rule-based (personal baseline plus guideline-sourced question cards) and the trained-model tier is explicitly future work for that condition, not quietly skipped.
+The `copd` condition label and its prototype cards work as software routes;
+that does not mean the COPD use case has been clinically validated. Asthma is
+future work. The only current condition values are `copd` and `parkinsons`.
 
-## Product requirements
+## Actual measurement and dialogue mechanism
 
-VoiceShift is an opt-in between-visit check-in for adults already diagnosed with COPD or Parkinson’s. The app offers two entry points. **Call my parent** starts an outbound AI call to an enrolled, linked parent. **Check my voice** starts a self-check in the app. Offer either flow according to preference and access. A short excerpt of the Rainbow Passage — a standardized reading passage already used in clinical voice assessment — supplies the audio sample, offered once daily by default. Compare speech timing with that person’s prior comparable samples. Use a repeatable difference to choose the next question in the same session. Ask what the person experienced and produce a patient-confirmed note. Keep measured changes, patient reports, and unresolved questions separate.
+- WAV audio is loaded using `soundfile`, converted to mono 16 kHz, and passed to
+  pretrained Silero VAD. Timing ignores silence before the first and after the
+  last detected speech segment.
+- Features are pause fraction, longest internal gap, and syllable count divided
+  by speech duration. The API uses placeholder count **40**; it neither verifies
+  the spoken passage nor estimates its syllables from a transcript.
+- Enrollment uses 3-5 clean reference takes. The baseline stores per-feature
+  median and scaled MAD; a zero MAD is floored at 1e-6. A multifeature robust
+  z-score norm >=2.0 on two consecutive check-ins triggers a question. These
+  are prototype parameters, not clinical thresholds.
+- `profiles` holds baseline JSONB; `checkins` is a TimescaleDB hypertable with
+  one row for every check-in. Recent scores are replayed per request, so no
+  in-memory per-profile tracker must survive a restart. Profile row locks
+  serialize updates.
+- Four condition/cue cards in `app/dialogue/question_cards.py` are labeled
+  `prototype`. Selection and answer classification are deterministic lookup and
+  keyword matching. There is no backend LLM, semantic search, clinician review
+  record, or evidence retrieval service.
+- `/answer` returns a three-bucket note and optional follow-up. It stores the
+  patient's words/status, and rejects a second answer for that check-in. The
+  full returned note is not separately persisted. `/confirm` changes status;
+  it neither corrects content nor grants sharing permission.
+- `/speak` voices explicitly supplied text through ElevenLabs. It can be called
+  by a future UI for the question, follow-up, or report read-back; it does not
+  implement speech recognition, a voice agent, or an outbound call.
 
-| Known care context | After a persistent timing difference |
-|---|---|
-| COPD | Ask neutrally what happened during the pause. If the person says they stopped for breath, ask whether this is more frequent than usual and what activity it affects. |
-| Parkinson’s | Ask what happened during the pause. If the person reports difficulty speaking, ask where they noticed it and whether being understood in everyday conversations has changed. |
+The trigger's multifeature score can rise because of rate or another feature,
+so the current generic note wording about longer pauses needs refinement before
+claiming a feature-specific explanation. Current references are keyed only by
+profile, not channel, phrase or device. There is no enrollment-update flow or
+adaptive check-in scheduling.
 
-Use fictional profiles and consenting teammate audio. The system measures speech timing and collects context. Diagnosis, disease progression, flare-up prediction, and treatment decisions require separate clinical work.
+## Research evidence retained in the repository
 
-## Caregiver and self-check workflows
+These are exploratory offline results reported in committed files, not a
+fresh model training run or measures of clinical diagnostic performance. The
+[datasets guide](backend/data/README.md) retains download and reproduction
+commands. Source studies and project background remain linked below.
 
-- **Call my parent.** Start with one fictional family pair. The parent enrolls and explicitly authorizes the account link and preferred sharing scope. The caregiver taps the button. The backend checks the active link, applies rate limits, and creates an idempotent call request to the stored number. The AI conducts the check-in using the parent's phone reference and existing care context. It reads back the proposed report, offers correction, and asks separately for permission to share. Publish only the approved version to the linked caregiver’s app. Check that the link is still active at publication and on report access.
-- **Check my voice.** Start a self-check from the app at any time. Use the participant’s web reference. Show an editable note for their own review and keep it private unless they choose to share.
-- **Call status.** Track queued, ringing, in progress, no answer, declined, failed, awaiting approval, completed privately, and report available. Do not record or disclose health details on voicemail or to an unverified answerer. If the call drops before approval or the parent declines sharing, the caregiver receives status only. No phone baseline means continue with questions and mark the acoustic comparison unavailable.
-- **Report contents.** Distinguish measured speech changes, patient-confirmed observations, and unresolved questions. Allow the parent to correct the content before approval. Never send an unapproved draft or imply that a missed call is a medical finding.
+| Analysis | Stored finding | Interpretation boundary |
+| --- | --- | --- |
+| MDVR-KCL connected reading | 16 PD / 21 HC; pause fraction 0.328 / 0.233, nominal p=0.008; mean speech segment 2.09s / 2.81s, p=0.016. The detailed feature artifact reports pause-fraction d about 1.00. | One session per participant, small cohort, possible age/recording confounding, exploratory multiple tests. A group difference does not validate personal change detection. |
+| MDVR-KCL severity association | Within 16 PD participants, segment duration vs Hoehn-Yahr Spearman r=-0.80, p=0.00022; pause fraction r=0.73, p=0.00145. | Cross-sectional association; not a causal dose-response experiment or longitudinal tracking validation. |
+| VAD sensitivity | Both headline MDVR-KCL timing features retain their direction at thresholds 0.3, 0.5, 0.7; nominal p approximately 0.006-0.025. | Robustness to these settings, not proof of generalizability or clinical sensitivity/specificity. |
+| ItalianPVS B1 primary replication | **27 PD / 21 HC actually analyzed**; pause fraction 0.265 / 0.196, p=0.044, d=0.61; segment-duration p=0.053, d=-0.60. | Continuous passage, matching the task category; segment duration is borderline and not significant at 0.05. Cohort composition and protocols still differ. |
+| ItalianPVS PR1/FB2 secondary comparison | 28 PD / 22 HC; pause fraction 0.347 / 0.178, p=0.000092, d=1.21; segment-duration p=0.214. | Isolated-word list, not continuous reading. Do not substitute its stronger effect for the B1 result. |
+| Connected-speech classifier | 21 timing/quality features on 37 participants: stored CV AUC about 0.75; another feature-set comparison reports about 0.74. | Offline cohort ranking only; preprocessing and evaluation need review. |
+| Historical bootstrap | Stored combined-classifier AUC interval about [0.58, 0.92] over 1,000 resamples. | The script scales before folds and can duplicate participants across folds after resampling; preserve as a historical output, not a validated confidence interval. |
+| Connected-speech embeddings | 37 participants; within-dataset AUC about 0.89 vs handcrafted about 0.74; 0 of 300 shuffled-label runs reached observed AUC (maximum about 0.83). | The artifact reports empirical p=0, not a true zero probability. Finite permutation uncertainty, small samples, preprocessing and other biases remain. An earlier naive embedding bootstrap was rejected because duplicates could cross folds. |
+| Cross-dataset embeddings | English -> Italian AUC 0.61, permutation p=0.20; reverse AUC 0.55, p=0.34. | The committed run combines language and task shift because it used PR1/word lists. The B1 rerun script is present; its output is not committed in this snapshot. Even B1 would retain recording/site differences. |
+| Figshare sustained vowel | 40 PD / 41 HC: handcrafted accuracy 0.617, AUC 0.630; embeddings accuracy 0.617, AUC 0.679. | Sustained /a/, not the app's connected-reading task. The quality extractor is an offline research module, not part of the live timing trigger. |
+| UCI Telemonitoring | 42 patients: feature-vs-own-UPDRS median correlations near zero (roughly -0.02 to 0.03), sign consistency about 52-60%. | These vowel-derived features did not supply convincing personal severity tracking in this analysis. Earlier session notes also report R-squared -0.35 / -0.09 for regression; those fit metrics are not stored in the committed correlation-summary file. |
 
-## Shared implementation
+Preserve `backend/data/pd_classifier_out/` and `backend/data/out/` outputs.
+The B1 JSON's `note` still contains an old word-list interpretation; the
+corrected task and numeric summary above take precedence. Research-owner review
+of that metadata and validation methodology is a separate change; no scripts,
+model artifacts, results, or API contracts are rewritten by this docs task.
 
-1. **Capture.** On the web, offer microphone capture, explicit Finish, and a text check-in. On the phone, place an outbound call to the linked parent’s verified, allowlisted number. Identify VoiceShift and ask whether now is a good time. Confirm the intended participant and obtain permission before recording. Let the parent finish the sample with a keypad command such as #. Verify provider support for preserving internal silence and for the recording callback before committing. Transcribe follow-up answers or use keypad choices as a clearly labeled fallback.
-2. **Normalize and measure.** Decode bounded recordings to mono 16 kHz for the VAD. Preserve original channel metadata. Use speech segment timestamps to compute pause fraction (internal gaps divided by first-to-last speech span), longest internal gap, and speaking rate (the passage's fixed syllable count divided by total speech duration). Ignore edge silence. Use silence between speech segments as an observation and keep its cause unknown. Retain timestamps. Reject unusable recordings and handle missing phrase verification explicitly.
-3. **Personal reference.** Key references by profile, channel, phrase, and comparable capture setup. App and phone references stay separate even after resampling. Use several clean reference takes for each supported profile/channel combination, comparing median and spread with a minimum absolute difference. Keep thresholds configurable and label them as prototype thresholds. Avoid silently adding flagged, noisy, or unconfirmed takes to the reference. Changed setups or missing references fall back to re-enrollment or symptom questions.
-4. **Dialogue policy.** Explicit patient reports take priority over acoustic cues. Route the supported emergency scenario through fixed, source-linked copy outside the generative model and without automated dispatch. A persistent timing change earns a neutral question after one optional repeat. If the person was distracted, capture the correction and continue. If audio is missing, unusable, or inconclusive, continue with routine questions. Never interpret a typical sample as reassurance.
-5. **Decision and dialogue, two tiers in the live app, plus one offline.** Tier one is deterministic and model-free: per-profile personal-baseline comparison (robust multivariate z-score across pause fraction, longest gap, and speaking rate, fit on that person's own clean reference takes) plus a repeatability check across consecutive check-ins. This tier alone decides whether a follow-up question fires — fully explainable, no learned model involved beyond the pretrained VAD. Tier two is generative: store source-linked question cards with condition, cue, intent, source, and review status; retrieve by known care context and the triggered cue; constrain generation to the retrieved card and confirmed facts, validate output, and fall back to exact question text. Apply the same constraint when summarizing the patient's reply into the note. If only selecting cards, describe it as retrieval, not generation. Keep medication and treatment generation outside the workflow. A third, population-trained tier (sustained-vowel voice quality, see design decision 7) was built and validated but stays offline: it did not generalize, so it is evidence in the pitch, not a feature in the app.
-6. **Notes and privacy.** Web shows an editable note. Phone reads key details back and accepts confirmation or correction before finalizing. Use ephemeral raw audio by default, protect secrets, and avoid logging personal audio or transcripts. Authenticate provider callbacks, deduplicate retries, and bind callbacks to the correct turn. Keep phone sessions isolated and invalidate stale responses after reset. Sharing is patient-controlled. A caregiver sees only the approved summary and call status. Keep raw recordings and full transcripts private.
+Timing results motivate further study. They do not demonstrate that this
+prototype diagnoses Parkinson's, tracks progression, predicts exacerbations,
+or has proven utility for a single person's daily monitoring. Keep every
+population-trained classifier/severity score offline. Never turn AUC,
+classification accuracy or the baseline distance into a disease probability.
 
-## Build order and acceptance
+## COPD evidence and search boundaries
 
-Three people over 24 hours. One owns shared speech analysis and dialogue, one owns web, and one owns phone. The CCR training run (design decision 7) is a fourth, parallel track: non-blocking, does not touch the live pipeline until a trained model file comes back, and can start the moment the UCI dataset is downloaded. Agree on the session and audio-analysis contract immediately. Prove browser microphone capture and one app-triggered outbound call with recording transport in parallel in the first two hours. Then finish both channel adapters against the same backend before adding visual polish, additional features, or scheduled calls.
+The original research identified potentially relevant COPD literature: a
+50-person structured-speech study, a University of Cadiz/INiBICA telehealth
+abstract reporting 16 patients / 4,741 patient-days, and a wearable speech study
+reporting 18 patients. These are literature leads and external findings cited
+by the team, not Cadence validation. Consult each primary source before reusing
+its clinical claims; they do not establish the prototype's thresholds.
 
-Verify a repeatable internal pause, ordinary repeats, wrong phrase, noise, changed mic, different channel, direct symptom reports with typical audio, and both condition-specific paths. Verify app-triggered calling, duplicate taps and provider callbacks, keypad completion, approval and correction, no answer, dropped calls, revoked links, and denial of access by an unrelated caregiver. Test that a phone recording never compares against a web reference. Measure time from finishing a sample to the next question. Compare confirmed useful facts and unnecessary questions against a fixed questionnaire. Keep simulated or fixture-driven events visibly labeled. Add cough only after timing and both channels work. Defer pitch, loudness, disease scoring, scheduled calls, and inbound calling.
+During the documented search, the team did not verify a dataset satisfying all
+of its requirements: diagnosed COPD participants, raw reading/talking/counting
+or vowel audio, usable diagnosis/severity labels, immediate download, and clear
+reuse provenance. Evaluated leads included gated/unreleased collections,
+non-speech cough or stethoscope sounds, and feature-only data. A surfaced
+interview-audio GitHub repository had uncertain clinical label provenance and
+reuse terms, so it was not used for validation. Some search/API requests were
+blocked; do not call the search exhaustive or claim no public COPD speech
+dataset exists anywhere. Some previously excluded Parkinson's datasets were
+access checks, not COPD evidence. COPD and asthma require separate validation.
 
-## Demo fixture plan
+## Product direction and planned workflows
 
-Seed one profile with five pre-recorded takes of the passage so the adaptive-question path can be demoed live without waiting on real elapsed days.
+The intended user is a person with a known care context who wants a useful
+between-visit record. The current hackathon emphasis is Parkinson's. Future
+COPD, asthma and other applications should combine voice with authorized
+medical history, confirmed diagnoses, symptoms, prior answers, independently
+measured physiology/wearables, and clinically reviewed evidence.
 
-| Take | Label | What it should sound like | What it proves |
-|---|---|---|---|
-| Day 1–3 | Clean baseline | Normal, comfortable pace, no inserted pauses | Builds the median/spread reference |
-| Day 4 | Typical variation | Slightly faster or slower, within normal spread | Confirms the system does not false-positive on ordinary variation |
-| Day 5 (×2) | Acted deviation | One teammate deliberately inserts a breath pause (COPD) or slows/slurs a phrase (Parkinson's) in the same spot, on two separate takes | Confirms a persistent, repeatable deviation fires the correct condition-specific question, not just a single noisy outlier |
+A proposed Adaptive Clinical Question Engine would use observed changes, known
+conditions, patient explanations, missing distinguishing information, prior
+evidence, and approved rules to choose useful questions. A proposed Clinical
+Question Library would evolve through published research, longitudinal studies,
+clinician review, authorized confirmed outcomes, independent testing and
+version-controlled releases. No unreviewed diagnostic rule should be promoted
+automatically. An LLM may eventually help phrase approved content; it must not
+invent diagnoses or unsupported probabilities. Detailed design and review gates
+are in [the roadmap](docs/CADENCE-ARCHITECTURE-ROADMAP.md).
 
-Label every fixture file with its day number and clean/acted status in the filename. The acceptance section already requires simulated events to be visibly labeled; this is where that labeling starts.
+The planned self-check flow needs real browser capture, note correction,
+completed follow-up turns, and optional explicit sharing. A proposed caregiver
+flow additionally needs verified identities, active patient authorization,
+recipient/scope checks, revocation and patient-approved report access. Phone
+calling, callback verification, voicemail handling and separate phone references
+are deferred. Existing `/confirm` is neither a consent system nor a publishing
+operation. Reports must keep measured observations, patient reports and
+unresolved questions separate. A missing reading is missing data, not illness.
 
-## Additional sources from the original research
+The earlier team responsibilities remain: speech/backend integration,
+frontend/UX, and conversation/research, with ownership coordinated before edits.
+Phone work is future scope, not a third required working adapter for this MVP.
+Daily check-ins and a later taper to every 2-3 days were design ideas; no scheduler
+or validated frequency recommendation is implemented.
 
+## Demo fixture and acceptance plan
+
+Use fictional profiles and consenting teammate audio for demonstrations. The
+short committed test fixture checks software mechanics, not clinical utility.
+A human demo fixture set is still needed:
+
+| Take | Label | Purpose |
+| --- | --- | --- |
+| Days 1-3 | Clean reference | Establish one person's comfortable reading reference. |
+| Day 4 | Typical variation | Exercise ordinary timing variation. |
+| Day 5, twice | Acted deviation | Exercise two consecutive elevated check-ins and question selection. |
+
+Label acted clips clearly; do not train disease models on them or call them
+real patient validation. Acceptance should include end-to-end browser/API
+behavior, unusable/noisy input, changed device/phrase, typical audio with a
+reported symptom, follow-up correction, provider failures, and report consent.
+The latter consent/caregiver tests depend on future implementation. Compare the
+usefulness of approved questions with a fixed questionnaire in later studies.
+No authentication, deployment protection, emergency assessment, medication
+advice, or automated dispatch is supplied by the current API.
+
+## Source index retained from the original research
 
 1. [CDC county COPD estimates](https://www.cdc.gov/copd/php/case-reporting/county-level-estimates-in-copd.html)
 2. [ECMC Pulmonary & Sleep Clinic](https://www.ecmc.edu/health-services/outpatient-services/pulmonary-sleep-clinic-and-function-testing-lab/)
@@ -102,46 +197,3 @@ Label every fixture file with its day number and clean/acted status in the filen
 19. [ItalianPVS: Italian Parkinson's Voice and Speech (Hugging Face mirror)](https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech)
 20. [A Longitudinal Multivariate Assessment of Acoustic and Motor Biomarkers in COPD Telehealth](https://zenodo.org/records/23600864)
 21. [Association of daily lung condition in COPD patients with wearable speech and physiological data](https://pmc.ncbi.nlm.nih.gov/articles/PMC12480672/)
-
-
-
-
-downloading https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech/resolve/main/italian_parkinson/22%20Elderly%20Healthy%20Control/LISCO%20G/PR1GLIIUSSC57M210320171057.wav -> /scratch/voiceshift_data/italianpvs_hc/hc_11.wav
-downloading https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech/resolve/main/italian_parkinson/22%20Elderly%20Healthy%20Control/LUIGI%20P/PR1LPUUITGI41M230320171115.wav -> /scratch/voiceshift_data/italianpvs_hc/hc_12.wav
-downloading https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech/resolve/main/italian_parkinson/22%20Elderly%20Healthy%20Control/MARIACRISTINA%20P/PR1MPAERRIR56F300320171150.wav -> /scratch/voiceshift_data/italianpvs_hc/hc_13.wav
-downloading https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech/resolve/main/italian_parkinson/22%20Elderly%20Healthy%20Control/MICHELE%20G/PR1MGIACTHT49M210320170903.wav -> /scratch/voiceshift_data/italianpvs_hc/hc_14.wav
-downloading https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech/resolve/main/italian_parkinson/22%20Elderly%20Healthy%20Control/NICOLA%20P/PR1NPIICEOR42M020420171813.wav -> /scratch/voiceshift_data/italianpvs_hc/hc_15.wav
-downloading https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech/resolve/main/italian_parkinson/22%20Elderly%20Healthy%20Control/PORCELLI%20A/PR1APNOTROC49M230320170933.wav -> /scratch/voiceshift_data/italianpvs_hc/hc_16.wav
-downloading https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech/resolve/main/italian_parkinson/22%20Elderly%20Healthy%20Control/SUMMO%20L/PR1LSUUIMGM48F230320171058.wav -> /scratch/voiceshift_data/italianpvs_hc/hc_17.wav
-downloading https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech/resolve/main/italian_parkinson/22%20Elderly%20Healthy%20Control/TERESA%20M/PR1TMEIRAEC54F230320171157.wav -> /scratch/voiceshift_data/italianpvs_hc/hc_18.wav
-downloading https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech/resolve/main/italian_parkinson/22%20Elderly%20Healthy%20Control/VITANTONIO%20D/PR1VDIETAS47M210320170948.wav -> /scratch/voiceshift_data/italianpvs_hc/hc_19.wav
-downloading https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech/resolve/main/italian_parkinson/22%20Elderly%20Healthy%20Control/VITO%20A/PR1VAILTFOO49M230320171035.wav -> /scratch/voiceshift_data/italianpvs_hc/hc_20.wav
-downloading https://huggingface.co/datasets/birgermoell/Italian_Parkinsons_Voice_and_Speech/resolve/main/italian_parkinson/22%20Elderly%20Healthy%20Control/VITO%20L/PR1VLIATFOO55M300320171241.wav -> /scratch/voiceshift_data/italianpvs_hc/hc_21.wav
-loading WAV2VEC2_XLSR53 (multilingual, ~300M params)...
-Downloading: "https://download.pytorch.org/torchaudio/models/wav2vec2_fairseq_large_xlsr53.pth" to /user/abadguja/.cache/torch/hub/checkpoints/wav2vec2_fairseq_large_xlsr53.pth
-100.0%
-embedding MDVR-KCL (English, connected speech)...
-/user/abadguja/voiceshift-env/lib/python3.10/site-packages/torch/jit/_serialization.py:176: FutureWarning: `torch.jit.load` is deprecated. Please switch to `torch.export`.
-  warnings.warn(
-  embedded [mdvr_kcl] ID02_pd_2_0_0.wav
-  embedded [mdvr_kcl] ID04_pd_2_0_1.wav
-  embedded [mdvr_kcl] ID06_pd_3_1_1.wav
-  embedded [mdvr_kcl] ID07_pd_2_0_0.wav
-  embedded [mdvr_kcl] ID13_pd_3_2_2.wav
-  embedded [mdvr_kcl] ID16_pd_2_0_0.wav
-  embedded [mdvr_kcl] ID17_pd_2_1_0.wav
-  embedded [mdvr_kcl] ID18_pd_4_3_3.wav
-  embedded [mdvr_kcl] ID20_pd_3_0_1.wav
-  embedded [mdvr_kcl] ID24_pd_2_0_0.wav
-  embedded [mdvr_kcl] ID27_pd_4_1_1.wav
-  embedded [mdvr_kcl] ID29_pd_3_1_2.wav
-  embedded [mdvr_kcl] ID30_pd_2_1_1.wav
-  embedded [mdvr_kcl] ID32_pd_3_1_1.wav
-  embedded [mdvr_kcl] ID33_pd_3_2_2.wav
-  embedded [mdvr_kcl] ID34_pd_2_0_0.wav
-  embedded [mdvr_kcl] ID00_hc_0_0_0.wav
-  embedded [mdvr_kcl] ID01_hc_0_0_0.wav
-  embedded [mdvr_kcl] ID03_hc_0_0_0.wav
-
-
-CCR is cooking somerhtn
